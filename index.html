@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel Horas Simple V9</title>
+<title>Panel Horas Simple V9.2</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -42,7 +42,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 </style>
 </head>
 <body>
-<header><h1>Panel de Horas Simple V9</h1><div id="clock"></div></header>
+<header><h1>Panel de Horas Simple V9.1</h1><div id="clock"></div></header>
 <div class="wrap">
 <div id="mode" class="notice">Modo local. Para compartir datos, pegá la URL de Google Apps Script.</div>
 <div class="toolbar">
@@ -62,10 +62,54 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 <div style="overflow:auto"><table><thead><tr><th>Día</th><th>Hora</th><th>Aula</th><th>Alumno / Contacto</th><th>Profesor</th><th>Actividad</th><th class="actions">Acción</th></tr></thead><tbody id="agenda"></tbody></table></div></section>
 </div>
 <div id="loadModal" class="modal"><div class="box"><h2 id="loadTitle">Cargar horario</h2><input type="hidden" id="editIndex"><div class="form">
-<div><label>Hora</label><input id="hora" type="time" value="17:00"></div><div><label>Aula</label><select id="aula"></select></div>
-<div><label>Alumno</label><input id="alumno" placeholder="Nombre del alumno"></div><div><label>Contacto</label><input id="contacto" placeholder="Madre / Padre / Tutor"></div><div><label>WhatsApp</label><input id="whatsapp" placeholder="+54 9 ..."></div><div><label>Teléfono</label><input id="telefono" placeholder="Teléfono"></div><div><label>Profesor</label><select id="profesor"></select></div>
-<div class="full"><label>Actividad</label><input id="actividad" placeholder="Opcional"></div>
-<div class="full"><label>Días</label><div id="daysBox" class="days"></div><div style="font-size:13px;color:#475467;margin-top:6px">Marcá uno o varios días.</div></div>
+<div class="full"><label>Nombre del Alumno</label><input id="alumno" placeholder="Nombre del alumno"></div>
+<div class="full"><label>Día</label><div id="daysBox" class="days"></div><div style="font-size:13px;color:#475467;margin-top:6px">Marcá uno o varios días.</div></div>
+
+<div class="full">
+<label>Nombre del Alumno</label>
+<input id="alumno" placeholder="Nombre del alumno">
+</div>
+
+<div class="full">
+<label>Día</label>
+<div id="daysBox" class="days"></div>
+<div style="font-size:13px;color:#475467;margin-top:6px">
+Marcá uno o varios días.
+</div>
+</div>
+
+<div>
+<label>Hora</label>
+<input id="hora" type="time" value="17:00">
+</div>
+
+<div>
+<label>Aula</label>
+<select id="aula"></select>
+</div>
+
+<div>
+<label>Profesor</label>
+<select id="profesor"></select>
+</div>
+
+<div>
+<label>Actividad</label>
+<input id="actividad" placeholder="Opcional">
+</div>
+
+<div>
+<label>Contacto</label>
+<input id="contacto" placeholder="Madre / Padre / Tutor">
+</div>
+
+<div>
+<label>WhatsApp</label>
+<input id="whatsapp" placeholder="+54 9 ...">
+</div>
+
+<input id="telefono" type="hidden" value="">
+
 <div class="full"><button id="saveBtn" class="b2" onclick="saveItem()">Guardar</button> <button class="b6" onclick="closeLoad()">Cerrar</button></div>
 </div></div></div>
 <div id="configModal" class="modal"><div class="box"><h2>Configurar listas</h2><div class="config-list">
