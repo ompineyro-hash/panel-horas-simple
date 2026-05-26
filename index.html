@@ -42,7 +42,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 </style>
 </head>
 <body>
-<header><h1>Panel de Horas Simple V9.1</h1><div id="clock"></div></header>
+<header><h1>Panel de Horas Simple V9.2</h1><div id="clock"></div></header>
 <div class="wrap">
 <div id="mode" class="notice">Modo local. Para compartir datos, pegá la URL de Google Apps Script.</div>
 <div class="toolbar">
@@ -62,8 +62,6 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 <div style="overflow:auto"><table><thead><tr><th>Día</th><th>Hora</th><th>Aula</th><th>Alumno / Contacto</th><th>Profesor</th><th>Actividad</th><th class="actions">Acción</th></tr></thead><tbody id="agenda"></tbody></table></div></section>
 </div>
 <div id="loadModal" class="modal"><div class="box"><h2 id="loadTitle">Cargar horario</h2><input type="hidden" id="editIndex"><div class="form">
-<div class="full"><label>Nombre del Alumno</label><input id="alumno" placeholder="Nombre del alumno"></div>
-<div class="full"><label>Día</label><div id="daysBox" class="days"></div><div style="font-size:13px;color:#475467;margin-top:6px">Marcá uno o varios días.</div></div>
 
 <div class="full">
 <label>Nombre del Alumno</label>
@@ -73,9 +71,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 <div class="full">
 <label>Día</label>
 <div id="daysBox" class="days"></div>
-<div style="font-size:13px;color:#475467;margin-top:6px">
-Marcá uno o varios días.
-</div>
+<div style="font-size:13px;color:#475467;margin-top:6px">Marcá uno o varios días.</div>
 </div>
 
 <div>
