@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel Horas Simple V9.1</title>
+<title>Panel Horas Simple V9.7</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -42,7 +42,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 </style>
 </head>
 <body>
-<header><h1>Panel de Horas Simple V9.1</h1><div id="clock"></div></header>
+<header><h1>Panel de Horas Simple V9.7</h1><div id="clock"></div></header>
 <div class="wrap">
 <div id="mode" class="notice">Modo local. Para compartir datos, pegá la URL de Google Apps Script.</div>
 <div class="toolbar">
@@ -62,15 +62,48 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 <div style="overflow:auto"><table><thead><tr><th>Día</th><th>Hora</th><th>Aula</th><th>Alumno / Contacto</th><th>Profesor</th><th>Actividad</th><th class="actions">Acción</th></tr></thead><tbody id="agenda"></tbody></table></div></section>
 </div>
 <div id="loadModal" class="modal"><div class="box"><h2 id="loadTitle">Cargar horario</h2><input type="hidden" id="editIndex"><div class="form">
-<div class="full"><label>Nombre del Alumno</label><input id="alumno" placeholder="Nombre del alumno"></div>
-<div class="full"><label>Día</label><div id="daysBox" class="days"></div><div style="font-size:13px;color:#475467;margin-top:6px">Marcá uno o varios días.</div></div>
-<div><label>Hora</label><input id="hora" type="time" value="17:00"></div>
-<div><label>Aula</label><select id="aula"></select></div>
-<div><label>Profesor</label><select id="profesor"></select></div>
-<div><label>Actividad</label><input id="actividad" placeholder="Opcional"></div>
-<div><label>Contacto</label><input id="contacto" placeholder="Madre / Padre / Tutor"></div>
-<div><label>WhatsApp</label><input id="whatsapp" placeholder="+54 9 ..."></div>
-<input id="telefono" type="hidden" value="">
+
+<div class="full">
+<label>Nombre del Alumno</label>
+<input id="alumno" placeholder="Nombre del alumno">
+</div>
+
+<div class="full">
+<label>Día</label>
+<div id="daysBox" class="days"></div>
+<div style="font-size:13px;color:#475467;margin-top:6px">Marcá uno o varios días.</div>
+</div>
+
+<div>
+<label>Hora</label>
+<input id="hora" type="time" value="17:00">
+</div>
+
+<div>
+<label>Aula</label>
+<select id="aula"></select>
+</div>
+
+<div>
+<label>Profesor</label>
+<select id="profesor"></select>
+</div>
+
+<div>
+<label>Actividad</label>
+<input id="actividad" placeholder="Opcional">
+</div>
+
+<div>
+<label>Contacto</label>
+<input id="contacto" placeholder="Madre / Padre / Tutor">
+</div>
+
+<div>
+<label>WhatsApp</label>
+<input id="whatsapp" placeholder="+54 9 ...">
+</div>
+
 <div class="full"><button id="saveBtn" class="b2" onclick="saveItem()">Guardar</button> <button class="b6" onclick="closeLoad()">Cerrar</button></div>
 </div></div></div>
 <div id="configModal" class="modal"><div class="box"><h2>Configurar listas</h2><div class="config-list">
@@ -84,17 +117,70 @@ function saveLocal(){localStorage.setItem("panel_v9_items",JSON.stringify(items)
 function tick(){clock.textContent=new Date().toLocaleString("es-AR",{weekday:"long",hour:"2-digit",minute:"2-digit"})}setInterval(tick,1000);tick();
 function nowInfo(){const d=new Date();return{day:DAYS[d.getDay()],hm:String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}}
 function fixTime(v){if(!v)return"";v=String(v);const m=v.match(/(\d{1,2}):(\d{2})/);return m?String(m[1]).padStart(2,"0")+":"+m[2]:v}
-function normalize(x){return{...x,hora:fixTime(x.hora||""),id:String(x.id||"")}}
+function normalize(x){
+  x={...x,hora:fixTime(x.hora||""),id:String(x.id||"")};
+  return {
+    id:String(x.id||""),
+    dia:String(x.dia||""),
+    hora:fixTime(x.hora||""),
+    aula:String(x.aula||""),
+    alumno:String(x.alumno||""),
+    profesor:String(x.profesor||""),
+    actividad:String(x.actividad||""),
+    contacto:String(x.contacto||""),
+    whatsapp:String(x.whatsapp||"")
+  };
+}
+
 function setMode(text,cls){mode.className="notice"+(cls?" "+cls:"");mode.textContent=text||(scriptUrl?"Modo compartido conectado a Google Sheets. Actualiza solo cada 15 segundos.":"Modo local. Para compartir datos, pegá la URL de Google Apps Script.")}
 function startAuto(){if(autoTimer)clearInterval(autoTimer);if(scriptUrl)autoTimer=setInterval(loadData,15000)}
 function setScriptUrl(){const u=prompt("Pegá acá la URL de Google Apps Script. Tiene que terminar en /exec:",scriptUrl);if(u!==null){scriptUrl=u.trim();localStorage.setItem("panel_v9_script_url",scriptUrl);startAuto();loadData()}}
 async function apiGet(){const r=await fetch(scriptUrl+"?ts="+Date.now());return await r.json()}
-async function apiPost(payload){const r=await fetch(scriptUrl,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(payload)});return await r.json()}
+async function apiPost(payload){
+  const clean={
+    action:payload.action || "add",
+    id:payload.id || "",
+    dia:payload.dia || "",
+    hora:payload.hora || "",
+    aula:payload.aula || "",
+    alumno:payload.alumno || "",
+    profesor:payload.profesor || "",
+    actividad:payload.actividad || "",
+    contacto:payload.contacto || "",
+    whatsapp:payload.whatsapp || ""
+  };
+  const r=await fetch(scriptUrl,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(clean)});
+  return await r.json();
+}
+
 async function loadData(){if(!scriptUrl){render();return}try{const data=await apiGet();items=(Array.isArray(data)?data:[]).map(normalize);localStorage.setItem("panel_v9_items",JSON.stringify(items));setMode("Modo compartido conectado a Google Sheets. Actualiza solo cada 15 segundos.","ok");render()}catch(e){setMode("No pude leer Google. Revisá URL /exec y permisos.","err");render()}}
 function fillSelects(){aula.innerHTML=rooms.map(r=>`<option>${r}</option>`).join("");profesor.innerHTML=teachers.map(t=>`<option>${t}</option>`).join("")}
 function buildDays(selected=[]){const today=DAYS[new Date().getDay()], def=selected.length?selected:(today!="Domingo"?[today]:["Lunes"]);daysBox.innerHTML=WORKDAYS.map(d=>`<label class="daycheck"><input type="checkbox" value="${d}" ${def.includes(d)?"checked":""}> ${d}</label>`).join("")}
 function selectedDays(){return[...daysBox.querySelectorAll("input:checked")].map(x=>x.value)}
-function openLoad(index=""){fillSelects();editIndex.value=index;loadTitle.textContent=index===""?"Cargar horario":"Editar horario";if(index!==""){const x=items[index];hora.value=fixTime(x.hora);aula.value=x.aula;alumno.value=x.alumno;contacto.value=x.contacto||"";whatsapp.value=x.whatsapp||"";telefono.value=x.telefono||"";profesor.value=x.profesor;actividad.value=x.actividad||"";buildDays([x.dia])}else{alumno.value="";contacto.value="";whatsapp.value="";telefono.value="";actividad.value="";buildDays()}loadModal.classList.add("show")}
+function openLoad(index=""){
+  fillSelects();
+  editIndex.value=index;
+  loadTitle.textContent=index===""?"Cargar horario":"Editar alumno / contacto";
+  if(index!==""){
+    const x=normalize(items[index]);
+    alumno.value=x.alumno;
+    buildDays([x.dia]);
+    hora.value=fixTime(x.hora);
+    aula.value=x.aula;
+    profesor.value=x.profesor;
+    actividad.value=x.actividad;
+    contacto.value=x.contacto;
+    whatsapp.value=x.whatsapp;
+  }else{
+    alumno.value="";
+    contacto.value="";
+    whatsapp.value="";
+    actividad.value="";
+    buildDays();
+  }
+  loadModal.classList.add("show");
+}
+
 function closeLoad(){loadModal.classList.remove("show")}
 function openConfig(){renderConfig();configModal.classList.add("show")}
 function closeConfig(){configModal.classList.remove("show");fillSelects();render()}
@@ -104,7 +190,64 @@ function addTeacher(){const v=newTeacher.value.trim();if(v&&!teachers.includes(v
 function removeRoom(i){if(confirm("¿Quitar aula de la lista?")){rooms.splice(i,1);saveLocal();renderConfig()}}
 function removeTeacher(i){if(confirm("¿Quitar profesor de la lista?")){teachers.splice(i,1);saveLocal();renderConfig()}}
 function itemKey(x){return[x.dia,fixTime(x.hora),x.aula,(x.alumno||"").trim().toLowerCase()].join("|")}
-async function saveItem(){const ds=selectedDays(),base={hora:fixTime(hora.value),aula:aula.value,alumno:alumno.value.trim(),contacto:contacto.value.trim(),whatsapp:whatsapp.value.trim(),telefono:telefono.value.trim(),profesor:profesor.value,actividad:actividad.value.trim()};if(!ds.length){alert("Marcá al menos un día.");return}if(!base.hora||!base.aula||!base.alumno){alert("Completá hora, aula y alumno.");return}saveBtn.disabled=true;saveBtn.textContent="Guardando...";try{if(scriptUrl){if(editIndex.value===""){let dup=0;for(const d of ds){const res=await apiPost({action:"add",dia:d,...base});if(res.duplicate)dup++}if(dup)alert(dup+" horario/s ya estaban cargados y no se duplicaron.")}else{const old=items[Number(editIndex.value)];await apiPost({action:"update",id:old.id,dia:ds[0],...base})}closeLoad();await loadData();return}if(editIndex.value===""){let dup=0;for(const d of ds){const obj={dia:d,...base};if(items.some(x=>itemKey(x)===itemKey(obj)))dup++;else items.push({...obj,id:Date.now()+Math.random()+""})}if(dup)alert(dup+" horario/s ya estaban cargados y no se duplicaron.")}else items[Number(editIndex.value)]={...items[Number(editIndex.value)],dia:ds[0],...base};saveLocal();closeLoad();render()}catch(e){alert("No pude guardar. Revisá conexión o URL.")}finally{saveBtn.disabled=false;saveBtn.textContent="Guardar"}}
+async function saveItem(){
+  const ds=selectedDays();
+  const base={
+    hora:fixTime(hora.value),
+    aula:aula.value,
+    alumno:alumno.value.trim(),
+    profesor:profesor.value,
+    actividad:actividad.value.trim(),
+    contacto:contacto.value.trim(),
+    whatsapp:whatsapp.value.trim()
+  };
+
+  if(!ds.length){alert("Marcá al menos un día.");return}
+  if(!base.hora||!base.aula||!base.alumno){alert("Completá hora, aula y alumno.");return}
+
+  saveBtn.disabled=true;
+  saveBtn.textContent="Guardando...";
+
+  try{
+    if(scriptUrl){
+      if(editIndex.value===""){
+        let dup=0;
+        for(const d of ds){
+          const res=await apiPost({action:"add",dia:d,...base});
+          if(res.duplicate)dup++;
+        }
+        if(dup)alert(dup+" horario/s ya estaban cargados y no se duplicaron.");
+      }else{
+        const old=items[Number(editIndex.value)];
+        await apiPost({action:"update",id:old.id,dia:ds[0],...base});
+      }
+      closeLoad();
+      await loadData();
+      return;
+    }
+
+    if(editIndex.value===""){
+      let dup=0;
+      for(const d of ds){
+        const obj={dia:d,...base};
+        if(items.some(x=>itemKey(x)===itemKey(obj))) dup++;
+        else items.push({...obj,id:Date.now()+Math.random()+""});
+      }
+      if(dup)alert(dup+" horario/s ya estaban cargados y no se duplicaron.");
+    }else{
+      items[Number(editIndex.value)]={...items[Number(editIndex.value)],dia:ds[0],...base};
+    }
+    saveLocal();
+    closeLoad();
+    render();
+  }catch(e){
+    alert("No pude guardar. Revisá conexión o URL.");
+  }finally{
+    saveBtn.disabled=false;
+    saveBtn.textContent="Guardar";
+  }
+}
+
 async function deleteItem(i){const x=items[i];if(!confirm("¿Eliminar este horario?"))return;if(scriptUrl){try{await apiPost({action:"delete",id:x.id});await loadData()}catch(e){alert("No pude borrar en Google.")}return}items.splice(i,1);saveLocal();render()}
 async function clearAll(){if(!confirm("¿Borrar todos los horarios cargados?"))return;if(scriptUrl){try{await apiPost({action:"clear"});items=[];localStorage.setItem("panel_v9_items","[]");render();alert("Datos limpiados.");await loadData()}catch(e){alert("No pude limpiar Google.")}return}items=[];saveLocal();render()}
 async function seedDemo(){const n=nowInfo(),h1=n.hm;let d=new Date();d.setMinutes(d.getMinutes()+30);const h2=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"),demo=[{dia:n.day,hora:h1,aula:"Aula 1",alumno:"Camila Abad",profesor:"Laura",actividad:"Apoyo"},{dia:n.day,hora:h1,aula:"Inglés",alumno:"Tomás Ríos",profesor:"Ana",actividad:"Inglés"},{dia:n.day,hora:h2,aula:"Aula 1",alumno:"Tomás Ríos",profesor:"Laura",actividad:"Apoyo"},{dia:n.day,hora:h2,aula:"Inglés",alumno:"Sofía Núñez",profesor:"Ana",actividad:"Inglés"}];if(scriptUrl){for(const obj of demo)await apiPost({action:"add",...obj});await loadData()}else{for(const obj of demo)if(!items.some(x=>itemKey(x)===itemKey(obj)))items.push({...obj,id:Date.now()+Math.random()+""});saveLocal();render()}}
@@ -112,14 +255,11 @@ async function seedDemo(){const n=nowInfo(),h1=n.hm;let d=new Date();d.setMinute
 
 function onlyDigits(s){return String(s||"").replace(/\D/g,"")}
 function contactHtml(x){
-  const wa=onlyDigits(x.whatsapp||""), tel=onlyDigits(x.telefono||"");
+  const wa=onlyDigits(x.whatsapp||"");
   let out="";
   if(x.contacto) out+=`<div class="contact-small">Contacto: ${x.contacto}</div>`;
-  if(x.whatsapp||x.telefono){
-    out+=`<div class="contact-links">`;
-    if(wa) out+=`<a class="wa" href="https://wa.me/${wa}" target="_blank">WhatsApp</a>`;
-    if(tel) out+=`<a class="tel" href="tel:${tel}">Llamar</a>`;
-    out+=`</div>`;
+  if(wa){
+    out+=`<div class="contact-links"><a class="wa" href="https://wa.me/${wa}" target="_blank" onclick="event.stopPropagation()">💬 WhatsApp</a></div>`;
   }
   return out;
 }
@@ -149,7 +289,7 @@ function clearFilters(){
 function printSchedule(){window.print()}
 function byRoom(list){const all=[...new Set([...rooms,...items.map(x=>x.aula).filter(Boolean)])],map={};all.forEach(r=>map[r]=[]);list.forEach(x=>{if(!map[x.aula])map[x.aula]=[];map[x.aula].push(x)});return map}
 function findNextForRoom(room,afterHm){const n=nowInfo();return items.filter(x=>x.dia===n.day&&x.aula===room&&fixTime(x.hora)>afterHm).sort((a,b)=>fixTime(a.hora).localeCompare(fixTime(b.hora)))[0]}
-function renderRooms(elId,list,compareList=[],afterHm="00:00"){const el=document.getElementById(elId),map=byRoom(list);el.innerHTML="";Object.keys(map).forEach(room=>{const box=document.createElement("div");box.className="room";box.innerHTML=`<h3>${room}</h3>`;if(!map[room].length)box.innerHTML+=`<div class="empty">Sin alumno en este momento</div>`;map[room].forEach(p=>{const prev=compareList.find(x=>(x.alumno||"").toLowerCase()===(p.alumno||"").toLowerCase());let cls="new",tag="🆕 Ingresa";if(prev){if(prev.aula===p.aula){cls="same";tag="🟢 Sigue en esta aula"}else{cls="change";tag="🔄 Viene de "+prev.aula}}box.innerHTML+=`<div class="person ${cls}"><b>${p.alumno}</b><div class="sub">${p.profesor||""}${p.actividad?" · "+p.actividad:""}</div>${contactHtml(p)}<span class="tag">${tag}</span></div>`});const nx=findNextForRoom(room,afterHm);if(nx)box.innerHTML+=`<div class="next-mini">Próximo en ${room}: ${fixTime(nx.hora)} · ${nx.alumno}</div>`;el.appendChild(box)})}
+function renderRooms(elId,list,compareList=[],afterHm="00:00"){const el=document.getElementById(elId),map=byRoom(list);el.innerHTML="";Object.keys(map).forEach(room=>{const box=document.createElement("div");box.className="room";box.innerHTML=`<h3>${room}</h3>`;if(!map[room].length)box.innerHTML+=`<div class="empty">Sin alumno en este momento</div>`;map[room].forEach(p=>{const prev=compareList.find(x=>(x.alumno||"").toLowerCase()===(p.alumno||"").toLowerCase());let cls="new",tag="🆕 Ingresa";if(prev){if(prev.aula===p.aula){cls="same";tag="🟢 Sigue en esta aula"}else{cls="change";tag="🔄 Viene de "+prev.aula}}box.innerHTML+=`<div class="person ${cls}" onclick="openLoad(${items.indexOf(p)})" title="Tocar para editar"><b>${p.alumno}</b><div class="sub">${p.profesor||""}${p.actividad?" · "+p.actividad:""}</div>${contactHtml(p)}<span class="tag">${tag}</span></div>`});const nx=findNextForRoom(room,afterHm);if(nx)box.innerHTML+=`<div class="next-mini">Próximo en ${room}: ${fixTime(nx.hora)} · ${nx.alumno}</div>`;el.appendChild(box)})}
 function render(){const n=nowInfo(),today=items.filter(x=>x.dia===n.day).sort((a,b)=>fixTime(a.hora).localeCompare(fixTime(b.hora)));let nowTime=[...new Set(today.filter(x=>fixTime(x.hora)<=n.hm).map(x=>fixTime(x.hora)))].pop();if(!nowTime)nowTime=today[0]?fixTime(today[0].hora):"";const nowList=nowTime?today.filter(x=>fixTime(x.hora)===nowTime):[],nextTime=(today.find(x=>fixTime(x.hora)>nowTime)||today.find(x=>fixTime(x.hora)>n.hm)||{}).hora||"",nextFixed=fixTime(nextTime),nextList=nextFixed?today.filter(x=>fixTime(x.hora)===nextFixed):[];renderRooms("nowRooms",nowList,[],nowTime||n.hm);nextTitle.textContent=nextFixed?"Próximo horario: "+nextFixed:"Sin próximo horario cargado para hoy";renderRooms("nextRooms",nextList,nowList,nextFixed||n.hm);agenda.innerHTML=filteredItems().map((x,i)=>({...x,i:items.indexOf(x)})).sort((a,b)=>DAYS.indexOf(a.dia)-DAYS.indexOf(b.dia)||fixTime(a.hora).localeCompare(fixTime(b.hora))||(a.aula||"").localeCompare(b.aula||"")).map(x=>`<tr><td>${x.dia}</td><td>${fixTime(x.hora)}</td><td>${x.aula}</td><td><b>${x.alumno}</b>${contactHtml(x)}</td><td>${x.profesor||""}</td><td>${x.actividad||""}</td><td class="actions"><button class="b1" onclick="openLoad(${x.i})">Editar</button><button class="b5" onclick="deleteItem(${x.i})">Borrar</button></td></tr>`).join("")||`<tr><td colspan="7" class="empty">Todavía no hay horarios cargados</td></tr>`}
 fillSelects();startAuto();loadData();
 </script>
