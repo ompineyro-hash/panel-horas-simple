@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel Horas Simple V9.2</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
+header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
+h1{margin:0;font-size:23px}.wrap{max-width:1180px;margin:auto;padding:14px}
+.notice{background:#fff2c6;border-radius:10px;padding:10px 12px;margin:10px 0;color:#5b4100}.notice.ok{background:#dff7e9;color:#064a34}.notice.err{background:#ffe4e0;color:#7a150d}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+button,input,select{font-size:16px;border-radius:10px;border:1px solid #d6e0ee;padding:10px}
+button{border:0;color:white;font-weight:bold;cursor:pointer}.b1{background:#0876d8}.b2{background:#12805c}.b3{background:#6941c6}.b4{background:#475467}.b5{background:#d92d20}.b6{background:#c96a00}.b7{background:#0f766e}button:disabled{opacity:.55}
+.card{background:white;border:1px solid #d6e0ee;border-radius:16px;box-shadow:0 4px 14px #0001;padding:14px;margin-bottom:14px}.card h2{font-size:28px;margin:0 0 12px}
+.room-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.room{border:1px solid #d6e0ee;border-radius:15px;padding:12px;background:#fbfdff;min-height:160px}.room h3{margin:0 0 10px;font-size:25px}
+.person{background:#fff;border-radius:13px;border-left:8px solid #0876d8;padding:12px;margin:8px 0;box-shadow:0 2px 8px #00000012}.person b{font-size:22px}.sub{color:#344054;margin-top:4px}.same{border-left-color:#12805c}.change{border-left-color:#c96a00}
+.tag{display:inline-block;margin-top:8px;padding:6px 9px;border-radius:999px;background:#eef4ff;font-size:14px;font-weight:bold}.empty{text-align:center;color:#555;padding:30px 8px}.next-mini{margin-top:8px;background:#fff6d8;color:#5b4100;border-radius:10px;padding:9px;font-weight:bold}
+table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1px solid #d6e0ee;padding:10px;text-align:left}th{background:#eef4fb}.actions button{padding:7px 9px;margin:2px;font-size:14px}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:12px;z-index:20}.modal.show{display:flex}.box{background:white;border-radius:18px;padding:16px;width:min(820px,96vw);max-height:92vh;overflow:auto}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}.form label{font-weight:bold;margin-bottom:4px;display:block}.form input,.form select{width:100%}.full{grid-column:1/-1}
+.days{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.daycheck{display:flex;align-items:center;gap:8px;background:#f8fbff;border:1px solid #d6e0ee;border-radius:10px;padding:8px}.daycheck input{width:auto}
+.config-list{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pill{display:inline-flex;align-items:center;gap:6px;background:#eef4fb;border-radius:999px;padding:7px 10px;margin:4px}.pill button{background:#d92d20;padding:2px 7px;border-radius:999px}
+.print-only{display:none}
+
+
+.contact-links{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.contact-links a{display:inline-block;text-decoration:none;color:white;font-weight:bold;border-radius:999px;padding:5px 8px;font-size:13px}
+.wa{background:#12805c}.tel{background:#0876d8}
+.contact-small{font-size:12px;color:#475467;margin-top:3px}
+
+.filters{display:grid;grid-template-columns:repeat(6,1fr) auto;gap:8px;margin:8px 0 14px;align-items:end}
+.filters label{font-size:13px;font-weight:bold;color:#344054;display:block;margin-bottom:3px}
+.filters input,.filters select{width:100%;padding:9px}
+.filters .filter-btn{align-self:end}
+@media(max-width:900px){.filters{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.filters{grid-template-columns:1fr}}
+
+@media(max-width:800px){.room-grid,.form,.config-list{grid-template-columns:1fr}.days{grid-template-columns:1fr 1fr}.toolbar button{flex:1}.card h2{font-size:23px}.room h3{font-size:22px}.person b{font-size:20px}}
+@media(max-width:480px){header{align-items:flex-start;flex-direction:column}button,input,select{width:100%;font-size:17px}.toolbar{flex-direction:column}.days{grid-template-columns:1fr}}
+@media print{header,.notice,.toolbar,#nowCard,#nextCard,.actions,.modal{display:none!important}body{background:white}.wrap{max-width:none;padding:0}.card{box-shadow:none;border:0}.print-only{display:block}th,td{font-size:12px;padding:6px;border:1px solid #777}th{background:#eee!important}}
+</style>
+</head>
+<body>
+<header><h1>Panel de Horas Simple V9.2</h1><div id="clock"></div></header>
+<div class="wrap">
+<div id="mode" class="notice">Modo local. Para compartir datos, pegá la URL de Google Apps Script.</div>
+<div class="toolbar">
+<button class="b1" onclick="openLoad()">+ Cargar horario</button><button class="b2" onclick="loadData()">Actualizar datos</button><button class="b3" onclick="setScriptUrl()">Configurar Google</button><button class="b3" onclick="openConfig()">Configurar listas</button><button class="b7" onclick="printSchedule()">Imprimir horario</button><button class="b4" onclick="seedDemo()">Cargar ejemplo</button><button class="b5" onclick="clearAll()">Limpiar datos</button>
+</div>
+<section id="nowCard" class="card"><h2>Ahora en cada aula</h2><div id="nowRooms" class="room-grid"></div></section>
+<section id="nextCard" class="card"><h2>Próximo horario</h2><div id="nextTitle" style="color:#475467;margin-bottom:8px"></div><div id="nextRooms" class="room-grid"></div></section>
+<section class="card"><div class="print-only"><h1>Horario semanal</h1><p>Generado desde Panel de Horas Simple</p></div><h2>Agenda completa</h2>
+<div class="filters">
+  <div><label>Alumno</label><input id="filterAlumno" placeholder="Buscar alumno..." oninput="render()"></div>
+  <div><label>Contacto</label><input id="filterContacto" placeholder="Buscar contacto..." oninput="render()"></div><div><label>Profesor</label><input id="filterProfesor" placeholder="Buscar profesor..." oninput="render()"></div>
+  <div><label>Aula</label><input id="filterAula" placeholder="Buscar aula..." oninput="render()"></div>
+  <div><label>Actividad</label><input id="filterActividad" placeholder="Buscar actividad..." oninput="render()"></div>
+  <div><label>Día</label><select id="filterDia" onchange="render()"><option value="">Todos</option><option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option><option>Sábado</option></select></div>
+  <button class="b4 filter-btn" onclick="clearFilters()">Limpiar filtros</button>
+</div>
+<div style="overflow:auto"><table><thead><tr><th>Día</th><th>Hora</th><th>Aula</th><th>Alumno / Contacto</th><th>Profesor</th><th>Actividad</th><th class="actions">Acción</th></tr></thead><tbody id="agenda"></tbody></table></div></section>
+</div>
+<div id="loadModal" class="modal"><div class="box"><h2 id="loadTitle">Cargar horario</h2><input type="hidden" id="editIndex"><div class="form">
+
+<div class="full">
+<label>Nombre del Alumno</label>
+<input id="alumno" placeholder="Nombre del alumno">
+</div>
+
+<div class="full">
+<label>Día</label>
+<div id="daysBox" class="days"></div>
+<div style="font-size:13px;color:#475467;margin-top:6px">Marcá uno o varios días.</div>
+</div>
+
+<div>
+<label>Hora</label>
+<input id="hora" type="time" value="17:00">
+</div>
+
+<div>
+<label>Aula</label>
+<select id="aula"></select>
+</div>
+
+<div>
+<label>Profesor</label>
+<select id="profesor"></select>
+</div>
+
+<div>
+<label>Actividad</label>
+<input id="actividad" placeholder="Opcional">
+</div>
+
+<div>
+<label>Contacto</label>
+<input id="contacto" placeholder="Madre / Padre / Tutor">
+</div>
+
+<div>
+<label>WhatsApp</label>
+<input id="whatsapp" placeholder="+54 9 ...">
+</div>
+
+<input id="telefono" type="hidden" value="">
+
+<div class="full"><button id="saveBtn" class="b2" onclick="saveItem()">Guardar</button> <button class="b6" onclick="closeLoad()">Cerrar</button></div>
+</div></div></div>
+<div id="configModal" class="modal"><div class="box"><h2>Configurar listas</h2><div class="config-list">
+<div><h3>Aulas</h3><div style="display:flex;gap:6px"><input id="newRoom" placeholder="Ej: Aula 2"><button class="b1" onclick="addRoom()">Agregar</button></div><div id="roomPills"></div></div>
+<div><h3>Profesores</h3><div style="display:flex;gap:6px"><input id="newTeacher" placeholder="Ej: Laura"><button class="b1" onclick="addTeacher()">Agregar</button></div><div id="teacherPills"></div></div>
+</div><br><button class="b6" onclick="closeConfig()">Cerrar</button></div></div>
+<script>
+const DAYS=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"], WORKDAYS=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+let items=JSON.parse(localStorage.getItem("panel_v9_items")||"[]"), rooms=JSON.parse(localStorage.getItem("panel_v9_rooms")||'["Aula 1","Inglés"]'), teachers=JSON.parse(localStorage.getItem("panel_v9_teachers")||'["Laura","Ana"]'), scriptUrl=localStorage.getItem("panel_v9_script_url")||"", autoTimer=null;
+function saveLocal(){localStorage.setItem("panel_v9_items",JSON.stringify(items));localStorage.setItem("panel_v9_rooms",JSON.stringify(rooms));localStorage.setItem("panel_v9_teachers",JSON.stringify(teachers))}
+function tick(){clock.textContent=new Date().toLocaleString("es-AR",{weekday:"long",hour:"2-digit",minute:"2-digit"})}setInterval(tick,1000);tick();
+function nowInfo(){const d=new Date();return{day:DAYS[d.getDay()],hm:String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}}
+function fixTime(v){if(!v)return"";v=String(v);const m=v.match(/(\d{1,2}):(\d{2})/);return m?String(m[1]).padStart(2,"0")+":"+m[2]:v}
+function normalize(x){return{...x,hora:fixTime(x.hora||""),id:String(x.id||"")}}
+function setMode(text,cls){mode.className="notice"+(cls?" "+cls:"");mode.textContent=text||(scriptUrl?"Modo compartido conectado a Google Sheets. Actualiza solo cada 15 segundos.":"Modo local. Para compartir datos, pegá la URL de Google Apps Script.")}
+function startAuto(){if(autoTimer)clearInterval(autoTimer);if(scriptUrl)autoTimer=setInterval(loadData,15000)}
+function setScriptUrl(){const u=prompt("Pegá acá la URL de Google Apps Script. Tiene que terminar en /exec:",scriptUrl);if(u!==null){scriptUrl=u.trim();localStorage.setItem("panel_v9_script_url",scriptUrl);startAuto();loadData()}}
+async function apiGet(){const r=await fetch(scriptUrl+"?ts="+Date.now());return await r.json()}
+async function apiPost(payload){const r=await fetch(scriptUrl,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(payload)});return await r.json()}
+async function loadData(){if(!scriptUrl){render();return}try{const data=await apiGet();items=(Array.isArray(data)?data:[]).map(normalize);localStorage.setItem("panel_v9_items",JSON.stringify(items));setMode("Modo compartido conectado a Google Sheets. Actualiza solo cada 15 segundos.","ok");render()}catch(e){setMode("No pude leer Google. Revisá URL /exec y permisos.","err");render()}}
+function fillSelects(){aula.innerHTML=rooms.map(r=>`<option>${r}</option>`).join("");profesor.innerHTML=teachers.map(t=>`<option>${t}</option>`).join("")}
+function buildDays(selected=[]){const today=DAYS[new Date().getDay()], def=selected.length?selected:(today!="Domingo"?[today]:["Lunes"]);daysBox.innerHTML=WORKDAYS.map(d=>`<label class="daycheck"><input type="checkbox" value="${d}" ${def.includes(d)?"checked":""}> ${d}</label>`).join("")}
+function selectedDays(){return[...daysBox.querySelectorAll("input:checked")].map(x=>x.value)}
+function openLoad(index=""){fillSelects();editIndex.value=index;loadTitle.textContent=index===""?"Cargar horario":"Editar horario";if(index!==""){const x=items[index];hora.value=fixTime(x.hora);aula.value=x.aula;alumno.value=x.alumno;contacto.value=x.contacto||"";whatsapp.value=x.whatsapp||"";telefono.value=x.telefono||"";profesor.value=x.profesor;actividad.value=x.actividad||"";buildDays([x.dia])}else{alumno.value="";contacto.value="";whatsapp.value="";telefono.value="";actividad.value="";buildDays()}loadModal.classList.add("show")}
+function closeLoad(){loadModal.classList.remove("show")}
+function openConfig(){renderConfig();configModal.classList.add("show")}
+function closeConfig(){configModal.classList.remove("show");fillSelects();render()}
+function renderConfig(){roomPills.innerHTML=rooms.map((r,i)=>`<span class="pill">${r}<button onclick="removeRoom(${i})">×</button></span>`).join("");teacherPills.innerHTML=teachers.map((t,i)=>`<span class="pill">${t}<button onclick="removeTeacher(${i})">×</button></span>`).join("")}
+function addRoom(){const v=newRoom.value.trim();if(v&&!rooms.includes(v)){rooms.push(v);newRoom.value="";saveLocal();renderConfig()}}
+function addTeacher(){const v=newTeacher.value.trim();if(v&&!teachers.includes(v)){teachers.push(v);newTeacher.value="";saveLocal();renderConfig()}}
+function removeRoom(i){if(confirm("¿Quitar aula de la lista?")){rooms.splice(i,1);saveLocal();renderConfig()}}
+function removeTeacher(i){if(confirm("¿Quitar profesor de la lista?")){teachers.splice(i,1);saveLocal();renderConfig()}}
+function itemKey(x){return[x.dia,fixTime(x.hora),x.aula,(x.alumno||"").trim().toLowerCase()].join("|")}
+async function saveItem(){const ds=selectedDays(),base={hora:fixTime(hora.value),aula:aula.value,alumno:alumno.value.trim(),contacto:contacto.value.trim(),whatsapp:whatsapp.value.trim(),telefono:telefono.value.trim(),profesor:profesor.value,actividad:actividad.value.trim()};if(!ds.length){alert("Marcá al menos un día.");return}if(!base.hora||!base.aula||!base.alumno){alert("Completá hora, aula y alumno.");return}saveBtn.disabled=true;saveBtn.textContent="Guardando...";try{if(scriptUrl){if(editIndex.value===""){let dup=0;for(const d of ds){const res=await apiPost({action:"add",dia:d,...base});if(res.duplicate)dup++}if(dup)alert(dup+" horario/s ya estaban cargados y no se duplicaron.")}else{const old=items[Number(editIndex.value)];await apiPost({action:"update",id:old.id,dia:ds[0],...base})}closeLoad();await loadData();return}if(editIndex.value===""){let dup=0;for(const d of ds){const obj={dia:d,...base};if(items.some(x=>itemKey(x)===itemKey(obj)))dup++;else items.push({...obj,id:Date.now()+Math.random()+""})}if(dup)alert(dup+" horario/s ya estaban cargados y no se duplicaron.")}else items[Number(editIndex.value)]={...items[Number(editIndex.value)],dia:ds[0],...base};saveLocal();closeLoad();render()}catch(e){alert("No pude guardar. Revisá conexión o URL.")}finally{saveBtn.disabled=false;saveBtn.textContent="Guardar"}}
+async function deleteItem(i){const x=items[i];if(!confirm("¿Eliminar este horario?"))return;if(scriptUrl){try{await apiPost({action:"delete",id:x.id});await loadData()}catch(e){alert("No pude borrar en Google.")}return}items.splice(i,1);saveLocal();render()}
+async function clearAll(){if(!confirm("¿Borrar todos los horarios cargados?"))return;if(scriptUrl){try{await apiPost({action:"clear"});items=[];localStorage.setItem("panel_v9_items","[]");render();alert("Datos limpiados.");await loadData()}catch(e){alert("No pude limpiar Google.")}return}items=[];saveLocal();render()}
+async function seedDemo(){const n=nowInfo(),h1=n.hm;let d=new Date();d.setMinutes(d.getMinutes()+30);const h2=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"),demo=[{dia:n.day,hora:h1,aula:"Aula 1",alumno:"Camila Abad",profesor:"Laura",actividad:"Apoyo"},{dia:n.day,hora:h1,aula:"Inglés",alumno:"Tomás Ríos",profesor:"Ana",actividad:"Inglés"},{dia:n.day,hora:h2,aula:"Aula 1",alumno:"Tomás Ríos",profesor:"Laura",actividad:"Apoyo"},{dia:n.day,hora:h2,aula:"Inglés",alumno:"Sofía Núñez",profesor:"Ana",actividad:"Inglés"}];if(scriptUrl){for(const obj of demo)await apiPost({action:"add",...obj});await loadData()}else{for(const obj of demo)if(!items.some(x=>itemKey(x)===itemKey(obj)))items.push({...obj,id:Date.now()+Math.random()+""});saveLocal();render()}}
+
+
+function onlyDigits(s){return String(s||"").replace(/\D/g,"")}
+function contactHtml(x){
+  const wa=onlyDigits(x.whatsapp||""), tel=onlyDigits(x.telefono||"");
+  let out="";
+  if(x.contacto) out+=`<div class="contact-small">Contacto: ${x.contacto}</div>`;
+  if(x.whatsapp||x.telefono){
+    out+=`<div class="contact-links">`;
+    if(wa) out+=`<a class="wa" href="https://wa.me/${wa}" target="_blank">WhatsApp</a>`;
+    if(tel) out+=`<a class="tel" href="tel:${tel}">Llamar</a>`;
+    out+=`</div>`;
+  }
+  return out;
+}
+
+function txt(v){return String(v||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+function filteredItems(){
+  const fa=txt(filterAlumno?.value), fc=txt(filterContacto?.value), fp=txt(filterProfesor?.value), fau=txt(filterAula?.value), fac=txt(filterActividad?.value), fd=filterDia?.value||"";
+  return items.filter(x=>
+    (!fd || x.dia===fd) &&
+    (!fa || txt(x.alumno).includes(fa)) &&
+    (!fc || txt(x.contacto).includes(fc) || txt(x.whatsapp).includes(fc) || txt(x.telefono).includes(fc)) &&
+    (!fp || txt(x.profesor).includes(fp)) &&
+    (!fau || txt(x.aula).includes(fau)) &&
+    (!fac || txt(x.actividad).includes(fac))
+  );
+}
+function clearFilters(){
+  if(filterAlumno) filterAlumno.value="";
+  if(filterContacto) filterContacto.value="";
+  if(filterProfesor) filterProfesor.value="";
+  if(filterAula) filterAula.value="";
+  if(filterActividad) filterActividad.value="";
+  if(filterDia) filterDia.value="";
+  render();
+}
+
+function printSchedule(){window.print()}
+function byRoom(list){const all=[...new Set([...rooms,...items.map(x=>x.aula).filter(Boolean)])],map={};all.forEach(r=>map[r]=[]);list.forEach(x=>{if(!map[x.aula])map[x.aula]=[];map[x.aula].push(x)});return map}
+function findNextForRoom(room,afterHm){const n=nowInfo();return items.filter(x=>x.dia===n.day&&x.aula===room&&fixTime(x.hora)>afterHm).sort((a,b)=>fixTime(a.hora).localeCompare(fixTime(b.hora)))[0]}
+function renderRooms(elId,list,compareList=[],afterHm="00:00"){const el=document.getElementById(elId),map=byRoom(list);el.innerHTML="";Object.keys(map).forEach(room=>{const box=document.createElement("div");box.className="room";box.innerHTML=`<h3>${room}</h3>`;if(!map[room].length)box.innerHTML+=`<div class="empty">Sin alumno en este momento</div>`;map[room].forEach(p=>{const prev=compareList.find(x=>(x.alumno||"").toLowerCase()===(p.alumno||"").toLowerCase());let cls="new",tag="🆕 Ingresa";if(prev){if(prev.aula===p.aula){cls="same";tag="🟢 Sigue en esta aula"}else{cls="change";tag="🔄 Viene de "+prev.aula}}box.innerHTML+=`<div class="person ${cls}"><b>${p.alumno}</b><div class="sub">${p.profesor||""}${p.actividad?" · "+p.actividad:""}</div>${contactHtml(p)}<span class="tag">${tag}</span></div>`});const nx=findNextForRoom(room,afterHm);if(nx)box.innerHTML+=`<div class="next-mini">Próximo en ${room}: ${fixTime(nx.hora)} · ${nx.alumno}</div>`;el.appendChild(box)})}
+function render(){const n=nowInfo(),today=items.filter(x=>x.dia===n.day).sort((a,b)=>fixTime(a.hora).localeCompare(fixTime(b.hora)));let nowTime=[...new Set(today.filter(x=>fixTime(x.hora)<=n.hm).map(x=>fixTime(x.hora)))].pop();if(!nowTime)nowTime=today[0]?fixTime(today[0].hora):"";const nowList=nowTime?today.filter(x=>fixTime(x.hora)===nowTime):[],nextTime=(today.find(x=>fixTime(x.hora)>nowTime)||today.find(x=>fixTime(x.hora)>n.hm)||{}).hora||"",nextFixed=fixTime(nextTime),nextList=nextFixed?today.filter(x=>fixTime(x.hora)===nextFixed):[];renderRooms("nowRooms",nowList,[],nowTime||n.hm);nextTitle.textContent=nextFixed?"Próximo horario: "+nextFixed:"Sin próximo horario cargado para hoy";renderRooms("nextRooms",nextList,nowList,nextFixed||n.hm);agenda.innerHTML=filteredItems().map((x,i)=>({...x,i:items.indexOf(x)})).sort((a,b)=>DAYS.indexOf(a.dia)-DAYS.indexOf(b.dia)||fixTime(a.hora).localeCompare(fixTime(b.hora))||(a.aula||"").localeCompare(b.aula||"")).map(x=>`<tr><td>${x.dia}</td><td>${fixTime(x.hora)}</td><td>${x.aula}</td><td><b>${x.alumno}</b>${contactHtml(x)}</td><td>${x.profesor||""}</td><td>${x.actividad||""}</td><td class="actions"><button class="b1" onclick="openLoad(${x.i})">Editar</button><button class="b5" onclick="deleteItem(${x.i})">Borrar</button></td></tr>`).join("")||`<tr><td colspan="7" class="empty">Todavía no hay horarios cargados</td></tr>`}
+fillSelects();startAuto();loadData();
+</script>
+</body>
+</html>
