@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel Horas Simple V9.4</title>
+<title>Panel Horas Simple V9.5</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -14,7 +14,7 @@ button,input,select{font-size:16px;border-radius:10px;border:1px solid #d6e0ee;p
 button{border:0;color:white;font-weight:bold;cursor:pointer}.b1{background:#0876d8}.b2{background:#12805c}.b3{background:#6941c6}.b4{background:#475467}.b5{background:#d92d20}.b6{background:#c96a00}.b7{background:#0f766e}button:disabled{opacity:.55}
 .card{background:white;border:1px solid #d6e0ee;border-radius:16px;box-shadow:0 4px 14px #0001;padding:14px;margin-bottom:14px}.card h2{font-size:28px;margin:0 0 12px}
 .room-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.room{border:1px solid #d6e0ee;border-radius:15px;padding:12px;background:#fbfdff;min-height:160px}.room h3{margin:0 0 10px;font-size:25px}
-.person{background:#fff;border-radius:13px;border-left:8px solid #0876d8;padding:12px;margin:8px 0;box-shadow:0 2px 8px #00000012;cursor:pointer}.person b{font-size:22px}.sub{color:#344054;margin-top:4px}.same{border-left-color:#12805c}.change{border-left-color:#c96a00}
+.person{background:#fff;border-radius:13px;border-left:8px solid #0876d8;padding:12px;margin:8px 0;box-shadow:0 2px 8px #00000012}.person b{font-size:22px}.sub{color:#344054;margin-top:4px}.same{border-left-color:#12805c}.change{border-left-color:#c96a00}
 .tag{display:inline-block;margin-top:8px;padding:6px 9px;border-radius:999px;background:#eef4ff;font-size:14px;font-weight:bold}.empty{text-align:center;color:#555;padding:30px 8px}.next-mini{margin-top:8px;background:#fff6d8;color:#5b4100;border-radius:10px;padding:9px;font-weight:bold}
 table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1px solid #d6e0ee;padding:10px;text-align:left}th{background:#eef4fb}.actions button{padding:7px 9px;margin:2px;font-size:14px}
 .modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:12px;z-index:20}.modal.show{display:flex}.box{background:white;border-radius:18px;padding:16px;width:min(820px,96vw);max-height:92vh;overflow:auto}
@@ -42,7 +42,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 </style>
 </head>
 <body>
-<header><h1>Panel de Horas Simple V9.4</h1><div id="clock"></div></header>
+<header><h1>Panel de Horas Simple V9.5</h1><div id="clock"></div></header>
 <div class="wrap">
 <div id="mode" class="notice">Modo local. Para compartir datos, pegá la URL de Google Apps Script.</div>
 <div class="toolbar">
@@ -104,8 +104,6 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 <input id="whatsapp" placeholder="+54 9 ...">
 </div>
 
-<input id="telefono" type="hidden" value="">
-
 <div class="full"><button id="saveBtn" class="b2" onclick="saveItem()">Guardar</button> <button class="b6" onclick="closeLoad()">Cerrar</button></div>
 </div></div></div>
 <div id="configModal" class="modal"><div class="box"><h2>Configurar listas</h2><div class="config-list">
@@ -129,7 +127,29 @@ async function loadData(){if(!scriptUrl){render();return}try{const data=await ap
 function fillSelects(){aula.innerHTML=rooms.map(r=>`<option>${r}</option>`).join("");profesor.innerHTML=teachers.map(t=>`<option>${t}</option>`).join("")}
 function buildDays(selected=[]){const today=DAYS[new Date().getDay()], def=selected.length?selected:(today!="Domingo"?[today]:["Lunes"]);daysBox.innerHTML=WORKDAYS.map(d=>`<label class="daycheck"><input type="checkbox" value="${d}" ${def.includes(d)?"checked":""}> ${d}</label>`).join("")}
 function selectedDays(){return[...daysBox.querySelectorAll("input:checked")].map(x=>x.value)}
-function openLoad(index=""){fillSelects();editIndex.value=index;loadTitle.textContent=index===""?"Cargar horario":"Editar alumno / contacto";if(index!==""){const x=items[index];hora.value=fixTime(x.hora);aula.value=x.aula;alumno.value=x.alumno;contacto.value=x.contacto||"";whatsapp.value=x.whatsapp||"";telefono.value=x.telefono||"";profesor.value=x.profesor;actividad.value=x.actividad||"";buildDays([x.dia])}else{alumno.value="";contacto.value="";whatsapp.value="";telefono.value="";actividad.value="";buildDays()}loadModal.classList.add("show")}
+function openLoad(index=""){
+  fillSelects();
+  editIndex.value=index;
+  loadTitle.textContent=index===""?"Cargar horario":"Editar alumno / contacto";
+  if(index!==""){
+    const x=items[index];
+    hora.value=fixTime(x.hora);
+    aula.value=x.aula || "";
+    alumno.value=x.alumno || "";
+    profesor.value=x.profesor || "";
+    actividad.value=x.actividad || "";
+    contacto.value=x.contacto || "";
+    whatsapp.value=x.whatsapp || "";
+    buildDays([x.dia]);
+  }else{
+    alumno.value="";
+    contacto.value="";
+    whatsapp.value="";
+    actividad.value="";
+    buildDays();
+  }
+  loadModal.classList.add("show");
+}
 function closeLoad(){loadModal.classList.remove("show")}
 function openConfig(){renderConfig();configModal.classList.add("show")}
 function closeConfig(){configModal.classList.remove("show");fillSelects();render()}
@@ -139,7 +159,64 @@ function addTeacher(){const v=newTeacher.value.trim();if(v&&!teachers.includes(v
 function removeRoom(i){if(confirm("¿Quitar aula de la lista?")){rooms.splice(i,1);saveLocal();renderConfig()}}
 function removeTeacher(i){if(confirm("¿Quitar profesor de la lista?")){teachers.splice(i,1);saveLocal();renderConfig()}}
 function itemKey(x){return[x.dia,fixTime(x.hora),x.aula,(x.alumno||"").trim().toLowerCase()].join("|")}
-async function saveItem(){const ds=selectedDays(),base={hora:fixTime(hora.value),aula:aula.value,alumno:alumno.value.trim(),contacto:contacto.value.trim(),whatsapp:whatsapp.value.trim(),telefono:telefono.value.trim(),profesor:profesor.value,actividad:actividad.value.trim()};if(!ds.length){alert("Marcá al menos un día.");return}if(!base.hora||!base.aula||!base.alumno){alert("Completá hora, aula y alumno.");return}saveBtn.disabled=true;saveBtn.textContent="Guardando...";try{if(scriptUrl){if(editIndex.value===""){let dup=0;for(const d of ds){const res=await apiPost({action:"add",dia:d,...base});if(res.duplicate)dup++}if(dup)alert(dup+" horario/s ya estaban cargados y no se duplicaron.")}else{const old=items[Number(editIndex.value)];await apiPost({action:"update",id:old.id,dia:ds[0],...base})}closeLoad();await loadData();return}if(editIndex.value===""){let dup=0;for(const d of ds){const obj={dia:d,...base};if(items.some(x=>itemKey(x)===itemKey(obj)))dup++;else items.push({...obj,id:Date.now()+Math.random()+""})}if(dup)alert(dup+" horario/s ya estaban cargados y no se duplicaron.")}else items[Number(editIndex.value)]={...items[Number(editIndex.value)],dia:ds[0],...base};saveLocal();closeLoad();render()}catch(e){alert("No pude guardar. Revisá conexión o URL.")}finally{saveBtn.disabled=false;saveBtn.textContent="Guardar"}}
+async function saveItem(){
+  const ds=selectedDays();
+  const base={
+    hora:fixTime(hora.value),
+    aula:aula.value,
+    alumno:alumno.value.trim(),
+    contacto:contacto.value.trim(),
+    whatsapp:whatsapp.value.trim(),
+    profesor:profesor.value,
+    actividad:actividad.value.trim()
+  };
+
+  if(!ds.length){alert("Marcá al menos un día.");return}
+  if(!base.hora||!base.aula||!base.alumno){alert("Completá hora, aula y alumno.");return}
+
+  saveBtn.disabled=true;
+  saveBtn.textContent="Guardando...";
+
+  try{
+    if(scriptUrl){
+      if(editIndex.value===""){
+        let dup=0;
+        for(const d of ds){
+          const res=await apiPost({action:"add",dia:d,...base});
+          if(res.duplicate)dup++;
+        }
+        if(dup)alert(dup+" horario/s ya estaban cargados y no se duplicaron.");
+      }else{
+        const old=items[Number(editIndex.value)];
+        await apiPost({action:"update",id:old.id,dia:ds[0],...base});
+      }
+      closeLoad();
+      await loadData();
+      return;
+    }
+
+    if(editIndex.value===""){
+      let dup=0;
+      for(const d of ds){
+        const obj={dia:d,...base};
+        if(items.some(x=>itemKey(x)===itemKey(obj))) dup++;
+        else items.push({...obj,id:Date.now()+Math.random()+""});
+      }
+      if(dup)alert(dup+" horario/s ya estaban cargados y no se duplicaron.");
+    }else{
+      items[Number(editIndex.value)]={...items[Number(editIndex.value)],dia:ds[0],...base};
+    }
+    saveLocal();
+    closeLoad();
+    render();
+  }catch(e){
+    alert("No pude guardar. Revisá conexión o URL.");
+  }finally{
+    saveBtn.disabled=false;
+    saveBtn.textContent="Guardar";
+  }
+}
+
 async function deleteItem(i){const x=items[i];if(!confirm("¿Eliminar este horario?"))return;if(scriptUrl){try{await apiPost({action:"delete",id:x.id});await loadData()}catch(e){alert("No pude borrar en Google.")}return}items.splice(i,1);saveLocal();render()}
 async function clearAll(){if(!confirm("¿Borrar todos los horarios cargados?"))return;if(scriptUrl){try{await apiPost({action:"clear"});items=[];localStorage.setItem("panel_v9_items","[]");render();alert("Datos limpiados.");await loadData()}catch(e){alert("No pude limpiar Google.")}return}items=[];saveLocal();render()}
 async function seedDemo(){const n=nowInfo(),h1=n.hm;let d=new Date();d.setMinutes(d.getMinutes()+30);const h2=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"),demo=[{dia:n.day,hora:h1,aula:"Aula 1",alumno:"Camila Abad",profesor:"Laura",actividad:"Apoyo"},{dia:n.day,hora:h1,aula:"Inglés",alumno:"Tomás Ríos",profesor:"Ana",actividad:"Inglés"},{dia:n.day,hora:h2,aula:"Aula 1",alumno:"Tomás Ríos",profesor:"Laura",actividad:"Apoyo"},{dia:n.day,hora:h2,aula:"Inglés",alumno:"Sofía Núñez",profesor:"Ana",actividad:"Inglés"}];if(scriptUrl){for(const obj of demo)await apiPost({action:"add",...obj});await loadData()}else{for(const obj of demo)if(!items.some(x=>itemKey(x)===itemKey(obj)))items.push({...obj,id:Date.now()+Math.random()+""});saveLocal();render()}}
@@ -147,13 +224,13 @@ async function seedDemo(){const n=nowInfo(),h1=n.hm;let d=new Date();d.setMinute
 
 function onlyDigits(s){return String(s||"").replace(/\D/g,"")}
 function contactHtml(x){
-  const wa=onlyDigits(x.whatsapp||""), tel=onlyDigits(x.telefono||"");
+  const wa=onlyDigits(x.whatsapp||"");
   let out="";
   if(x.contacto) out+=`<div class="contact-small">Contacto: ${x.contacto}</div>`;
-  if(x.whatsapp||x.telefono){
+  if(x.whatsapp){
     out+=`<div class="contact-links">`;
-    if(wa) out+=`<a class="wa" href="https://wa.me/${wa}" target="_blank">WhatsApp</a>`;
-    if(tel) out+=`<a class="tel" href="tel:${tel}">Llamar</a>`;
+    if(wa) out+=`<a class="wa" href="https://wa.me/${wa}" target="_blank" onclick="event.stopPropagation()">💬 WhatsApp</a>`;
+    else out+=`<span class="contact-small">WhatsApp: ${x.whatsapp}</span>`;
     out+=`</div>`;
   }
   return out;
@@ -184,7 +261,7 @@ function clearFilters(){
 function printSchedule(){window.print()}
 function byRoom(list){const all=[...new Set([...rooms,...items.map(x=>x.aula).filter(Boolean)])],map={};all.forEach(r=>map[r]=[]);list.forEach(x=>{if(!map[x.aula])map[x.aula]=[];map[x.aula].push(x)});return map}
 function findNextForRoom(room,afterHm){const n=nowInfo();return items.filter(x=>x.dia===n.day&&x.aula===room&&fixTime(x.hora)>afterHm).sort((a,b)=>fixTime(a.hora).localeCompare(fixTime(b.hora)))[0]}
-function renderRooms(elId,list,compareList=[],afterHm="00:00"){const el=document.getElementById(elId),map=byRoom(list);el.innerHTML="";Object.keys(map).forEach(room=>{const box=document.createElement("div");box.className="room";box.innerHTML=`<h3>${room}</h3>`;if(!map[room].length)box.innerHTML+=`<div class="empty">Sin alumno en este momento</div>`;map[room].forEach(p=>{const prev=compareList.find(x=>(x.alumno||"").toLowerCase()===(p.alumno||"").toLowerCase());let cls="new",tag="🆕 Ingresa";if(prev){if(prev.aula===p.aula){cls="same";tag="🟢 Sigue en esta aula"}else{cls="change";tag="🔄 Viene de "+prev.aula}}box.innerHTML+=`<div class="person ${cls}" onclick="openLoad(${items.indexOf(p)})" title="Tocar para editar contacto y WhatsApp"><b>${p.alumno}</b><div class="sub">${p.profesor||""}${p.actividad?" · "+p.actividad:""}</div>${contactHtml(p)}<span class="tag">${tag}</span></div>`});const nx=findNextForRoom(room,afterHm);if(nx)box.innerHTML+=`<div class="next-mini">Próximo en ${room}: ${fixTime(nx.hora)} · ${nx.alumno}</div>`;el.appendChild(box)})}
+function renderRooms(elId,list,compareList=[],afterHm="00:00"){const el=document.getElementById(elId),map=byRoom(list);el.innerHTML="";Object.keys(map).forEach(room=>{const box=document.createElement("div");box.className="room";box.innerHTML=`<h3>${room}</h3>`;if(!map[room].length)box.innerHTML+=`<div class="empty">Sin alumno en este momento</div>`;map[room].forEach(p=>{const prev=compareList.find(x=>(x.alumno||"").toLowerCase()===(p.alumno||"").toLowerCase());let cls="new",tag="🆕 Ingresa";if(prev){if(prev.aula===p.aula){cls="same";tag="🟢 Sigue en esta aula"}else{cls="change";tag="🔄 Viene de "+prev.aula}}box.innerHTML+=`<div class="person ${cls}" onclick="openLoad(${items.indexOf(p)})" title="Tocar para editar"><b>${p.alumno}</b><div class="sub">${p.profesor||""}${p.actividad?" · "+p.actividad:""}</div>${contactHtml(p)}<span class="tag">${tag}</span></div>`});const nx=findNextForRoom(room,afterHm);if(nx)box.innerHTML+=`<div class="next-mini">Próximo en ${room}: ${fixTime(nx.hora)} · ${nx.alumno}</div>`;el.appendChild(box)})}
 function render(){const n=nowInfo(),today=items.filter(x=>x.dia===n.day).sort((a,b)=>fixTime(a.hora).localeCompare(fixTime(b.hora)));let nowTime=[...new Set(today.filter(x=>fixTime(x.hora)<=n.hm).map(x=>fixTime(x.hora)))].pop();if(!nowTime)nowTime=today[0]?fixTime(today[0].hora):"";const nowList=nowTime?today.filter(x=>fixTime(x.hora)===nowTime):[],nextTime=(today.find(x=>fixTime(x.hora)>nowTime)||today.find(x=>fixTime(x.hora)>n.hm)||{}).hora||"",nextFixed=fixTime(nextTime),nextList=nextFixed?today.filter(x=>fixTime(x.hora)===nextFixed):[];renderRooms("nowRooms",nowList,[],nowTime||n.hm);nextTitle.textContent=nextFixed?"Próximo horario: "+nextFixed:"Sin próximo horario cargado para hoy";renderRooms("nextRooms",nextList,nowList,nextFixed||n.hm);agenda.innerHTML=filteredItems().map((x,i)=>({...x,i:items.indexOf(x)})).sort((a,b)=>DAYS.indexOf(a.dia)-DAYS.indexOf(b.dia)||fixTime(a.hora).localeCompare(fixTime(b.hora))||(a.aula||"").localeCompare(b.aula||"")).map(x=>`<tr><td>${x.dia}</td><td>${fixTime(x.hora)}</td><td>${x.aula}</td><td><b>${x.alumno}</b>${contactHtml(x)}</td><td>${x.profesor||""}</td><td>${x.actividad||""}</td><td class="actions"><button class="b1" onclick="openLoad(${x.i})">Editar</button><button class="b5" onclick="deleteItem(${x.i})">Borrar</button></td></tr>`).join("")||`<tr><td colspan="7" class="empty">Todavía no hay horarios cargados</td></tr>`}
 fillSelects();startAuto();loadData();
 </script>
