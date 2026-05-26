@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel Horas Simple V9.5</title>
+<title>Panel Horas Simple V9.6</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -42,7 +42,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 </style>
 </head>
 <body>
-<header><h1>Panel de Horas Simple V9.5</h1><div id="clock"></div></header>
+<header><h1>Panel de Horas Simple V9.6</h1><div id="clock"></div></header>
 <div class="wrap">
 <div id="mode" class="notice">Modo local. Para compartir datos, pegá la URL de Google Apps Script.</div>
 <div class="toolbar">
@@ -117,12 +117,36 @@ function saveLocal(){localStorage.setItem("panel_v9_items",JSON.stringify(items)
 function tick(){clock.textContent=new Date().toLocaleString("es-AR",{weekday:"long",hour:"2-digit",minute:"2-digit"})}setInterval(tick,1000);tick();
 function nowInfo(){const d=new Date();return{day:DAYS[d.getDay()],hm:String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}}
 function fixTime(v){if(!v)return"";v=String(v);const m=v.match(/(\d{1,2}):(\d{2})/);return m?String(m[1]).padStart(2,"0")+":"+m[2]:v}
-function normalize(x){return{...x,hora:fixTime(x.hora||""),id:String(x.id||"")}}
+function normalize(x){
+  x={...x,hora:fixTime(x.hora||""),id:String(x.id||"")};
+  const looksNumber=v=>/^\+?\d{6,}$/.test(String(v||"").replace(/\s/g,""));
+  if(!x.profesor && x.whatsapp && !looksNumber(x.whatsapp) && looksNumber(x.actividad)){
+    x.profesor=x.whatsapp;
+    x.whatsapp=x.actividad;
+    x.actividad="";
+  }
+  return x;
+}
 function setMode(text,cls){mode.className="notice"+(cls?" "+cls:"");mode.textContent=text||(scriptUrl?"Modo compartido conectado a Google Sheets. Actualiza solo cada 15 segundos.":"Modo local. Para compartir datos, pegá la URL de Google Apps Script.")}
 function startAuto(){if(autoTimer)clearInterval(autoTimer);if(scriptUrl)autoTimer=setInterval(loadData,15000)}
 function setScriptUrl(){const u=prompt("Pegá acá la URL de Google Apps Script. Tiene que terminar en /exec:",scriptUrl);if(u!==null){scriptUrl=u.trim();localStorage.setItem("panel_v9_script_url",scriptUrl);startAuto();loadData()}}
 async function apiGet(){const r=await fetch(scriptUrl+"?ts="+Date.now());return await r.json()}
-async function apiPost(payload){const r=await fetch(scriptUrl,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(payload)});return await r.json()}
+async function apiPost(payload){
+  const clean={
+    action:payload.action,
+    id:payload.id,
+    dia:payload.dia,
+    hora:payload.hora,
+    aula:payload.aula,
+    alumno:payload.alumno,
+    profesor:payload.profesor,
+    actividad:payload.actividad,
+    contacto:payload.contacto,
+    whatsapp:payload.whatsapp
+  };
+  const r=await fetch(scriptUrl,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(clean)});
+  return await r.json();
+}
 async function loadData(){if(!scriptUrl){render();return}try{const data=await apiGet();items=(Array.isArray(data)?data:[]).map(normalize);localStorage.setItem("panel_v9_items",JSON.stringify(items));setMode("Modo compartido conectado a Google Sheets. Actualiza solo cada 15 segundos.","ok");render()}catch(e){setMode("No pude leer Google. Revisá URL /exec y permisos.","err");render()}}
 function fillSelects(){aula.innerHTML=rooms.map(r=>`<option>${r}</option>`).join("");profesor.innerHTML=teachers.map(t=>`<option>${t}</option>`).join("")}
 function buildDays(selected=[]){const today=DAYS[new Date().getDay()], def=selected.length?selected:(today!="Domingo"?[today]:["Lunes"]);daysBox.innerHTML=WORKDAYS.map(d=>`<label class="daycheck"><input type="checkbox" value="${d}" ${def.includes(d)?"checked":""}> ${d}</label>`).join("")}
@@ -132,7 +156,7 @@ function openLoad(index=""){
   editIndex.value=index;
   loadTitle.textContent=index===""?"Cargar horario":"Editar alumno / contacto";
   if(index!==""){
-    const x=items[index];
+    const x=normalize(items[index]);
     hora.value=fixTime(x.hora);
     aula.value=x.aula || "";
     alumno.value=x.alumno || "";
@@ -150,6 +174,7 @@ function openLoad(index=""){
   }
   loadModal.classList.add("show");
 }
+
 function closeLoad(){loadModal.classList.remove("show")}
 function openConfig(){renderConfig();configModal.classList.add("show")}
 function closeConfig(){configModal.classList.remove("show");fillSelects();render()}
@@ -165,10 +190,10 @@ async function saveItem(){
     hora:fixTime(hora.value),
     aula:aula.value,
     alumno:alumno.value.trim(),
-    contacto:contacto.value.trim(),
-    whatsapp:whatsapp.value.trim(),
     profesor:profesor.value,
-    actividad:actividad.value.trim()
+    actividad:actividad.value.trim(),
+    contacto:contacto.value.trim(),
+    whatsapp:whatsapp.value.trim()
   };
 
   if(!ds.length){alert("Marcá al menos un día.");return}
@@ -227,11 +252,10 @@ function contactHtml(x){
   const wa=onlyDigits(x.whatsapp||"");
   let out="";
   if(x.contacto) out+=`<div class="contact-small">Contacto: ${x.contacto}</div>`;
-  if(x.whatsapp){
-    out+=`<div class="contact-links">`;
-    if(wa) out+=`<a class="wa" href="https://wa.me/${wa}" target="_blank" onclick="event.stopPropagation()">💬 WhatsApp</a>`;
-    else out+=`<span class="contact-small">WhatsApp: ${x.whatsapp}</span>`;
-    out+=`</div>`;
+  if(wa){
+    out+=`<div class="contact-links"><a class="wa" href="https://wa.me/${wa}" target="_blank" onclick="event.stopPropagation()">💬 WhatsApp</a></div>`;
+  }else if(x.whatsapp){
+    out+=`<div class="contact-small">WhatsApp: ${x.whatsapp}</div>`;
   }
   return out;
 }
