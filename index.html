@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel Horas Simple V9.7</title>
+<title>Panel Horas Simple V9.8 AUTO</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -44,9 +44,9 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 <body>
 <header><h1>Panel de Horas Simple V9.7</h1><div id="clock"></div></header>
 <div class="wrap">
-<div id="mode" class="notice">Modo local. Para compartir datos, pegá la URL de Google Apps Script.</div>
+<div id="mode" class="notice">Modo compartido automático conectado a Google Sheets.</div>
 <div class="toolbar">
-<button class="b1" onclick="openLoad()">+ Cargar horario</button><button class="b2" onclick="loadData()">Actualizar datos</button><button class="b3" onclick="setScriptUrl()">Configurar Google</button><button class="b3" onclick="openConfig()">Configurar listas</button><button class="b7" onclick="printSchedule()">Imprimir horario</button><button class="b4" onclick="seedDemo()">Cargar ejemplo</button><button class="b5" onclick="clearAll()">Limpiar datos</button>
+<button class="b1" onclick="openLoad()">+ Cargar horario</button><button class="b2" onclick="loadData()">Actualizar datos</button><button class="b3" onclick="openConfig()">Configurar listas</button><button class="b7" onclick="printSchedule()">Imprimir horario</button><button class="b4" onclick="seedDemo()">Cargar ejemplo</button><button class="b5" onclick="clearAll()">Limpiar datos</button>
 </div>
 <section id="nowCard" class="card"><h2>Ahora en cada aula</h2><div id="nowRooms" class="room-grid"></div></section>
 <section id="nextCard" class="card"><h2>Próximo horario</h2><div id="nextTitle" style="color:#475467;margin-bottom:8px"></div><div id="nextRooms" class="room-grid"></div></section>
@@ -112,7 +112,11 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 </div><br><button class="b6" onclick="closeConfig()">Cerrar</button></div></div>
 <script>
 const DAYS=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"], WORKDAYS=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
-let items=JSON.parse(localStorage.getItem("panel_v9_items")||"[]"), rooms=JSON.parse(localStorage.getItem("panel_v9_rooms")||'["Aula 1","Inglés"]'), teachers=JSON.parse(localStorage.getItem("panel_v9_teachers")||'["Laura","Ana"]'), scriptUrl=localStorage.getItem("panel_v9_script_url")||"", autoTimer=null;
+let items=JSON.parse(localStorage.getItem("panel_v9_items")||"[]"), 
+rooms=JSON.parse(localStorage.getItem("panel_v9_rooms")||'["Aula 1","Inglés"]'), 
+teachers=JSON.parse(localStorage.getItem("panel_v9_teachers")||'["Laura","Ana"]'), 
+scriptUrl="https://script.google.com/macros/s/AKfycbyyrtk6-MCa37zq4iFD838iq8LrskFuD3FxNvoe7qU6oyreN5a9Uan0nd3R5Oaeue4s/exec",
+autoTimer=null;
 function saveLocal(){localStorage.setItem("panel_v9_items",JSON.stringify(items));localStorage.setItem("panel_v9_rooms",JSON.stringify(rooms));localStorage.setItem("panel_v9_teachers",JSON.stringify(teachers))}
 function tick(){clock.textContent=new Date().toLocaleString("es-AR",{weekday:"long",hour:"2-digit",minute:"2-digit"})}setInterval(tick,1000);tick();
 function nowInfo(){const d=new Date();return{day:DAYS[d.getDay()],hm:String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}}
@@ -132,7 +136,7 @@ function normalize(x){
   };
 }
 
-function setMode(text,cls){mode.className="notice"+(cls?" "+cls:"");mode.textContent=text||(scriptUrl?"Modo compartido conectado a Google Sheets. Actualiza solo cada 15 segundos.":"Modo local. Para compartir datos, pegá la URL de Google Apps Script.")}
+function setMode(text,cls){mode.className="notice"+(cls?" "+cls:"");mode.textContent=text||(scriptUrl?"Modo compartido conectado a Google Sheets. Actualiza solo cada 15 segundos.":"Modo compartido automático conectado a Google Sheets.")}
 function startAuto(){if(autoTimer)clearInterval(autoTimer);if(scriptUrl)autoTimer=setInterval(loadData,15000)}
 function setScriptUrl(){const u=prompt("Pegá acá la URL de Google Apps Script. Tiene que terminar en /exec:",scriptUrl);if(u!==null){scriptUrl=u.trim();localStorage.setItem("panel_v9_script_url",scriptUrl);startAuto();loadData()}}
 async function apiGet(){const r=await fetch(scriptUrl+"?ts="+Date.now());return await r.json()}
