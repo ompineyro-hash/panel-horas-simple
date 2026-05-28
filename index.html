@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel Horas Simple V9.8 AUTO</title>
+<title>Panel Horas Simple V10 CLEAN</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -42,11 +42,11 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 </style>
 </head>
 <body>
-<header><h1>Panel de Horas Simple V9.7</h1><div id="clock"></div></header>
+<header><h1>Panel de Horas Simple V10 CLEAN</h1><div id="clock"></div></header>
 <div class="wrap">
-<div id="mode" class="notice">Modo compartido automático conectado a Google Sheets.</div>
+<div id="mode" class="notice ok">Sincronización automática activa.</div>
 <div class="toolbar">
-<button class="b1" onclick="openLoad()">+ Cargar horario</button><button class="b2" onclick="loadData()">Actualizar datos</button><button class="b3" onclick="openConfig()">Configurar listas</button><button class="b7" onclick="printSchedule()">Imprimir horario</button><button class="b4" onclick="seedDemo()">Cargar ejemplo</button><button class="b5" onclick="clearAll()">Limpiar datos</button>
+<button class="b1" onclick="openLoad()">+ Cargar horario</button><button class="b2" onclick="loadData()">Actualizar</button><button class="b3" onclick="openConfig()">Aulas y profesores</button><button class="b7" onclick="printSchedule()">Imprimir</button><button class="b5" onclick="clearAll()">Limpiar</button>
 </div>
 <section id="nowCard" class="card"><h2>Ahora en cada aula</h2><div id="nowRooms" class="room-grid"></div></section>
 <section id="nextCard" class="card"><h2>Próximo horario</h2><div id="nextTitle" style="color:#475467;margin-bottom:8px"></div><div id="nextRooms" class="room-grid"></div></section>
@@ -106,7 +106,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 
 <div class="full"><button id="saveBtn" class="b2" onclick="saveItem()">Guardar</button> <button class="b6" onclick="closeLoad()">Cerrar</button></div>
 </div></div></div>
-<div id="configModal" class="modal"><div class="box"><h2>Configurar listas</h2><div class="config-list">
+<div id="configModal" class="modal"><div class="box"><h2>Aulas y profesores</h2><div class="config-list">
 <div><h3>Aulas</h3><div style="display:flex;gap:6px"><input id="newRoom" placeholder="Ej: Aula 2"><button class="b1" onclick="addRoom()">Agregar</button></div><div id="roomPills"></div></div>
 <div><h3>Profesores</h3><div style="display:flex;gap:6px"><input id="newTeacher" placeholder="Ej: Laura"><button class="b1" onclick="addTeacher()">Agregar</button></div><div id="teacherPills"></div></div>
 </div><br><button class="b6" onclick="closeConfig()">Cerrar</button></div></div>
@@ -136,7 +136,7 @@ function normalize(x){
   };
 }
 
-function setMode(text,cls){mode.className="notice"+(cls?" "+cls:"");mode.textContent=text||(scriptUrl?"Modo compartido conectado a Google Sheets. Actualiza solo cada 15 segundos.":"Modo compartido automático conectado a Google Sheets.")}
+function setMode(text,cls){mode.className="notice"+(cls?" "+cls:"");mode.textContent=text||"Sincronización automática activa."}
 function startAuto(){if(autoTimer)clearInterval(autoTimer);if(scriptUrl)autoTimer=setInterval(loadData,15000)}
 function setScriptUrl(){const u=prompt("Pegá acá la URL de Google Apps Script. Tiene que terminar en /exec:",scriptUrl);if(u!==null){scriptUrl=u.trim();localStorage.setItem("panel_v9_script_url",scriptUrl);startAuto();loadData()}}
 async function apiGet(){const r=await fetch(scriptUrl+"?ts="+Date.now());return await r.json()}
@@ -157,7 +157,7 @@ async function apiPost(payload){
   return await r.json();
 }
 
-async function loadData(){if(!scriptUrl){render();return}try{const data=await apiGet();items=(Array.isArray(data)?data:[]).map(normalize);localStorage.setItem("panel_v9_items",JSON.stringify(items));setMode("Modo compartido conectado a Google Sheets. Actualiza solo cada 15 segundos.","ok");render()}catch(e){setMode("No pude leer Google. Revisá URL /exec y permisos.","err");render()}}
+async function loadData(){if(!scriptUrl){render();return}try{setMode("Actualizando datos...","");const data=await apiGet();items=(Array.isArray(data)?data:[]).map(normalize);localStorage.setItem("panel_v9_items",JSON.stringify(items));setMode("Datos sincronizados automáticamente.","ok");render()}catch(e){setMode("Sin conexión. Reintentando automáticamente...","err");render()}}
 function fillSelects(){aula.innerHTML=rooms.map(r=>`<option>${r}</option>`).join("");profesor.innerHTML=teachers.map(t=>`<option>${t}</option>`).join("")}
 function buildDays(selected=[]){const today=DAYS[new Date().getDay()], def=selected.length?selected:(today!="Domingo"?[today]:["Lunes"]);daysBox.innerHTML=WORKDAYS.map(d=>`<label class="daycheck"><input type="checkbox" value="${d}" ${def.includes(d)?"checked":""}> ${d}</label>`).join("")}
 function selectedDays(){return[...daysBox.querySelectorAll("input:checked")].map(x=>x.value)}
@@ -245,15 +245,39 @@ async function saveItem(){
     closeLoad();
     render();
   }catch(e){
-    alert("No pude guardar. Revisá conexión o URL.");
+    alert("No pude guardar. Revisá la conexión e intentá nuevamente.");
   }finally{
     saveBtn.disabled=false;
     saveBtn.textContent="Guardar";
   }
 }
 
-async function deleteItem(i){const x=items[i];if(!confirm("¿Eliminar este horario?"))return;if(scriptUrl){try{await apiPost({action:"delete",id:x.id});await loadData()}catch(e){alert("No pude borrar en Google.")}return}items.splice(i,1);saveLocal();render()}
-async function clearAll(){if(!confirm("¿Borrar todos los horarios cargados?"))return;if(scriptUrl){try{await apiPost({action:"clear"});items=[];localStorage.setItem("panel_v9_items","[]");render();alert("Datos limpiados.");await loadData()}catch(e){alert("No pude limpiar Google.")}return}items=[];saveLocal();render()}
+async function deleteItem(i){const x=items[i];if(!confirm("¿Eliminar este horario?"))return;if(scriptUrl){try{await apiPost({action:"delete",id:x.id});await loadData()}catch(e){alert("No pude borrar. Revisá la conexión e intentá nuevamente.")}return}items.splice(i,1);saveLocal();render()}
+async function clearAll(){
+  if(!confirm("Atención: esto borra TODOS los horarios compartidos. ¿Querés continuar?"))return;
+  const code=prompt("Para confirmar escribí: BORRAR");
+  if(code!=="BORRAR"){alert("Limpieza cancelada.");return}
+  const backup={fecha:new Date().toISOString(),items:[...items]};
+  localStorage.setItem("panel_v10_backup_"+Date.now(),JSON.stringify(backup));
+  if(scriptUrl){
+    try{
+      setMode("Limpiando datos...","");
+      await apiPost({action:"clear"});
+      items=[];
+      localStorage.setItem("panel_v9_items","[]");
+      render();
+      setMode("Datos limpiados. Se guardó una copia de seguridad local.","ok");
+      await loadData();
+    }catch(e){
+      setMode("No se pudo limpiar. Revisá conexión e intentá nuevamente.","err");
+    }
+    return;
+  }
+  items=[];
+  saveLocal();
+  render();
+  setMode("Datos limpiados. Se guardó una copia de seguridad local.","ok");
+}
 async function seedDemo(){const n=nowInfo(),h1=n.hm;let d=new Date();d.setMinutes(d.getMinutes()+30);const h2=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"),demo=[{dia:n.day,hora:h1,aula:"Aula 1",alumno:"Camila Abad",profesor:"Laura",actividad:"Apoyo"},{dia:n.day,hora:h1,aula:"Inglés",alumno:"Tomás Ríos",profesor:"Ana",actividad:"Inglés"},{dia:n.day,hora:h2,aula:"Aula 1",alumno:"Tomás Ríos",profesor:"Laura",actividad:"Apoyo"},{dia:n.day,hora:h2,aula:"Inglés",alumno:"Sofía Núñez",profesor:"Ana",actividad:"Inglés"}];if(scriptUrl){for(const obj of demo)await apiPost({action:"add",...obj});await loadData()}else{for(const obj of demo)if(!items.some(x=>itemKey(x)===itemKey(obj)))items.push({...obj,id:Date.now()+Math.random()+""});saveLocal();render()}}
 
 
@@ -296,6 +320,8 @@ function findNextForRoom(room,afterHm){const n=nowInfo();return items.filter(x=>
 function renderRooms(elId,list,compareList=[],afterHm="00:00"){const el=document.getElementById(elId),map=byRoom(list);el.innerHTML="";Object.keys(map).forEach(room=>{const box=document.createElement("div");box.className="room";box.innerHTML=`<h3>${room}</h3>`;if(!map[room].length)box.innerHTML+=`<div class="empty">Sin alumno en este momento</div>`;map[room].forEach(p=>{const prev=compareList.find(x=>(x.alumno||"").toLowerCase()===(p.alumno||"").toLowerCase());let cls="new",tag="🆕 Ingresa";if(prev){if(prev.aula===p.aula){cls="same";tag="🟢 Sigue en esta aula"}else{cls="change";tag="🔄 Viene de "+prev.aula}}box.innerHTML+=`<div class="person ${cls}" onclick="openLoad(${items.indexOf(p)})" title="Tocar para editar"><b>${p.alumno}</b><div class="sub">${p.profesor||""}${p.actividad?" · "+p.actividad:""}</div>${contactHtml(p)}<span class="tag">${tag}</span></div>`});const nx=findNextForRoom(room,afterHm);if(nx)box.innerHTML+=`<div class="next-mini">Próximo en ${room}: ${fixTime(nx.hora)} · ${nx.alumno}</div>`;el.appendChild(box)})}
 function render(){const n=nowInfo(),today=items.filter(x=>x.dia===n.day).sort((a,b)=>fixTime(a.hora).localeCompare(fixTime(b.hora)));let nowTime=[...new Set(today.filter(x=>fixTime(x.hora)<=n.hm).map(x=>fixTime(x.hora)))].pop();if(!nowTime)nowTime=today[0]?fixTime(today[0].hora):"";const nowList=nowTime?today.filter(x=>fixTime(x.hora)===nowTime):[],nextTime=(today.find(x=>fixTime(x.hora)>nowTime)||today.find(x=>fixTime(x.hora)>n.hm)||{}).hora||"",nextFixed=fixTime(nextTime),nextList=nextFixed?today.filter(x=>fixTime(x.hora)===nextFixed):[];renderRooms("nowRooms",nowList,[],nowTime||n.hm);nextTitle.textContent=nextFixed?"Próximo horario: "+nextFixed:"Sin próximo horario cargado para hoy";renderRooms("nextRooms",nextList,nowList,nextFixed||n.hm);agenda.innerHTML=filteredItems().map((x,i)=>({...x,i:items.indexOf(x)})).sort((a,b)=>DAYS.indexOf(a.dia)-DAYS.indexOf(b.dia)||fixTime(a.hora).localeCompare(fixTime(b.hora))||(a.aula||"").localeCompare(b.aula||"")).map(x=>`<tr><td>${x.dia}</td><td>${fixTime(x.hora)}</td><td>${x.aula}</td><td><b>${x.alumno}</b>${contactHtml(x)}</td><td>${x.profesor||""}</td><td>${x.actividad||""}</td><td class="actions"><button class="b1" onclick="openLoad(${x.i})">Editar</button><button class="b5" onclick="deleteItem(${x.i})">Borrar</button></td></tr>`).join("")||`<tr><td colspan="7" class="empty">Todavía no hay horarios cargados</td></tr>`}
 fillSelects();startAuto();loadData();
+
+// V10 CLEAN: sincronización automática, mensajes simples y limpieza protegida.
 </script>
 </body>
 </html>
