@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel Horas Simple V10.2.2 CENTRALIZADA TEST</title>
+<title>Panel Horas Simple V10.2.3 ASISTENCIA TEST</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -52,7 +52,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 </style>
 </head>
 <body>
-<header><h1>Panel de Horas Simple V10.2.2 CENTRALIZADA TEST</h1><div id="clock"></div></header>
+<header><h1>Panel de Horas Simple V10.2.3 ASISTENCIA TEST</h1><div id="clock"></div></header>
 <div class="wrap">
 <div id="mode" class="notice ok">Sincronización activa sin interrumpir.</div>
 <div class="toolbar">
@@ -69,7 +69,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
   <div><label>Día</label><select id="filterDia" onchange="render()"><option value="">Todos</option><option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option><option>Sábado</option></select></div>
   <button class="b4 filter-btn" onclick="clearFilters()">Limpiar filtros</button>
 </div>
-<div style="overflow:auto"><table><thead><tr><th>Día</th><th>Hora</th><th>Aula</th><th>Alumno / Contacto</th><th>Profesor</th><th>Actividad</th><th class="actions">Acción</th></tr></thead><tbody id="agenda"></tbody></table></div></section>
+<div style="overflow:auto"><table><thead><tr><th>Día</th><th>Hora</th><th>Aula</th><th>Alumno / Contacto</th><th>Profesor</th><th>Actividad</th><th>Asistencia</th><th class="actions">Acción</th></tr></thead><tbody id="agenda"></tbody></table></div></section>
 </div>
 <div id="loadModal" class="modal"><div class="box"><h2 id="loadTitle">Cargar horario</h2><input type="hidden" id="editIndex"><div class="form">
 
@@ -426,10 +426,10 @@ function printSchedule(){window.print()}
 function byRoom(list){const all=[...new Set([...rooms,...items.map(x=>x.aula).filter(Boolean)])],map={};all.forEach(r=>map[r]=[]);list.forEach(x=>{if(!map[x.aula])map[x.aula]=[];map[x.aula].push(x)});return map}
 function findNextForRoom(room,afterHm){const n=nowInfo();return items.filter(x=>x.dia===n.day&&x.aula===room&&fixTime(x.hora)>afterHm).sort((a,b)=>fixTime(a.hora).localeCompare(fixTime(b.hora)))[0]}
 function renderRooms(elId,list,compareList=[],afterHm="00:00"){const el=document.getElementById(elId),map=byRoom(list);el.innerHTML="";Object.keys(map).forEach(room=>{const box=document.createElement("div");box.className="room";box.innerHTML=`<h3>${room}</h3>`;if(!map[room].length)box.innerHTML+=`<div class="empty">Sin alumno en este momento</div>`;map[room].forEach(p=>{const prev=compareList.find(x=>(x.alumno||"").toLowerCase()===(p.alumno||"").toLowerCase());let cls="new",tag="🆕 Ingresa";if(prev){if(prev.aula===p.aula){cls="same";tag="🟢 Sigue en esta aula"}else{cls="change";tag="🔄 Viene de "+prev.aula}}box.innerHTML+=`<div class="person ${cls} ${p.asistencia||""}" onclick="openLoad(${items.indexOf(p)})" title="Tocar para editar"><b>${p.alumno}</b><div class="sub">${p.profesor||""}${p.actividad?" · "+p.actividad:""}</div>${contactHtml(p)}${assistHtml(p)}<span class="tag">${tag}</span></div>`});const nx=findNextForRoom(room,afterHm);if(nx)box.innerHTML+=`<div class="next-mini">Próximo en ${room}: ${fixTime(nx.hora)} · ${nx.alumno}</div>`;el.appendChild(box)})}
-function render(){const n=nowInfo(),today=items.filter(x=>x.dia===n.day).sort((a,b)=>fixTime(a.hora).localeCompare(fixTime(b.hora)));let nowTime=[...new Set(today.filter(x=>fixTime(x.hora)<=n.hm).map(x=>fixTime(x.hora)))].pop();if(!nowTime)nowTime=today[0]?fixTime(today[0].hora):"";const nowList=nowTime?today.filter(x=>fixTime(x.hora)===nowTime):[],nextTime=(today.find(x=>fixTime(x.hora)>nowTime)||today.find(x=>fixTime(x.hora)>n.hm)||{}).hora||"",nextFixed=fixTime(nextTime),nextList=nextFixed?today.filter(x=>fixTime(x.hora)===nextFixed):[];renderRooms("nowRooms",nowList,[],nowTime||n.hm);nextTitle.textContent=nextFixed?"Próximo horario: "+nextFixed:"Sin próximo horario cargado para hoy";renderRooms("nextRooms",nextList,nowList,nextFixed||n.hm);agenda.innerHTML=filteredItems().map((x,i)=>({...x,i:items.indexOf(x)})).sort((a,b)=>DAYS.indexOf(a.dia)-DAYS.indexOf(b.dia)||fixTime(a.hora).localeCompare(fixTime(b.hora))||(a.aula||"").localeCompare(b.aula||"")).map(x=>`<tr><td>${x.dia}</td><td>${fixTime(x.hora)}</td><td>${x.aula}</td><td><b>${x.alumno}</b>${contactHtml(x)}</td><td>${x.profesor||""}</td><td>${x.actividad||""}</td><td class="actions"><button class="b1" onclick="openLoad(${x.i})">Editar</button><button class="b5" onclick="deleteItem(${x.i})">Borrar</button></td></tr>`).join("")||`<tr><td colspan="7" class="empty">Todavía no hay horarios cargados</td></tr>`}
+function render(){const n=nowInfo(),today=items.filter(x=>x.dia===n.day).sort((a,b)=>fixTime(a.hora).localeCompare(fixTime(b.hora)));let nowTime=[...new Set(today.filter(x=>fixTime(x.hora)<=n.hm).map(x=>fixTime(x.hora)))].pop();if(!nowTime)nowTime=today[0]?fixTime(today[0].hora):"";const nowList=nowTime?today.filter(x=>fixTime(x.hora)===nowTime):[],nextTime=(today.find(x=>fixTime(x.hora)>nowTime)||today.find(x=>fixTime(x.hora)>n.hm)||{}).hora||"",nextFixed=fixTime(nextTime),nextList=nextFixed?today.filter(x=>fixTime(x.hora)===nextFixed):[];renderRooms("nowRooms",nowList,[],nowTime||n.hm);nextTitle.textContent=nextFixed?"Próximo horario: "+nextFixed:"Sin próximo horario cargado para hoy";renderRooms("nextRooms",nextList,nowList,nextFixed||n.hm);agenda.innerHTML=filteredItems().map((x,i)=>({...x,i:items.indexOf(x)})).sort((a,b)=>DAYS.indexOf(a.dia)-DAYS.indexOf(b.dia)||fixTime(a.hora).localeCompare(fixTime(b.hora))||(a.aula||"").localeCompare(b.aula||"")).map(x=>`<tr><td>${x.dia}</td><td>${fixTime(x.hora)}</td><td>${x.aula}</td><td><b>${x.alumno}</b>${contactHtml(x)}</td><td>${x.profesor||""}</td><td>${x.actividad||""}</td><td>${assistHtml(x)}</td><td class="actions"><button class="b1" onclick="openLoad(${x.i})">Editar</button><button class="b5" onclick="deleteItem(${x.i})">Borrar</button></td></tr>`).join("")||`<tr><td colspan="8" class="empty">Todavía no hay horarios cargados</td></tr>`}
 fillSelects();startAuto();loadData(true);
 
-// V10.2.2 CENTRALIZADA TEST: listas compartidas y asistencia diaria guardada.
+// V10.2.3 ASISTENCIA TEST: listas compartidas y asistencia diaria guardada.
 
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"){
@@ -442,7 +442,7 @@ document.addEventListener("click",e=>{
   }
 });
 
-// V10.2.2 CENTRALIZADA TEST: sincronización suave, no interrumpe edición ni ventanas.
+// V10.2.3 ASISTENCIA TEST: sincronización suave, no interrumpe edición ni ventanas.
 </script>
 </body>
 </html>
