@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel Horas Simple V10.2.5 ASISTENCIA FINAL TEST</title>
+<title>Panel Horas Simple V10.3 ASISTENCIA FINAL</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -42,7 +42,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 
 .assist{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .assist button{font-size:13px;padding:6px 9px;border-radius:999px}
-.bp{background:#12805c}.ba{background:#d92d20}
+.bp{background:#12805c}.ba{background:#d92d20}.assist button.off{background:#98a2b3;color:#fff;opacity:.72}.assist button.on{outline:3px solid #11182722;transform:scale(1.02)}
 .person.presente{border-left-color:#12805c;background:#f3fff8}
 .person.ausente{border-left-color:#d92d20;background:#fff6f4}
 .status{display:inline-block;margin-top:5px;font-size:12px;font-weight:bold;border-radius:999px;padding:4px 7px;background:#eef4ff}
@@ -52,7 +52,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 </style>
 </head>
 <body>
-<header><h1>Panel de Horas Simple V10.2.5 ASISTENCIA FINAL TEST</h1><div id="clock"></div></header>
+<header><h1>Panel de Horas Simple V10.3 ASISTENCIA FINAL</h1><div id="clock"></div></header>
 <div class="wrap">
 <div id="mode" class="notice ok">Sincronización activa sin interrumpir.</div>
 <div class="toolbar">
@@ -163,8 +163,18 @@ function normalize(x){
 
 function normalizeStudent(x){return{id:String(x.id||""),alumno:String(x.alumno||x.nombre||""),contacto:String(x.contacto||""),whatsapp:String(x.whatsapp||"")};}
 function todayISO(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
-function attKeyFrom(x){return [todayISO(),x.id||""].join("|")}
-function applyAttendanceToItems(){const today=todayISO(),map={};attendance.filter(a=>a.fecha===today).forEach(a=>{map[[a.fecha,a.horarioId||""].join("|")]=a.estado||""});items=items.map(x=>({...x,asistencia:map[attKeyFrom(x)]||""}))}
+function attKeyFrom(x){return [todayISO(),String(x.id||"").trim()].join("|")}
+function applyAttendanceToItems(){
+  const today=todayISO(),map={};
+  attendance.filter(a=>String(a.fecha||"").trim()===today).forEach(a=>{
+    const key=[String(a.fecha||"").trim(),String(a.horarioId||"").trim()].join("|");
+    map[key]=String(a.estado||"").trim().toLowerCase();
+  });
+  items=items.map(x=>{
+    const key=[today,String(x.id||"").trim()].join("|");
+    return {...x,asistencia:map[key]||""};
+  });
+}
 function applyStudentData(){const name=(alumno.value||"").trim().toLowerCase();const s=students.find(x=>(x.alumno||"").trim().toLowerCase()===name);if(s){if(!contacto.value) contacto.value=s.contacto||"";if(!whatsapp.value) whatsapp.value=s.whatsapp||""}}
 function setMode(text,cls){mode.className="notice"+(cls?" "+cls:"");mode.textContent=text||"Sincronización activa sin interrumpir."}
 function isBusy(){
@@ -207,7 +217,7 @@ async function loadData(force=false){
     applyAttendanceToItems();
     localStorage.setItem("panel_v9_items",JSON.stringify(items));
     fillSelects();
-    setMode("Datos sincronizados.","ok");
+    if(force) setMode("Datos sincronizados.","ok");
     render();
   }catch(e){
     setMode("Sin conexión. La app reintentará sola.","err");
@@ -309,8 +319,8 @@ async function saveItem(){
     whatsapp:whatsapp.value.trim()
   };
 
-  if(!ds.length){alert("Marcá al menos un día.");return}
-  if(!base.hora||!base.aula||!base.alumno){alert("Completá hora, aula y alumno.");return}
+  if(!ds.length){setMode("Marcá al menos un día.","err");return}
+  if(!base.hora||!base.aula||!base.alumno){setMode("Completá hora, aula y alumno.","err");return}
 
   await ensureStudentFromBase(base);
 
@@ -386,25 +396,32 @@ async function clearAll(){
 async function seedDemo(){const n=nowInfo(),h1=n.hm;let d=new Date();d.setMinutes(d.getMinutes()+30);const h2=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"),demo=[{dia:n.day,hora:h1,aula:"Aula 1",alumno:"Camila Abad",profesor:"Laura",actividad:"Apoyo"},{dia:n.day,hora:h1,aula:"Inglés",alumno:"Tomás Ríos",profesor:"Ana",actividad:"Inglés"},{dia:n.day,hora:h2,aula:"Aula 1",alumno:"Tomás Ríos",profesor:"Laura",actividad:"Apoyo"},{dia:n.day,hora:h2,aula:"Inglés",alumno:"Sofía Núñez",profesor:"Ana",actividad:"Inglés"}];if(scriptUrl){for(const obj of demo)await apiPost({action:"add",...obj});await loadData(true)}else{for(const obj of demo)if(!items.some(x=>itemKey(x)===itemKey(obj)))items.push({...obj,id:Date.now()+Math.random()+""});saveLocal();render()}}
 
 
-function assistHtml(x){const st=x.asistencia||"";const label=st?`<span class="status ${st}">Marcado: ${st==="presente"?"Presente":"Ausente"}</span>`:`<span class="status">Sin marcar</span>`;return `${label}<div class="assist"><button class="bp" onclick="event.stopPropagation();setAssist('${x.id}','presente')">Presente</button><button class="ba" onclick="event.stopPropagation();setAssist('${x.id}','ausente')">Ausente</button></div>`}
+function assistHtml(x){
+  const st=String(x.asistencia||"").trim().toLowerCase();
+  const label=st?`<span class="status ${st}">Estado actual: ${st==="presente"?"PRESENTE":"AUSENTE"}</span>`:`<span class="status">Estado: Sin marcar</span>`;
+  const presenteClass=st==="presente"?"bp on":"bp off";
+  const ausenteClass=st==="ausente"?"ba on":"ba off";
+  return `${label}<div class="assist"><button class="${presenteClass}" onclick="event.stopPropagation();setAssist('${x.id}','presente')">${st==="presente"?"PRESENTE":"Presente"}</button><button class="${ausenteClass}" onclick="event.stopPropagation();setAssist('${x.id}','ausente')">${st==="ausente"?"AUSENTE":"Ausente"}</button></div>`;
+}
 async function setAssist(id,status){
-  const i=items.findIndex(x=>x.id===id);
+  const i=items.findIndex(x=>String(x.id||"").trim()===String(id||"").trim());
   if(i<0)return;
-  const x=items[i];
+
+  const x=items[i],today=todayISO();
+  const rec={fecha:today,horarioId:String(x.id||"").trim(),dia:x.dia,hora:x.hora,aula:x.aula,alumno:x.alumno,profesor:x.profesor,estado:status};
+
   items[i].asistencia=status;
 
-  const today=todayISO();
-  const existing=attendance.findIndex(a=>a.fecha===today && a.horarioId===x.id);
-  const rec={fecha:today,horarioId:x.id,dia:x.dia,hora:x.hora,aula:x.aula,alumno:x.alumno,profesor:x.profesor,estado:status};
+  const existing=attendance.findIndex(a=>String(a.fecha||"").trim()===today&&String(a.horarioId||"").trim()===rec.horarioId);
   if(existing>=0) attendance[existing]=rec;
   else attendance.push(rec);
 
   saveLocal();
   render();
+  setMode("Asistencia marcada: "+(status==="presente"?"Presente":"Ausente"),"ok");
 
   if(scriptUrl){
     try{
-      setMode("Guardando asistencia...","");
       const res=await apiPost({action:"saveAttendance",...rec});
       if(!res||!res.ok)throw new Error("No guardó");
       setMode("Asistencia guardada.","ok");
@@ -454,7 +471,7 @@ function renderRooms(elId,list,compareList=[],afterHm="00:00"){const el=document
 function render(){const n=nowInfo(),today=items.filter(x=>x.dia===n.day).sort((a,b)=>fixTime(a.hora).localeCompare(fixTime(b.hora)));let nowTime=[...new Set(today.filter(x=>fixTime(x.hora)<=n.hm).map(x=>fixTime(x.hora)))].pop();if(!nowTime)nowTime=today[0]?fixTime(today[0].hora):"";const nowList=nowTime?today.filter(x=>fixTime(x.hora)===nowTime):[],nextTime=(today.find(x=>fixTime(x.hora)>nowTime)||today.find(x=>fixTime(x.hora)>n.hm)||{}).hora||"",nextFixed=fixTime(nextTime),nextList=nextFixed?today.filter(x=>fixTime(x.hora)===nextFixed):[];renderRooms("nowRooms",nowList,[],nowTime||n.hm);nextTitle.textContent=nextFixed?"Próximo horario: "+nextFixed:"Sin próximo horario cargado para hoy";renderRooms("nextRooms",nextList,nowList,nextFixed||n.hm);agenda.innerHTML=filteredItems().map((x,i)=>({...x,i:items.indexOf(x)})).sort((a,b)=>DAYS.indexOf(a.dia)-DAYS.indexOf(b.dia)||fixTime(a.hora).localeCompare(fixTime(b.hora))||(a.aula||"").localeCompare(b.aula||"")).map(x=>`<tr><td>${x.dia}</td><td>${fixTime(x.hora)}</td><td>${x.aula}</td><td><b>${x.alumno}</b>${contactHtml(x)}</td><td>${x.profesor||""}</td><td>${x.actividad||""}</td><td>${assistHtml(x)}</td><td class="actions"><button class="b1" onclick="openLoad(${x.i})">Editar</button><button class="b5" onclick="deleteItem(${x.i})">Borrar</button></td></tr>`).join("")||`<tr><td colspan="8" class="empty">Todavía no hay horarios cargados</td></tr>`}
 fillSelects();startAuto();loadData(true);
 
-// V10.2.5 ASISTENCIA FINAL TEST: listas compartidas y asistencia diaria guardada.
+// V10.3 ASISTENCIA FINAL: listas compartidas y asistencia diaria guardada.
 
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"){
@@ -467,7 +484,7 @@ document.addEventListener("click",e=>{
   }
 });
 
-// V10.2.5 ASISTENCIA FINAL TEST: sincronización suave, no interrumpe edición ni ventanas.
+// V10.3 ASISTENCIA FINAL: sincronización suave, no interrumpe edición ni ventanas.
 </script>
 </body>
 </html>
