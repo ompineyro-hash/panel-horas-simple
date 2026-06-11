@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel Horas Simple V10.3.3 DEBUG ASISTENCIA</title>
+<title>Panel Horas Simple V10.4 ASISTENCIA</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -49,16 +49,12 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 .status.presente{background:#dff7e9;color:#064a34}
 .status.ausente{background:#ffe4e0;color:#7a150d}
 .shared-note{font-size:13px;color:#475467;margin:0 0 10px}
-.debugBox{background:#111827;color:#d1fae5;border-radius:12px;padding:10px;margin:10px 0;font-family:Consolas,monospace;font-size:12px;white-space:pre-wrap;max-height:220px;overflow:auto}
-.debugActions{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.debugActions button{font-size:12px;padding:6px 8px;background:#334155}
 </style>
 </head>
 <body>
 <header><h1>Panel de Horas Simple V10.3.3 DEBUG ASISTENCIA</h1><div id="clock"></div></header>
 <div class="wrap">
 <div id="mode" class="notice ok">Sincronización activa sin interrumpir.</div>
-<div class="debugActions"><button onclick="toggleDebug()">Ver/Ocultar diagnóstico</button><button onclick="copyDebug()">Copiar diagnóstico</button><button onclick="runAssistDebug()">Diagnóstico asistencia</button></div>
-<div id="debugBox" class="debugBox" style="display:none">Diagnóstico listo.</div>
 <div class="toolbar">
 <button class="b1" onclick="openLoad()">+ Cargar horario</button><button class="b2" onclick="loadData(true)">Actualizar</button><button class="b3" onclick="openConfig()">Datos compartidos</button><button class="b7" onclick="printSchedule()">Imprimir</button><button class="b5" onclick="clearAll()">Limpiar</button>
 </div>
@@ -146,27 +142,10 @@ attendance=JSON.parse(localStorage.getItem("panel_v10_attendance")||"[]"),
 scriptUrl="https://script.google.com/macros/s/AKfycbwJXywOPHngiPrvMM2JvzqZfYhDlfpjOY9MseFA4krm1X8ho_OTCrt4suEKb-0L7JS-/exec",
 autoTimer=null;
 
-let debugLines=[];
+
 function dbg(msg,obj){
-  const line=new Date().toLocaleTimeString('es-AR')+' · '+msg+(obj!==undefined?' · '+JSON.stringify(obj,null,2):'');
-  debugLines.push(line);
-  if(debugLines.length>80)debugLines=debugLines.slice(-80);
-  const el=document.getElementById('debugBox');
-  if(el) el.textContent=debugLines.join('\n');
-  console.log('[ASISTENCIA DEBUG]',msg,obj||'');
-}
-function toggleDebug(){const el=document.getElementById('debugBox'); if(el) el.style.display=(el.style.display==='none'?'block':'none');}
-async function copyDebug(){try{await navigator.clipboard.writeText(debugLines.join('\n')); alert('Diagnóstico copiado. Pegámelo acá.');}catch(e){alert(debugLines.join('\n'));}}
-async function runAssistDebug(){
-  const today=todayISO();
-  const sample=items.slice(0,8).map(x=>({id:x.id,dia:x.dia,hora:x.hora,aula:x.aula,alumno:x.alumno,asistencia:x.asistencia,key:attKeyFrom(x,today)}));
-  const att=attendance.filter(a=>dateKey(a.fecha)===today).slice(-12).map(a=>({fecha:a.fecha,horarioId:a.horarioId,estado:a.estado,clave:a.clave,asistenciaKey:a.asistenciaKey,dia:a.dia,hora:a.hora,aula:a.aula,alumno:a.alumno}));
-  dbg('DIAGNOSTICO MANUAL',{hoy:today,items:items.length,asistenciasTotal:attendance.length,itemsMuestra:sample,asistenciasHoy:att});
-  if(scriptUrl){
-    try{const data=await apiGet();
-    dbg('GET recibido',{tipo:Array.isArray(data)?'array':'objeto',horarios:Array.isArray(data)?data.length:(data.horarios||[]).length,asistencia:(data.asistencia||[]).length}); dbg('GET directo Apps Script',{tipo:Array.isArray(data)?'array':'objeto',horarios:Array.isArray(data)?data.length:(data.horarios||[]).length,asistencia:(data.asistencia||[]).length,asistenciaUltimas:(data.asistencia||[]).slice(-5)});}catch(e){dbg('ERROR GET directo',String(e));}
-  }
-  toggleDebug();
+  // Diagnóstico interno desactivado en versión limpia.
+  console.log('[ASISTENCIA]', msg, obj || '');
 }
 
 function saveLocal(){localStorage.setItem("panel_v9_items",JSON.stringify(items));localStorage.setItem("panel_v9_rooms",JSON.stringify(rooms));localStorage.setItem("panel_v9_teachers",JSON.stringify(teachers));localStorage.setItem("panel_v10_students",JSON.stringify(students));localStorage.setItem("panel_v10_attendance",JSON.stringify(attendance))}
@@ -257,7 +236,6 @@ async function loadData(force=false){
       localStorage.setItem("panel_v10_attendance",JSON.stringify(attendance));
     }
     applyAttendanceToItems();
-    dbg('Aplicada asistencia',{items:items.length,attendance:attendance.length,marcados:items.filter(x=>x.asistencia).length,ultimasAsistencias:attendance.slice(-5)});
     localStorage.setItem("panel_v9_items",JSON.stringify(items));
     fillSelects();
     if(force) setMode("Datos sincronizados.","ok");
@@ -464,7 +442,6 @@ async function setAssist(id,status){
     estado:status
   };
 
-  dbg('Click asistencia',{status,rec});
 
   items[i].asistencia=status;
 
@@ -484,11 +461,9 @@ async function setAssist(id,status){
 
   if(scriptUrl){
     try{
-      dbg('POST saveAttendance enviando',rec);
       const res=await apiPost({action:"saveAttendance",...rec});
-      dbg('POST saveAttendance respuesta',res);
       if(!res||!res.ok)throw new Error("No guardó");
-      setMode("Asistencia guardada con clave fija.","ok");
+      setMode("Asistencia guardada.","ok");
     }catch(e){
       setMode("No se pudo guardar asistencia. Reintentá.","err");
     }
@@ -535,7 +510,7 @@ function renderRooms(elId,list,compareList=[],afterHm="00:00"){const el=document
 function render(){const n=nowInfo(),today=items.filter(x=>x.dia===n.day).sort((a,b)=>fixTime(a.hora).localeCompare(fixTime(b.hora)));let nowTime=[...new Set(today.filter(x=>fixTime(x.hora)<=n.hm).map(x=>fixTime(x.hora)))].pop();if(!nowTime)nowTime=today[0]?fixTime(today[0].hora):"";const nowList=nowTime?today.filter(x=>fixTime(x.hora)===nowTime):[],nextTime=(today.find(x=>fixTime(x.hora)>nowTime)||today.find(x=>fixTime(x.hora)>n.hm)||{}).hora||"",nextFixed=fixTime(nextTime),nextList=nextFixed?today.filter(x=>fixTime(x.hora)===nextFixed):[];renderRooms("nowRooms",nowList,[],nowTime||n.hm);nextTitle.textContent=nextFixed?"Próximo horario: "+nextFixed:"Sin próximo horario cargado para hoy";renderRooms("nextRooms",nextList,nowList,nextFixed||n.hm);agenda.innerHTML=filteredItems().map((x,i)=>({...x,i:items.indexOf(x)})).sort((a,b)=>DAYS.indexOf(a.dia)-DAYS.indexOf(b.dia)||fixTime(a.hora).localeCompare(fixTime(b.hora))||(a.aula||"").localeCompare(b.aula||"")).map(x=>`<tr><td>${x.dia}</td><td>${fixTime(x.hora)}</td><td>${x.aula}</td><td><b>${x.alumno}</b>${contactHtml(x)}</td><td>${x.profesor||""}</td><td>${x.actividad||""}</td><td>${assistHtml(x)}</td><td class="actions"><button class="b1" onclick="openLoad(${x.i})">Editar</button><button class="b5" onclick="deleteItem(${x.i})">Borrar</button></td></tr>`).join("")||`<tr><td colspan="8" class="empty">Todavía no hay horarios cargados</td></tr>`}
 fillSelects();startAuto();loadData(true);
 
-// V10.3.3 DEBUG ASISTENCIA: clave fecha|dia|hora|aula|alumno para que no vuelva a Sin marcar.
+// V10.4 ASISTENCIA: clave fecha|dia|hora|aula|alumno para que no vuelva a Sin marcar.
 
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"){
@@ -548,7 +523,7 @@ document.addEventListener("click",e=>{
   }
 });
 
-// V10.3.3 DEBUG ASISTENCIA: sincronización suave, no interrumpe edición ni ventanas.
+// V10.4 ASISTENCIA: sincronización suave, no interrumpe edición ni ventanas.
 </script>
 </body>
 </html>
