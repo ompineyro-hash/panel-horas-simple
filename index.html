@@ -49,14 +49,20 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 .status.presente{background:#dff7e9;color:#064a34}
 .status.ausente{background:#ffe4e0;color:#7a150d}
 .shared-note{font-size:13px;color:#475467;margin:0 0 10px}
+
+.report-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}
+.report-card{background:#f8fbff;border:1px solid #d6e0ee;border-radius:14px;padding:12px}
+.report-card h3{margin:0 0 8px;font-size:20px}.report-num{font-size:24px;font-weight:bold;margin:4px 0}.warn{background:#fff6d8;border-left:6px solid #c96a00;border-radius:10px;padding:9px;margin:6px 0}
+.report-actions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.report-actions button{font-size:14px;padding:8px 10px}
+@media(max-width:800px){.report-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<header><h1>Panel de Horas Simple V10.3.3 DEBUG ASISTENCIA</h1><div id="clock"></div></header>
+<header><h1>Panel de Horas Simple V10.5 ESTABLE</h1><div id="clock"></div></header>
 <div class="wrap">
 <div id="mode" class="notice ok">Sincronización activa sin interrumpir.</div>
 <div class="toolbar">
-<button class="b1" onclick="openLoad()">+ Cargar horario</button><button class="b2" onclick="loadData(true)">Actualizar</button><button class="b3" onclick="openConfig()">Datos compartidos</button><button class="b7" onclick="printSchedule()">Imprimir</button><button class="b5" onclick="clearAll()">Limpiar</button>
+<button class="b1" onclick="openLoad()">+ Cargar horario</button><button class="b2" onclick="loadData(true)">Actualizar</button><button class="b3" onclick="openConfig()">Datos compartidos</button><button class="b7" onclick="openReports()">📊 Informes</button><button class="b7" onclick="printSchedule()">Imprimir</button><button class="b5" onclick="clearAll()">Limpiar</button>
 </div>
 <section id="nowCard" class="card"><h2>Ahora en cada aula</h2><div id="nowRooms" class="room-grid"></div></section>
 <section id="nextCard" class="card"><h2>Próximo horario</h2><div id="nextTitle" style="color:#475467;margin-bottom:8px"></div><div id="nextRooms" class="room-grid"></div></section>
@@ -132,6 +138,17 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 <div id="studentPills"></div>
 </div>
 </div><br><button class="b6" onclick="closeConfig()">Cerrar</button></div></div>
+
+<div id="reportsModal" class="modal"><div class="box"><h2>📊 Informes de asistencia</h2>
+<p class="shared-note">Resumen automático usando las asistencias guardadas. Si falta marcar un alumno, no cuenta como presente ni ausente.</p>
+<div class="report-actions"><button class="b2" onclick="refreshReports()">Actualizar informes</button><button class="b6" onclick="closeReports()">Cerrar</button></div>
+<div id="reportsSummary" class="report-grid"></div>
+<h3>Alumnos con más ausencias del mes</h3>
+<div style="overflow:auto"><table><thead><tr><th>Alumno</th><th>Ausentes</th><th>Presentes</th><th>% asistencia</th></tr></thead><tbody id="reportsRanking"></tbody></table></div>
+<h3>Consulta por alumno</h3>
+<select id="reportStudent" onchange="renderStudentReport()"></select>
+<div id="studentReport" style="margin-top:10px"></div>
+</div></div>
 <script>
 const DAYS=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"], WORKDAYS=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 let items=JSON.parse(localStorage.getItem("panel_v9_items")||"[]"), 
@@ -508,6 +525,94 @@ function byRoom(list){const all=[...new Set([...rooms,...items.map(x=>x.aula).fi
 function findNextForRoom(room,afterHm){const n=nowInfo();return items.filter(x=>x.dia===n.day&&x.aula===room&&fixTime(x.hora)>afterHm).sort((a,b)=>fixTime(a.hora).localeCompare(fixTime(b.hora)))[0]}
 function renderRooms(elId,list,compareList=[],afterHm="00:00"){const el=document.getElementById(elId),map=byRoom(list);el.innerHTML="";Object.keys(map).forEach(room=>{const box=document.createElement("div");box.className="room";box.innerHTML=`<h3>${room}</h3>`;if(!map[room].length)box.innerHTML+=`<div class="empty">Sin alumno en este momento</div>`;map[room].forEach(p=>{const prev=compareList.find(x=>(x.alumno||"").toLowerCase()===(p.alumno||"").toLowerCase());let cls="new",tag="🆕 Ingresa";if(prev){if(prev.aula===p.aula){cls="same";tag="🟢 Sigue en esta aula"}else{cls="change";tag="🔄 Viene de "+prev.aula}}box.innerHTML+=`<div class="person ${cls} ${p.asistencia||""}" onclick="openLoad(${items.indexOf(p)})" title="Tocar para editar"><b>${p.alumno}</b><div class="sub">${p.profesor||""}${p.actividad?" · "+p.actividad:""}</div>${contactHtml(p)}${assistHtml(p)}<span class="tag">${tag}</span></div>`});const nx=findNextForRoom(room,afterHm);if(nx)box.innerHTML+=`<div class="next-mini">Próximo en ${room}: ${fixTime(nx.hora)} · ${nx.alumno}</div>`;el.appendChild(box)})}
 function render(){const n=nowInfo(),today=items.filter(x=>x.dia===n.day).sort((a,b)=>fixTime(a.hora).localeCompare(fixTime(b.hora)));let nowTime=[...new Set(today.filter(x=>fixTime(x.hora)<=n.hm).map(x=>fixTime(x.hora)))].pop();if(!nowTime)nowTime=today[0]?fixTime(today[0].hora):"";const nowList=nowTime?today.filter(x=>fixTime(x.hora)===nowTime):[],nextTime=(today.find(x=>fixTime(x.hora)>nowTime)||today.find(x=>fixTime(x.hora)>n.hm)||{}).hora||"",nextFixed=fixTime(nextTime),nextList=nextFixed?today.filter(x=>fixTime(x.hora)===nextFixed):[];renderRooms("nowRooms",nowList,[],nowTime||n.hm);nextTitle.textContent=nextFixed?"Próximo horario: "+nextFixed:"Sin próximo horario cargado para hoy";renderRooms("nextRooms",nextList,nowList,nextFixed||n.hm);agenda.innerHTML=filteredItems().map((x,i)=>({...x,i:items.indexOf(x)})).sort((a,b)=>DAYS.indexOf(a.dia)-DAYS.indexOf(b.dia)||fixTime(a.hora).localeCompare(fixTime(b.hora))||(a.aula||"").localeCompare(b.aula||"")).map(x=>`<tr><td>${x.dia}</td><td>${fixTime(x.hora)}</td><td>${x.aula}</td><td><b>${x.alumno}</b>${contactHtml(x)}</td><td>${x.profesor||""}</td><td>${x.actividad||""}</td><td>${assistHtml(x)}</td><td class="actions"><button class="b1" onclick="openLoad(${x.i})">Editar</button><button class="b5" onclick="deleteItem(${x.i})">Borrar</button></td></tr>`).join("")||`<tr><td colspan="8" class="empty">Todavía no hay horarios cargados</td></tr>`}
+
+function parseISODate(s){
+  const m=String(s||"").match(/(\d{4})-(\d{2})-(\d{2})/);
+  if(!m)return null;
+  return new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
+}
+function isoFromDate(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+function startOfWeekMonday(d){const x=new Date(d);const day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);x.setHours(0,0,0,0);return x}
+function endOfMonth(d){return new Date(d.getFullYear(),d.getMonth()+1,0)}
+function finalAttendanceRecords(){
+  const map={};
+  (attendance||[]).forEach((a,idx)=>{
+    const estado=String(a.estado||a.asistencia||"").trim().toLowerCase();
+    const fecha=dateKey(a.fecha);
+    if(!fecha || !["presente","ausente"].includes(estado))return;
+    const key=String(a.asistenciaKey||a.clave||"").trim() || [fecha,cleanKeyPart(a.dia),fixTime(a.hora),cleanKeyPart(a.aula),cleanKeyPart(a.alumno)].join("|") || [fecha,String(a.horarioId||"").trim()].join("|");
+    map[key]={...a,fecha,estado,_idx:idx,alumno:String(a.alumno||"Sin nombre")};
+  });
+  return Object.values(map).sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha)) || (a._idx||0)-(b._idx||0));
+}
+function recordsBetween(start,end){
+  const s=isoFromDate(start), e=isoFromDate(end);
+  return finalAttendanceRecords().filter(r=>r.fecha>=s && r.fecha<=e);
+}
+function countRecords(list){
+  const presentes=list.filter(r=>r.estado==="presente").length;
+  const ausentes=list.filter(r=>r.estado==="ausente").length;
+  const total=presentes+ausentes;
+  const pct=total?((presentes*100/total).toFixed(1).replace('.',','))+"%":"-";
+  return {presentes,ausentes,total,pct};
+}
+function summaryCard(title,list){
+  const c=countRecords(list);
+  return `<div class="report-card"><h3>${title}</h3><div>Presentes</div><div class="report-num">${c.presentes}</div><div>Ausentes: <b>${c.ausentes}</b></div><div>Total marcado: <b>${c.total}</b></div><div>% asistencia: <b>${c.pct}</b></div></div>`;
+}
+async function openReports(){
+  reportsModal.classList.add("show");
+  await refreshReports();
+}
+function closeReports(){reportsModal.classList.remove("show")}
+async function refreshReports(){
+  if(scriptUrl){try{await loadData(true)}catch(e){}}
+  renderReports();
+}
+function renderReports(){
+  const now=new Date();
+  const todayStart=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const weekStart=startOfWeekMonday(now), weekEnd=addDays(weekStart,6);
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1), monthEnd=endOfMonth(now);
+  const todayList=recordsBetween(todayStart,todayStart);
+  const weekList=recordsBetween(weekStart,weekEnd);
+  const monthList=recordsBetween(monthStart,monthEnd);
+  reportsSummary.innerHTML=summaryCard("Hoy",todayList)+summaryCard("Esta semana",weekList)+summaryCard("Este mes",monthList);
+  const by={};
+  monthList.forEach(r=>{
+    const name=String(r.alumno||"Sin nombre");
+    if(!by[name])by[name]={alumno:name,presente:0,ausente:0};
+    if(r.estado==="presente")by[name].presente++; else by[name].ausente++;
+  });
+  const rows=Object.values(by).sort((a,b)=>b.ausente-a.ausente || a.alumno.localeCompare(b.alumno));
+  reportsRanking.innerHTML=rows.slice(0,20).map(r=>{
+    const total=r.presente+r.ausente, pct=total?((r.presente*100/total).toFixed(1).replace('.',','))+"%":"-";
+    return `<tr><td><b>${r.alumno}</b></td><td>${r.ausente}</td><td>${r.presente}</td><td>${pct}</td></tr>`;
+  }).join("") || `<tr><td colspan="4" class="empty">Todavía no hay asistencias marcadas este mes.</td></tr>`;
+  const names=[...new Set(finalAttendanceRecords().map(r=>String(r.alumno||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const old=reportStudent.value;
+  reportStudent.innerHTML=`<option value="">Elegir alumno...</option>`+names.map(n=>`<option>${n}</option>`).join("");
+  if(names.includes(old))reportStudent.value=old;
+  renderStudentReport();
+}
+function renderStudentReport(){
+  const name=reportStudent.value;
+  if(!name){studentReport.innerHTML=`<div class="empty">Elegí un alumno para ver su historial.</div>`;return;}
+  const list=finalAttendanceRecords().filter(r=>String(r.alumno||"").trim()===name).slice().reverse();
+  const c=countRecords(list);
+  const alerts=[];
+  let consecutive=0;
+  for(const r of list){ if(r.estado==="ausente")consecutive++; else break; }
+  if(c.ausentes>=3)alerts.push(`⚠ ${name} registra ${c.ausentes} ausencias en el historial guardado.`);
+  if(consecutive>=2)alerts.push(`⚠ ${name} tiene ${consecutive} ausencias consecutivas recientes.`);
+  studentReport.innerHTML=`<div class="report-card"><h3>${name}</h3><div>Presentes: <b>${c.presentes}</b> · Ausentes: <b>${c.ausentes}</b> · Asistencia: <b>${c.pct}</b></div></div>`+
+    alerts.map(a=>`<div class="warn">${a}</div>`).join("")+
+    `<div style="overflow:auto"><table><thead><tr><th>Fecha</th><th>Día</th><th>Hora</th><th>Aula</th><th>Estado</th></tr></thead><tbody>`+
+    list.slice(0,60).map(r=>`<tr><td>${r.fecha}</td><td>${r.dia||""}</td><td>${fixTime(r.hora)}</td><td>${r.aula||""}</td><td><b>${r.estado.toUpperCase()}</b></td></tr>`).join("")+
+    `</tbody></table></div>`;
+}
+
 fillSelects();startAuto();loadData(true);
 
 // V10.4 ASISTENCIA: clave fecha|dia|hora|aula|alumno para que no vuelva a Sin marcar.
