@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel Horas Simple V10.4 ASISTENCIA</title>
+<title>Panel Horas Simple V10.7 DOCENTE</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -55,10 +55,43 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 .report-card h3{margin:0 0 8px;font-size:20px}.report-num{font-size:24px;font-weight:bold;margin:4px 0}.warn{background:#fff6d8;border-left:6px solid #c96a00;border-radius:10px;padding:9px;margin:6px 0}
 .report-actions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.report-actions button{font-size:14px;padding:8px 10px}
 @media(max-width:800px){.report-grid{grid-template-columns:1fr}}
+
+/* V10.7 DOCENTE - vista compacta */
+.room-grid{grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+#nowCard .card h2{}
+#nowRooms .room,#nextRooms .room{min-height:120px;padding:10px}
+#nowRooms .room h3,#nextRooms .room h3{font-size:20px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.mini-count{font-size:14px;color:#0876d8;font-weight:bold}
+.student-line{display:grid;grid-template-columns:22px minmax(0,1fr) auto auto;gap:7px;align-items:center;padding:7px 0;border-bottom:1px solid #e6edf5;font-size:14px}
+.student-line:last-child{border-bottom:0}
+.student-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:bold}
+.student-time{font-size:12px;color:#475467;white-space:nowrap}
+.group-badge{font-size:12px;font-weight:bold;border-radius:7px;padding:3px 7px;background:#eef4ff;color:#243b6b;white-space:nowrap}
+.present-check{width:18px;height:18px;accent-color:#0876d8;cursor:pointer}
+.student-line.presente .student-name{color:#064a34}
+.student-line.ausente .student-name{color:#7a150d}
+.compact-empty{font-size:14px;color:#667085;text-align:center;padding:34px 4px}
+#nowRooms .next-mini,#nextRooms .next-mini{font-size:12px;margin-top:8px;padding:7px}
+/* ocultamos contacto/whatsapp/estado visual en la vista rápida */
+#nowRooms .contact-links,#nowRooms .contact-small,#nowRooms .status,#nowRooms .assist,
+#nextRooms .contact-links,#nextRooms .contact-small,#nextRooms .status,#nextRooms .assist{display:none!important}
+@media(max-width:800px){.room-grid{grid-template-columns:1fr 1fr}.student-line{font-size:13px;grid-template-columns:22px minmax(0,1fr) auto}}
+@media(max-width:520px){.room-grid{grid-template-columns:1fr}.student-line{font-size:15px}}
+
+
+.teacher-block{border-top:1px solid #e6edf5;margin-top:8px;padding-top:7px}
+.teacher-title{font-size:13px;font-weight:bold;color:#243b6b;background:#eef4ff;border-radius:999px;display:inline-block;padding:4px 8px;margin-bottom:4px}
+.move-badge{font-size:11px;font-weight:bold;border-radius:999px;padding:3px 6px;background:#eef4ff;color:#243b6b;white-space:nowrap}
+.move-badge.in{background:#eaf4ff;color:#084c8d}
+.move-badge.same{background:#dff7e9;color:#064a34}
+.move-badge.from{background:#fff6d8;color:#7a4b00}
+.absent-filter{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;margin:10px 0}
+@media(max-width:600px){.absent-filter{grid-template-columns:1fr}.student-line{grid-template-columns:22px minmax(0,1fr) auto}}
+
 </style>
 </head>
 <body>
-<header><h1>Panel de Horas Simple V10.5 ESTABLE</h1><div id="clock"></div></header>
+<header><h1>Panel de Horas Simple V10.7 DOCENTE</h1><div id="clock"></div></header>
 <div class="wrap">
 <div id="mode" class="notice ok">Sincronización activa sin interrumpir.</div>
 <div class="toolbar">
@@ -145,6 +178,13 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 <div id="reportsSummary" class="report-grid"></div>
 <h3>Alumnos con más ausencias del mes</h3>
 <div style="overflow:auto"><table><thead><tr><th>Alumno</th><th>Ausentes</th><th>Presentes</th><th>% asistencia</th></tr></thead><tbody id="reportsRanking"></tbody></table></div>
+<h3>Ausentes por día</h3>
+<div class="absent-filter">
+  <div><label>Día</label><select id="absentDay" onchange="renderAbsentsByDay()"><option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option><option>Sábado</option></select></div>
+  <button class="b4" onclick="renderAbsentsByDay()">Filtrar ausentes</button>
+</div>
+<div id="absentsByDay" style="overflow:auto"></div>
+
 <h3>Consulta por alumno</h3>
 <select id="reportStudent" onchange="renderStudentReport()"></select>
 <div id="studentReport" style="margin-top:10px"></div>
@@ -434,6 +474,32 @@ async function clearAll(){
 async function seedDemo(){const n=nowInfo(),h1=n.hm;let d=new Date();d.setMinutes(d.getMinutes()+30);const h2=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"),demo=[{dia:n.day,hora:h1,aula:"Aula 1",alumno:"Camila Abad",profesor:"Laura",actividad:"Apoyo"},{dia:n.day,hora:h1,aula:"Inglés",alumno:"Tomás Ríos",profesor:"Ana",actividad:"Inglés"},{dia:n.day,hora:h2,aula:"Aula 1",alumno:"Tomás Ríos",profesor:"Laura",actividad:"Apoyo"},{dia:n.day,hora:h2,aula:"Inglés",alumno:"Sofía Núñez",profesor:"Ana",actividad:"Inglés"}];if(scriptUrl){for(const obj of demo)await apiPost({action:"add",...obj});await loadData(true)}else{for(const obj of demo)if(!items.some(x=>itemKey(x)===itemKey(obj)))items.push({...obj,id:Date.now()+Math.random()+""});saveLocal();render()}}
 
 
+
+function safeAttr(v){return String(v||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function groupText(x){
+  const a=String(x.actividad||"").trim();
+  if(!a)return "";
+  const m=a.match(/\b(K|[1-6]\s*[A-Z]?|[1-6]|Inicial|Apoyo|Inglés)\b/i);
+  return m ? m[0].toUpperCase().replace(/\s+/g,"") : a.slice(0,4).toUpperCase();
+}
+function movementInfo(p,compareList=[]){
+  const prev=compareList.find(x=>cleanKeyPart(x.alumno)===cleanKeyPart(p.alumno));
+  if(!prev)return {txt:"Ingresa",cls:"in"};
+  if(cleanKeyPart(prev.aula)===cleanKeyPart(p.aula))return {txt:"Sigue",cls:"same"};
+  return {txt:"Viene de "+prev.aula,cls:"from"};
+}
+function studentLineHtml(p,compareList=[]){
+  const st=String(p.asistencia||"").trim().toLowerCase();
+  const checked=st==="presente" ? "checked" : "";
+  const badge=groupText(p);
+  const mov=movementInfo(p,compareList);
+  return `<div class="student-line ${st||""}" title="${safeAttr(p.alumno)}">
+    <input class="present-check" type="checkbox" ${checked} aria-label="Presente ${safeAttr(p.alumno)}" onclick="event.stopPropagation();setAssist('${safeAttr(p.id)}',this.checked?'presente':'ausente')">
+    <span class="student-name" onclick="openLoad(${items.indexOf(p)})">${p.alumno}</span>
+    <span class="move-badge ${mov.cls}">${mov.txt}</span>
+    ${badge?`<span class="group-badge">${badge}</span>`:""}
+  </div>`;
+}
 function assistHtml(x){
   const st=String(x.asistencia||"").trim().toLowerCase();
   const label=st?`<span class="status ${st}">Estado actual: ${st==="presente"?"PRESENTE":"AUSENTE"}</span>`:`<span class="status">Estado: Sin marcar</span>`;
@@ -523,7 +589,38 @@ function clearFilters(){
 function printSchedule(){window.print()}
 function byRoom(list){const all=[...new Set([...rooms,...items.map(x=>x.aula).filter(Boolean)])],map={};all.forEach(r=>map[r]=[]);list.forEach(x=>{if(!map[x.aula])map[x.aula]=[];map[x.aula].push(x)});return map}
 function findNextForRoom(room,afterHm){const n=nowInfo();return items.filter(x=>x.dia===n.day&&x.aula===room&&fixTime(x.hora)>afterHm).sort((a,b)=>fixTime(a.hora).localeCompare(fixTime(b.hora)))[0]}
-function renderRooms(elId,list,compareList=[],afterHm="00:00"){const el=document.getElementById(elId),map=byRoom(list);el.innerHTML="";Object.keys(map).forEach(room=>{const box=document.createElement("div");box.className="room";box.innerHTML=`<h3>${room}</h3>`;if(!map[room].length)box.innerHTML+=`<div class="empty">Sin alumno en este momento</div>`;map[room].forEach(p=>{const prev=compareList.find(x=>(x.alumno||"").toLowerCase()===(p.alumno||"").toLowerCase());let cls="new",tag="🆕 Ingresa";if(prev){if(prev.aula===p.aula){cls="same";tag="🟢 Sigue en esta aula"}else{cls="change";tag="🔄 Viene de "+prev.aula}}box.innerHTML+=`<div class="person ${cls} ${p.asistencia||""}" onclick="openLoad(${items.indexOf(p)})" title="Tocar para editar"><b>${p.alumno}</b><div class="sub">${p.profesor||""}${p.actividad?" · "+p.actividad:""}</div>${contactHtml(p)}${assistHtml(p)}<span class="tag">${tag}</span></div>`});const nx=findNextForRoom(room,afterHm);if(nx)box.innerHTML+=`<div class="next-mini">Próximo en ${room}: ${fixTime(nx.hora)} · ${nx.alumno}</div>`;el.appendChild(box)})}
+function renderRooms(elId,list,compareList=[],afterHm="00:00"){
+  const el=document.getElementById(elId),map=byRoom(list);
+  el.innerHTML="";
+  Object.keys(map).forEach(room=>{
+    const box=document.createElement("div");
+    box.className="room";
+    box.innerHTML=`<h3><span>${room}</span><span class="mini-count">👥 ${map[room].length}</span></h3>`;
+
+    if(!map[room].length){
+      box.innerHTML+=`<div class="compact-empty">Sin alumno en este momento</div>`;
+    }
+
+    const byTeacher={};
+    map[room].forEach(p=>{
+      const t=String(p.profesor||"Sin profesor").trim() || "Sin profesor";
+      if(!byTeacher[t])byTeacher[t]=[];
+      byTeacher[t].push(p);
+    });
+
+    Object.keys(byTeacher).sort((a,b)=>a.localeCompare(b)).forEach(t=>{
+      box.innerHTML+=`<div class="teacher-block"><div class="teacher-title">Profesor: ${t}</div>`;
+      byTeacher[t].sort((a,b)=>(a.alumno||"").localeCompare(b.alumno||"")).forEach(p=>{
+        box.innerHTML+=studentLineHtml(p,compareList);
+      });
+      box.innerHTML+=`</div>`;
+    });
+
+    const nx=findNextForRoom(room,afterHm);
+    if(nx)box.innerHTML+=`<div class="next-mini">Próximo: ${fixTime(nx.hora)} · ${nx.alumno}</div>`;
+    el.appendChild(box);
+  });
+}
 function render(){const n=nowInfo(),today=items.filter(x=>x.dia===n.day).sort((a,b)=>fixTime(a.hora).localeCompare(fixTime(b.hora)));let nowTime=[...new Set(today.filter(x=>fixTime(x.hora)<=n.hm).map(x=>fixTime(x.hora)))].pop();if(!nowTime)nowTime=today[0]?fixTime(today[0].hora):"";const nowList=nowTime?today.filter(x=>fixTime(x.hora)===nowTime):[],nextTime=(today.find(x=>fixTime(x.hora)>nowTime)||today.find(x=>fixTime(x.hora)>n.hm)||{}).hora||"",nextFixed=fixTime(nextTime),nextList=nextFixed?today.filter(x=>fixTime(x.hora)===nextFixed):[];renderRooms("nowRooms",nowList,[],nowTime||n.hm);nextTitle.textContent=nextFixed?"Próximo horario: "+nextFixed:"Sin próximo horario cargado para hoy";renderRooms("nextRooms",nextList,nowList,nextFixed||n.hm);agenda.innerHTML=filteredItems().map((x,i)=>({...x,i:items.indexOf(x)})).sort((a,b)=>DAYS.indexOf(a.dia)-DAYS.indexOf(b.dia)||fixTime(a.hora).localeCompare(fixTime(b.hora))||(a.aula||"").localeCompare(b.aula||"")).map(x=>`<tr><td>${x.dia}</td><td>${fixTime(x.hora)}</td><td>${x.aula}</td><td><b>${x.alumno}</b>${contactHtml(x)}</td><td>${x.profesor||""}</td><td>${x.actividad||""}</td><td>${assistHtml(x)}</td><td class="actions"><button class="b1" onclick="openLoad(${x.i})">Editar</button><button class="b5" onclick="deleteItem(${x.i})">Borrar</button></td></tr>`).join("")||`<tr><td colspan="8" class="empty">Todavía no hay horarios cargados</td></tr>`}
 
 function parseISODate(s){
@@ -595,7 +692,20 @@ function renderReports(){
   reportStudent.innerHTML=`<option value="">Elegir alumno...</option>`+names.map(n=>`<option>${n}</option>`).join("");
   if(names.includes(old))reportStudent.value=old;
   renderStudentReport();
+  renderAbsentsByDay();
 }
+function renderAbsentsByDay(){
+  const day=absentDay?.value||"Lunes";
+  const list=finalAttendanceRecords()
+    .filter(r=>String(r.estado||"").toLowerCase()==="ausente" && String(r.dia||"")===day)
+    .sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha)) || fixTime(a.hora).localeCompare(fixTime(b.hora)) || String(a.alumno||"").localeCompare(String(b.alumno||"")));
+
+  absentsByDay.innerHTML=`<table><thead><tr><th>Fecha</th><th>Hora</th><th>Alumno</th><th>Aula</th><th>Profesor</th></tr></thead><tbody>`+
+    (list.map(r=>`<tr><td>${r.fecha}</td><td>${fixTime(r.hora)}</td><td><b>${r.alumno||""}</b></td><td>${r.aula||""}</td><td>${r.profesor||""}</td></tr>`).join("") ||
+    `<tr><td colspan="5" class="empty">No hay ausentes registrados para ${day}.</td></tr>`)+
+    `</tbody></table>`;
+}
+
 function renderStudentReport(){
   const name=reportStudent.value;
   if(!name){studentReport.innerHTML=`<div class="empty">Elegí un alumno para ver su historial.</div>`;return;}
@@ -615,7 +725,7 @@ function renderStudentReport(){
 
 fillSelects();startAuto();loadData(true);
 
-// V10.4 ASISTENCIA: clave fecha|dia|hora|aula|alumno para que no vuelva a Sin marcar.
+// V10.7 DOCENTE: vista compacta con casilla Presente frente a cada alumno.
 
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"){
@@ -628,7 +738,7 @@ document.addEventListener("click",e=>{
   }
 });
 
-// V10.4 ASISTENCIA: sincronización suave, no interrumpe edición ni ventanas.
+// V10.7: sincronización suave, no interrumpe edición ni ventanas.
 </script>
 </body>
 </html>
