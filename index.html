@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel Horas Simple V10.7 DOCENTE</title>
+<title>Panel Horas Simple V10.7 DOCENTE - BASE FIJA</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -262,7 +262,27 @@ function startAuto(){
   if(autoTimer)clearInterval(autoTimer);
   if(scriptUrl)autoTimer=setInterval(()=>{ if(!isBusy()) loadData(false); },60000);
 }
-function setScriptUrl(){const u=prompt("Pegá acá la URL de Google Apps Script. Tiene que terminar en /exec:",scriptUrl);if(u!==null){scriptUrl=u.trim();localStorage.setItem("panel_v9_script_url",scriptUrl);startAuto();loadData()}}
+function setScriptUrl(){
+  const u=prompt("Pegá acá tu URL de Google Apps Script. Tiene que terminar en /exec:",scriptUrl);
+  if(u!==null){
+    const val=u.trim();
+    if(!val){
+      scriptUrl="";
+      localStorage.removeItem("panel_v9_script_url");
+      setMode("Sin base conectada. Presioná Conectar base para pegar tu URL /exec.","err");
+      render();
+      return;
+    }
+    if(!val.startsWith("https://script.google.com/macros/s/") || !val.endsWith("/exec")){
+      alert("La URL no parece correcta. Debe empezar con https://script.google.com/macros/s/ y terminar en /exec");
+      return;
+    }
+    scriptUrl=val;
+    localStorage.setItem("panel_v9_script_url",scriptUrl);
+    startAuto();
+    loadData(true);
+  }
+}
 async function apiGet(){const r=await fetch(scriptUrl+"?ts="+Date.now());return await r.json()}
 async function apiPost(payload){
   const r=await fetch(scriptUrl,{
@@ -723,8 +743,16 @@ function renderStudentReport(){
     `</tbody></table></div>`;
 }
 
-fillSelects();startAuto();loadData(true);
+fillSelects();
+if(!scriptUrl){
+  setMode("Sin base conectada. Presioná Conectar base y pegá tu URL /exec.","err");
+  render();
+}else{
+  startAuto();
+  loadData(true);
+}
 
+// V10.7 DOCENTE: base fija compartida para docentes.
 // V10.7 DOCENTE: vista compacta con casilla Presente frente a cada alumno.
 
 document.addEventListener("keydown",e=>{
