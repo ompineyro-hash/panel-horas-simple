@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel Horas Simple V10.7 DOCENTE - BASE FIJA</title>
+<title>Panel de Horarios v1.0 - OMP FINAL AJUSTE</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -62,12 +62,16 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 #nowRooms .room,#nextRooms .room{min-height:120px;padding:10px}
 #nowRooms .room h3,#nextRooms .room h3{font-size:20px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
 .mini-count{font-size:14px;color:#0876d8;font-weight:bold}
-.student-line{display:grid;grid-template-columns:22px minmax(0,1fr) auto auto;gap:7px;align-items:center;padding:7px 0;border-bottom:1px solid #e6edf5;font-size:14px}
+.student-line{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:7px;align-items:center;padding:7px 0;border-bottom:1px solid #e6edf5;font-size:14px}
 .student-line:last-child{border-bottom:0}
 .student-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:bold}
 .student-time{font-size:12px;color:#475467;white-space:nowrap}
 .group-badge{font-size:12px;font-weight:bold;border-radius:7px;padding:3px 7px;background:#eef4ff;color:#243b6b;white-space:nowrap}
 .present-check{width:18px;height:18px;accent-color:#0876d8;cursor:pointer}
+.assist-cycle{border:1px solid #d6e0ee!important;background:#fff!important;color:#344054!important;border-radius:999px!important;padding:5px 9px!important;font-size:13px!important;min-width:92px;text-align:center}
+.assist-cycle.presente{background:#dff7e9!important;color:#064a34!important;border-color:#9ad9b5!important}
+.assist-cycle.ausente{background:#ffe4e0!important;color:#7a150d!important;border-color:#f2a49b!important}
+.assist-cycle.sinmarcar{background:#fff!important;color:#667085!important}
 .student-line.presente .student-name{color:#064a34}
 .student-line.ausente .student-name{color:#7a150d}
 .compact-empty{font-size:14px;color:#667085;text-align:center;padding:34px 4px}
@@ -75,7 +79,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 /* ocultamos contacto/whatsapp/estado visual en la vista rápida */
 #nowRooms .contact-links,#nowRooms .contact-small,#nowRooms .status,#nowRooms .assist,
 #nextRooms .contact-links,#nextRooms .contact-small,#nextRooms .status,#nextRooms .assist{display:none!important}
-@media(max-width:800px){.room-grid{grid-template-columns:1fr 1fr}.student-line{font-size:13px;grid-template-columns:22px minmax(0,1fr) auto}}
+@media(max-width:800px){.room-grid{grid-template-columns:1fr 1fr}.student-line{font-size:13px;grid-template-columns:auto minmax(0,1fr) auto}}
 @media(max-width:520px){.room-grid{grid-template-columns:1fr}.student-line{font-size:15px}}
 
 
@@ -86,12 +90,52 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 .move-badge.same{background:#dff7e9;color:#064a34}
 .move-badge.from{background:#fff6d8;color:#7a4b00}
 .absent-filter{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;margin:10px 0}
-@media(max-width:600px){.absent-filter{grid-template-columns:1fr}.student-line{grid-template-columns:22px minmax(0,1fr) auto}}
+@media(max-width:600px){.absent-filter{grid-template-columns:1fr}.student-line{grid-template-columns:auto minmax(0,1fr) auto}}
+
+
+
+/* ========================
+   OMP INSTALLER v1.0
+   ======================== */
+body.omp-pending header,
+body.omp-pending .wrap,
+body.omp-pending .modal{display:none!important}
+#ompInstaller{display:none;min-height:100vh;padding:22px;background:#f2f6fb;color:#0b1728}
+body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:center}
+.omp-card{width:min(640px,96vw);background:white;border:1px solid #d6e0ee;border-radius:20px;box-shadow:0 10px 30px #0002;padding:22px}
+.omp-card h1{font-size:28px;margin:0 0 8px;color:#0f172a}
+.omp-card p{color:#475467;font-size:16px;line-height:1.45}
+.omp-form{display:grid;gap:12px;margin-top:16px}.omp-form label{font-weight:bold}.omp-form input{width:100%}
+.omp-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.omp-actions button{min-width:180px}
+.omp-status{margin-top:14px;background:#f8fbff;border:1px solid #d6e0ee;border-radius:14px;padding:12px;color:#344054}
+.omp-steps{margin-top:12px;display:grid;gap:7px}.omp-step{padding:8px 10px;border-radius:10px;background:#f8fbff;border:1px solid #d6e0ee;color:#344054}.omp-step.ok{background:#dff7e9;color:#064a34}.omp-step.err{background:#ffe4e0;color:#7a150d}
+.omp-small{font-size:13px;color:#667085;margin-top:10px}
+
+.helper-note{background:#eef4ff;color:#344054;border-radius:10px;padding:8px 10px;margin:8px 0;font-size:14px}
 
 </style>
 </head>
-<body>
-<header><h1>Panel de Horas Simple V10.7 DOCENTE</h1><div id="clock"></div></header>
+<body class="omp-pending">
+
+<div id="ompInstaller">
+  <div class="omp-card">
+    <h1 id="ompTitle">Bienvenido a Panel de Horarios</h1>
+    <p id="ompText">Complete los datos para comenzar.</p>
+    <div id="ompForm" class="omp-form" style="display:none">
+      <div><label>Nombre de la institución</label><input id="ompInstitution" placeholder="Ej: Instituto ABC"></div>
+      <div><label>Su nombre</label><input id="ompResponsible" placeholder="Ej: Andrea Pérez"></div>
+    </div>
+    <div id="ompSteps" class="omp-steps"></div>
+    <div id="ompStatus" class="omp-status">Revisando este equipo...</div>
+    <div class="omp-actions">
+      <button id="ompMainBtn" class="b2" onclick="OMPInstaller.mainAction()">Continuar</button>
+      <button id="ompOpenBtn" class="b1" style="display:none" onclick="OMPInstaller.openApp()">Abrir aplicación</button>
+    </div>
+    <div class="omp-small">Instalador OMP v1.0 final</div>
+  </div>
+</div>
+
+<header><h1>Panel de Horarios</h1><div id="clock"></div></header>
 <div class="wrap">
 <div id="mode" class="notice ok">Sincronización activa sin interrumpir.</div>
 <div class="toolbar">
@@ -110,11 +154,11 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 </div>
 <div style="overflow:auto"><table><thead><tr><th>Día</th><th>Hora</th><th>Aula</th><th>Alumno / Contacto</th><th>Profesor</th><th>Actividad</th><th>Asistencia</th><th class="actions">Acción</th></tr></thead><tbody id="agenda"></tbody></table></div></section>
 </div>
-<div id="loadModal" class="modal"><div class="box"><h2 id="loadTitle">Cargar horario</h2><input type="hidden" id="editIndex"><div class="form">
+<div id="loadModal" class="modal"><div class="box"><h2 id="loadTitle">Cargar horario</h2><div id="loadHelp" class="helper-note">Use esta pantalla para asignar un alumno ya cargado a un aula, profesor, día y hora.</div><input type="hidden" id="editIndex"><div class="form">
 
 <div class="full">
 <label>Nombre del Alumno</label>
-<input id="alumno" placeholder="Nombre del alumno" onblur="applyStudentData()">
+<input id="alumno" placeholder="Nombre del alumno" oninput="applyStudentData()" onblur="applyStudentData()">
 </div>
 
 <div class="full">
@@ -157,7 +201,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 </div></div></div>
 
 <div id="configModal" class="modal"><div class="box"><h2>Datos compartidos</h2>
-<p class="shared-note">Aulas, profesores y alumnos se comparten entre todos los docentes.</p>
+<p class="shared-note">Primero cargue aquí las aulas, profesores y alumnos. Después use Cargar horario para asignarlos a días y horarios.</p>
 <div class="config-list">
 <div><h3>Aulas</h3><div style="display:flex;gap:6px"><input id="newRoom" placeholder="Ej: Aula 2"><button class="b1" onclick="addRoom()">Agregar</button></div><div id="roomPills"></div></div>
 <div><h3>Profesores</h3><div style="display:flex;gap:6px"><input id="newTeacher" placeholder="Ej: Laura"><button class="b1" onclick="addTeacher()">Agregar</button></div><div id="teacherPills"></div></div>
@@ -192,11 +236,11 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 <script>
 const DAYS=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"], WORKDAYS=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 let items=JSON.parse(localStorage.getItem("panel_v9_items")||"[]"), 
-rooms=JSON.parse(localStorage.getItem("panel_v9_rooms")||'["Aula 1","Inglés"]'), 
-teachers=JSON.parse(localStorage.getItem("panel_v9_teachers")||'["Laura","Ana"]'), 
+rooms=JSON.parse(localStorage.getItem("panel_v9_rooms")||'[]'), 
+teachers=JSON.parse(localStorage.getItem("panel_v9_teachers")||'[]'), 
 students=JSON.parse(localStorage.getItem("panel_v10_students")||"[]"),
 attendance=JSON.parse(localStorage.getItem("panel_v10_attendance")||"[]"),
-scriptUrl="https://script.google.com/macros/s/AKfycbwJXywOPHngiPrvMM2JvzqZfYhDlfpjOY9MseFA4krm1X8ho_OTCrt4suEKb-0L7JS-/exec",
+scriptUrl=localStorage.getItem("panel_v9_script_url")||"",
 autoTimer=null;
 
 
@@ -322,13 +366,30 @@ async function loadData(force=false){
     render();
   }
 }
+function optionHtml(v){return `<option value="${safeAttr(v)}">${String(v||"")}</option>`}
+function setSelectValue(sel,val){
+  if(!sel)return;
+  val=String(val||"");
+  if(!val){ sel.value=""; return; }
+  if(![...sel.options].some(o=>o.value===val)){
+    const op=document.createElement("option");op.value=val;op.textContent=val;sel.appendChild(op);
+  }
+  sel.value=val;
+}
 function fillSelects(){
-  aula.innerHTML=rooms.map(r=>`<option>${r}</option>`).join("");
-  profesor.innerHTML=teachers.map(t=>`<option>${t}</option>`).join("");
+  aula.innerHTML=rooms.length
+    ? `<option value="">Seleccionar aula...</option>`+rooms.map(optionHtml).join("")
+    : `<option value="">Primero cargue un aula en Datos compartidos</option>`;
+  profesor.innerHTML=teachers.length
+    ? `<option value="">Seleccionar profesor...</option>`+teachers.map(optionHtml).join("")
+    : `<option value="">Primero cargue profesores en Datos compartidos</option>`;
   let dl=document.getElementById("studentsList");
   if(!dl){dl=document.createElement("datalist");dl.id="studentsList";document.body.appendChild(dl)}
-  dl.innerHTML=students.map(s=>`<option value="${s.alumno}"></option>`).join("");
-  if(typeof alumno!=="undefined") alumno.setAttribute("list","studentsList");
+  dl.innerHTML=students.map(s=>`<option value="${safeAttr(s.alumno)}"></option>`).join("");
+  if(typeof alumno!=="undefined"){
+    alumno.setAttribute("list","studentsList");
+    alumno.placeholder=students.length?"Elegir alumno cargado...":"Primero cargue alumnos en Datos compartidos";
+  }
 }
 function buildDays(selected=[]){const today=DAYS[new Date().getDay()], def=selected.length?selected:(today!="Domingo"?[today]:["Lunes"]);daysBox.innerHTML=WORKDAYS.map(d=>`<label class="daycheck"><input type="checkbox" value="${d}" ${def.includes(d)?"checked":""}> ${d}</label>`).join("")}
 function selectedDays(){return[...daysBox.querySelectorAll("input:checked")].map(x=>x.value)}
@@ -341,8 +402,8 @@ function openLoad(index=""){
     alumno.value=x.alumno;
     buildDays([x.dia]);
     hora.value=fixTime(x.hora);
-    aula.value=x.aula;
-    profesor.value=x.profesor;
+    setSelectValue(aula,x.aula);
+    setSelectValue(profesor,x.profesor);
     actividad.value=x.actividad;
     contacto.value=x.contacto;
     whatsapp.value=x.whatsapp;
@@ -352,6 +413,15 @@ function openLoad(index=""){
     whatsapp.value="";
     actividad.value="";
     buildDays();
+    if(rooms.length===1) setSelectValue(aula,rooms[0]);
+    else setSelectValue(aula,"");
+    if(teachers.length===1) setSelectValue(profesor,teachers[0]);
+    else setSelectValue(profesor,"");
+    if(!rooms.length || !teachers.length || !students.length){
+      setMode("Antes de cargar horarios, revise Datos compartidos: aulas, profesores y alumnos.","err");
+    }else{
+      setMode("Elegí alumno, aula, profesor, día y hora. Luego guardá.","ok");
+    }
   }
   loadModal.classList.add("show");
 }
@@ -389,8 +459,8 @@ async function saveShared(kind,values){
     renderConfig();
     setMode("Datos compartidos guardados.","ok");
   }catch(e){
-    setMode("No se pudo guardar en la base central. Revisá conexión y reintentá.","err");
-    alert("No se pudo guardar en Google Sheets. Reintentá.");
+    setMode("No se pudo guardar. Revisá la conexión y reintentá.","err");
+    alert("No se pudo guardar. Reintentá.");
   }
 }
 function addRoom(){const v=newRoom.value.trim();if(v&&!rooms.includes(v)){rooms.push(v);newRoom.value="";saveShared("aulas",rooms)}}
@@ -419,6 +489,7 @@ async function saveItem(){
 
   if(!ds.length){setMode("Marcá al menos un día.","err");return}
   if(!base.hora||!base.aula||!base.alumno){setMode("Completá hora, aula y alumno.","err");return}
+  if(!base.profesor){setMode("Elegí un profesor. Se carga una sola vez desde Datos compartidos.","err");return}
 
   await ensureStudentFromBase(base);
 
@@ -508,13 +579,28 @@ function movementInfo(p,compareList=[]){
   if(cleanKeyPart(prev.aula)===cleanKeyPart(p.aula))return {txt:"Sigue",cls:"same"};
   return {txt:"Viene de "+prev.aula,cls:"from"};
 }
+function assistText(status){
+  status=String(status||"").trim().toLowerCase();
+  if(status==="presente") return "🟢 Presente";
+  if(status==="ausente") return "🔴 Ausente";
+  return "⚪ Sin marcar";
+}
+function nextAssistStatus(status){
+  status=String(status||"").trim().toLowerCase();
+  if(!status) return "presente";
+  if(status==="presente") return "ausente";
+  return "";
+}
+function assistButtonClass(status){
+  status=String(status||"").trim().toLowerCase();
+  return "assist-cycle "+(status||"sinmarcar");
+}
 function studentLineHtml(p,compareList=[]){
   const st=String(p.asistencia||"").trim().toLowerCase();
-  const checked=st==="presente" ? "checked" : "";
   const badge=groupText(p);
   const mov=movementInfo(p,compareList);
   return `<div class="student-line ${st||""}" title="${safeAttr(p.alumno)}">
-    <input class="present-check" type="checkbox" ${checked} aria-label="Presente ${safeAttr(p.alumno)}" onclick="event.stopPropagation();setAssist('${safeAttr(p.id)}',this.checked?'presente':'ausente')">
+    <button class="${assistButtonClass(st)}" aria-label="Asistencia ${safeAttr(p.alumno)}" onclick="event.stopPropagation();cycleAssist('${safeAttr(p.id)}')">${assistText(st)}</button>
     <span class="student-name" onclick="openLoad(${items.indexOf(p)})">${p.alumno}</span>
     <span class="move-badge ${mov.cls}">${mov.txt}</span>
     ${badge?`<span class="group-badge">${badge}</span>`:""}
@@ -523,15 +609,45 @@ function studentLineHtml(p,compareList=[]){
 function assistHtml(x){
   const st=String(x.asistencia||"").trim().toLowerCase();
   const label=st?`<span class="status ${st}">Estado actual: ${st==="presente"?"PRESENTE":"AUSENTE"}</span>`:`<span class="status">Estado: Sin marcar</span>`;
-  const presenteClass=st==="presente"?"bp on":"bp off";
-  const ausenteClass=st==="ausente"?"ba on":"ba off";
-  return `${label}<div class="assist"><button class="${presenteClass}" onclick="event.stopPropagation();setAssist('${x.id}','presente')">${st==="presente"?"PRESENTE":"Presente"}</button><button class="${ausenteClass}" onclick="event.stopPropagation();setAssist('${x.id}','ausente')">${st==="ausente"?"AUSENTE":"Ausente"}</button></div>`;
+  return `${label}<div class="assist"><button class="${assistButtonClass(st)}" onclick="event.stopPropagation();cycleAssist('${x.id}')">${assistText(st)}</button></div>`;
+}
+async function cycleAssist(id){
+  const i=items.findIndex(x=>String(x.id||"").trim()===String(id||"").trim());
+  if(i<0)return;
+  const current=String(items[i].asistencia||"").trim().toLowerCase();
+  await setAssist(id,nextAssistStatus(current));
 }
 async function setAssist(id,status){
   const i=items.findIndex(x=>String(x.id||"").trim()===String(id||"").trim());
   if(i<0)return;
   const x=items[i],today=todayISO();
   const fixedKey=attKeyFrom(x,today);
+  status=String(status||"").trim().toLowerCase();
+
+  const existing=attendance.findIndex(a=>{
+    const fecha=dateKey(a.fecha);
+    if(fecha!==today)return false;
+    const k=String(a.asistenciaKey||a.clave||"").trim() || attKeyFrom(a,fecha);
+    const oldK=[fecha,String(a.horarioId||"").trim()].join("|");
+    return k===fixedKey || (a.horarioId && oldK===oldAttKeyFrom(x,today));
+  });
+
+  if(!status){
+    items[i].asistencia="";
+    if(existing>=0) attendance.splice(existing,1);
+    saveLocal();
+    render();
+    setMode("Asistencia sin marcar.","ok");
+    if(scriptUrl){
+      try{
+        await apiPost({action:"saveAttendance",fecha:today,asistenciaKey:fixedKey,clave:fixedKey,horarioId:String(x.id||"").trim(),dia:x.dia,hora:fixTime(x.hora),aula:x.aula,alumno:x.alumno,profesor:x.profesor,estado:""});
+      }catch(e){
+        setMode("No se pudo actualizar asistencia. Reintentá.","err");
+      }
+    }
+    return;
+  }
+
   const rec={
     fecha:today,
     asistenciaKey:fixedKey,
@@ -545,16 +661,8 @@ async function setAssist(id,status){
     estado:status
   };
 
-
   items[i].asistencia=status;
 
-  const existing=attendance.findIndex(a=>{
-    const fecha=dateKey(a.fecha);
-    if(fecha!==today)return false;
-    const k=String(a.asistenciaKey||a.clave||"").trim() || attKeyFrom(a,fecha);
-    const oldK=[fecha,String(a.horarioId||"").trim()].join("|");
-    return k===fixedKey || (a.horarioId && oldK===oldAttKeyFrom(x,today));
-  });
   if(existing>=0)attendance[existing]=rec;
   else attendance.push(rec);
 
@@ -743,14 +851,155 @@ function renderStudentReport(){
     `</tbody></table></div>`;
 }
 
-fillSelects();
-if(!scriptUrl){
-  setMode("Sin base conectada. Presioná Conectar base y pegá tu URL /exec.","err");
-  render();
-}else{
-  startAuto();
-  loadData(true);
+
+
+// ========================
+// OMP INSTALLER v1.0 + flujo maestro Datos compartidos / Cargar horario
+// ========================
+const OMPInstaller={
+  appId:"panel_horarios",
+  version:"1.0",
+  configKey:"omp_install_panel_horarios_v1",
+  stepKey:"omp_install_panel_horarios_step",
+  diagKey:"omp_install_panel_horarios_diag",
+  state:"checking",
+  log(msg){
+    const row={fecha:new Date().toISOString(),mensaje:String(msg||"")};
+    let arr=[];try{arr=JSON.parse(localStorage.getItem(this.diagKey)||"[]")}catch(e){}
+    arr.push(row);localStorage.setItem(this.diagKey,JSON.stringify(arr.slice(-80)));
+  },
+  getConfig(){try{return JSON.parse(localStorage.getItem(this.configKey)||"null")}catch(e){return null}},
+  setStatus(msg){const el=document.getElementById("ompStatus");if(el)el.textContent=msg;},
+  setStep(msg,cls=""){
+    const box=document.getElementById("ompSteps");if(!box)return;
+    const d=document.createElement("div");d.className="omp-step"+(cls?" "+cls:"");d.textContent=msg;box.appendChild(d);
+  },
+  hasLegacyInstall(){
+    return !!(localStorage.getItem("panel_v9_items")||localStorage.getItem("panel_v9_rooms")||localStorage.getItem("panel_v9_teachers")||localStorage.getItem("panel_v10_students")||localStorage.getItem("panel_v9_script_url"));
+  },
+  checkStorage(){
+    try{localStorage.setItem("omp_test","ok");localStorage.removeItem("omp_test");return true}catch(e){return false}
+  },
+  checkBrowser(){return !!(window.localStorage && window.JSON && document.querySelector)},
+  checkInternet(){return navigator.onLine!==false},
+  start(){
+    this.log("Inicio del instalador");
+    document.body.classList.add("omp-pending");
+    const cfg=this.getConfig();
+    const step=localStorage.getItem(this.stepKey)||"";
+    if(cfg && cfg.estado==="INSTALADA"){
+      this.log("Instalación OMP encontrada");
+      this.openApp();return;
+    }
+    if(step && step!=="COMPLETA"){
+      this.state="incomplete";
+      ompTitle.textContent="Instalación interrumpida";
+      ompText.textContent="La instalación quedó incompleta. Podemos continuar desde donde se cortó.";
+      ompForm.style.display="none";
+      ompMainBtn.textContent="Continuar instalación";
+      this.setStatus("Listo para continuar.");
+      return;
+    }
+    if(this.hasLegacyInstall()){
+      this.state="found";
+      ompTitle.textContent="Instalación encontrada";
+      ompText.textContent="Encontramos datos de Panel de Horarios en este equipo. No vamos a instalar encima.";
+      ompForm.style.display="none";
+      ompMainBtn.textContent="Abrir aplicación";
+      ompOpenBtn.style.display="inline-block";
+      this.setStatus("Puede abrir la aplicación sin modificar nada.");
+      return;
+    }
+    this.state="new";
+    ompTitle.textContent="Panel de Horarios";
+    ompText.textContent="Vamos a preparar la aplicación para comenzar a usarla.";
+    ompForm.style.display="grid";
+    ompMainBtn.textContent="Instalar aplicación";
+    this.setStatus("Complete los datos y presione Instalar aplicación.");
+  },
+  async mainAction(){
+    if(this.state==="found"){this.openApp();return;}
+    if(this.state==="incomplete"){await this.install(true);return;}
+    if(this.state==="new"){await this.install(false);return;}
+    this.start();
+  },
+  async install(resume=false){
+    const inst=(ompInstitution.value||"").trim();
+    const resp=(ompResponsible.value||"").trim();
+    if(!resume && (!inst||!resp)){this.setStatus("Complete los dos datos para continuar.");return;}
+    ompMainBtn.disabled=true;ompForm.style.display="none";ompSteps.innerHTML="";
+    localStorage.setItem(this.stepKey,"REVISION");
+    this.setStatus("Revisando este equipo...");
+    this.setStep("Revisando este equipo...");
+    await new Promise(r=>setTimeout(r,250));
+    if(!this.checkBrowser()||!this.checkStorage()){
+      this.setStep("Este equipo necesita preparación.","err");
+      this.setStatus("No se pudo preparar este equipo automáticamente.");
+      this.log("Fallo de navegador o almacenamiento");
+      ompMainBtn.disabled=false;ompMainBtn.textContent="Revisar";this.state="blocked";return;
+    }
+    this.setStep("Equipo preparado.","ok");
+    localStorage.setItem(this.stepKey,"CONFIGURACION");
+    this.setStatus("Guardando configuración...");
+    await new Promise(r=>setTimeout(r,250));
+    const cfg={
+      appId:this.appId,
+      version:this.version,
+      estado:"INSTALADA",
+      institucion: inst || (this.getConfig()&&this.getConfig().institucion) || "Panel de Horarios",
+      responsable: resp || (this.getConfig()&&this.getConfig().responsable) || "Responsable",
+      instalacionId:"OMP-"+Date.now()+"-"+Math.random().toString(16).slice(2),
+      fecha:new Date().toISOString(),
+      dispositivo:/Mobi|Android/i.test(navigator.userAgent)?"celular":"pc"
+    };
+    localStorage.setItem(this.configKey,JSON.stringify(cfg));
+    const saved=this.getConfig();
+    if(!saved || saved.estado!=="INSTALADA"){
+      this.setStep("No se pudo finalizar la instalación.","err");
+      this.setStatus("No se pudo completar. Cierre y vuelva a intentar.");
+      this.log("Fallo al verificar configuración guardada");
+      localStorage.setItem(this.stepKey,"CONFIGURACION");
+      ompMainBtn.disabled=false;ompMainBtn.style.display="inline-block";ompMainBtn.textContent="Continuar instalación";this.state="incomplete";return;
+    }
+    localStorage.setItem(this.stepKey,"COMPLETA");
+    this.setStep("Configuración guardada.","ok");
+    this.setStep("Instalación finalizada correctamente.","ok");
+    this.setStatus("Instalación finalizada correctamente. Ya puede comenzar.");
+    this.log("Instalación finalizada");
+    ompMainBtn.style.display="none";ompOpenBtn.style.display="inline-block";
+  },
+  openApp(){
+    this.log("Apertura de aplicación");
+    document.body.classList.remove("omp-pending");
+    panelStart();
+  },
+  showDiag(){
+    let cfg=this.getConfig()||{};
+    let diag=[];try{diag=JSON.parse(localStorage.getItem(this.diagKey)||"[]")}catch(e){}
+    const lines=[
+      "Diagnóstico OMP",
+      "Estado: "+(cfg.estado||"sin instalar"),
+      "Institución: "+(cfg.institucion||"-"),
+      "Responsable: "+(cfg.responsable||"-"),
+      "Dispositivo: "+(cfg.dispositivo||"-"),
+      "Últimos eventos:"
+    ].concat(diag.slice(-8).map(x=>"- "+(x.fecha||"")+" · "+(x.mensaje||"")));
+    alert(lines.join("\n"));
+  }
+};
+
+function panelStart(){
+  fillSelects();
+  if(!scriptUrl){
+    setMode("Aplicación instalada correctamente. Si es la primera vez, cargue Datos compartidos y luego Cargar horario.","ok");
+    render();
+  }else{
+    startAuto();
+    loadData(true);
+  }
 }
+
+OMPInstaller.start();
 
 // V10.7 DOCENTE: base fija compartida para docentes.
 // V10.7 DOCENTE: vista compacta con casilla Presente frente a cada alumno.
@@ -758,6 +1007,9 @@ if(!scriptUrl){
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"){
     document.querySelectorAll(".modal.show").forEach(m=>m.classList.remove("show"));
+  }
+  if(e.ctrlKey && e.altKey && String(e.key||"").toLowerCase()==="d"){
+    OMPInstaller.showDiag();
   }
 });
 document.addEventListener("click",e=>{
