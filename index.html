@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de Horarios v1.0 - OMP FINAL AJUSTE</title>
+<title>Panel de Horarios V10.8.5 RC - Distribución Final</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -17,7 +17,7 @@ button{border:0;color:white;font-weight:bold;cursor:pointer}.b1{background:#0876
 .person{background:#fff;border-radius:13px;border-left:8px solid #0876d8;padding:12px;margin:8px 0;box-shadow:0 2px 8px #00000012}.person b{font-size:22px}.sub{color:#344054;margin-top:4px}.same{border-left-color:#12805c}.change{border-left-color:#c96a00}
 .tag{display:inline-block;margin-top:8px;padding:6px 9px;border-radius:999px;background:#eef4ff;font-size:14px;font-weight:bold}.empty{text-align:center;color:#555;padding:30px 8px}.next-mini{margin-top:8px;background:#fff6d8;color:#5b4100;border-radius:10px;padding:9px;font-weight:bold}
 table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1px solid #d6e0ee;padding:10px;text-align:left}th{background:#eef4fb}.actions button{padding:7px 9px;margin:2px;font-size:14px}
-.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:12px;z-index:20}.modal.show{display:flex}.box{background:white;border-radius:18px;padding:16px;width:min(820px,96vw);max-height:92vh;overflow:auto}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:12px;z-index:20}.modal.show{display:flex}.box{background:white;border-radius:18px;padding:16px;width:min(820px,96vw);max-height:92vh;overflow:auto;resize:both;min-width:320px;min-height:240px}
 .form{display:grid;grid-template-columns:1fr 1fr;gap:10px}.form label{font-weight:bold;margin-bottom:4px;display:block}.form input,.form select{width:100%}.full{grid-column:1/-1}
 .days{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.daycheck{display:flex;align-items:center;gap:8px;background:#f8fbff;border:1px solid #d6e0ee;border-radius:10px;padding:8px}.daycheck input{width:auto}
 .config-list{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pill{display:inline-flex;align-items:center;gap:6px;background:#eef4fb;border-radius:999px;padding:7px 10px;margin:4px}.pill button{background:#d92d20;padding:2px 7px;border-radius:999px}
@@ -36,7 +36,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 @media(max-width:900px){.filters{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.filters{grid-template-columns:1fr}}
 
-@media(max-width:800px){.room-grid,.form,.config-list{grid-template-columns:1fr}.days{grid-template-columns:1fr 1fr}.toolbar button{flex:1}.card h2{font-size:23px}.room h3{font-size:22px}.person b{font-size:20px}}
+@media(max-width:800px){.box{resize:none;width:96vw;max-height:92vh}.room-grid,.form,.config-list{grid-template-columns:1fr}.days{grid-template-columns:1fr 1fr}.toolbar button{flex:1}.card h2{font-size:23px}.room h3{font-size:22px}.person b{font-size:20px}}
 @media(max-width:480px){header{align-items:flex-start;flex-direction:column}button,input,select{width:100%;font-size:17px}.toolbar{flex-direction:column}.days{grid-template-columns:1fr}}
 @media print{header,.notice,.toolbar,#nowCard,#nextCard,.actions,.modal{display:none!important}body{background:white}.wrap{max-width:none;padding:0}.card{box-shadow:none;border:0}.print-only{display:block}th,td{font-size:12px;padding:6px;border:1px solid #777}th{background:#eee!important}}
 
@@ -130,8 +130,9 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
     <div class="omp-actions">
       <button id="ompMainBtn" class="b2" onclick="OMPInstaller.mainAction()">Continuar</button>
       <button id="ompOpenBtn" class="b1" style="display:none" onclick="OMPInstaller.openApp()">Abrir aplicación</button>
+      <button id="ompConnectBtn" class="b1" onclick="OMPInstaller.connectExisting()">Conectar a instalación existente</button>
     </div>
-    <div class="omp-small">Instalador OMP v1.0 final</div>
+    <div class="omp-small">Instalador OMP v1.0 final · distribución V10.8.5 RC</div>
   </div>
 </div>
 
@@ -139,7 +140,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
 <div class="wrap">
 <div id="mode" class="notice ok">Sincronización activa sin interrumpir.</div>
 <div class="toolbar">
-<button class="b1" onclick="openLoad()">+ Cargar horario</button><button class="b2" onclick="loadData(true)">Actualizar</button><button class="b3" onclick="openConfig()">Datos compartidos</button><button class="b7" onclick="openReports()">📊 Informes</button><button class="b7" onclick="printSchedule()">Imprimir</button><button class="b5" onclick="clearAll()">Limpiar</button>
+<button class="b1" onclick="openLoad()">+ Cargar horario</button><button class="b2" onclick="loadData(true)">Actualizar</button><button class="b3" onclick="openConfig()">Datos compartidos</button><button class="b7" onclick="openReports()">📊 Informes</button><button class="b7" onclick="printSchedule()">Imprimir</button><button class="b4" onclick="showAbout()">Acerca de</button><button class="b5" onclick="clearAll()">Limpiar</button>
 </div>
 <section id="nowCard" class="card"><h2>Ahora en cada aula</h2><div id="nowRooms" class="room-grid"></div></section>
 <section id="nextCard" class="card"><h2>Próximo horario</h2><div id="nextTitle" style="color:#475467;margin-bottom:8px"></div><div id="nextRooms" class="room-grid"></div></section>
@@ -202,6 +203,12 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
 
 <div id="configModal" class="modal"><div class="box"><h2>Datos compartidos</h2>
 <p class="shared-note">Primero cargue aquí las aulas, profesores y alumnos. Después use Cargar horario para asignarlos a días y horarios.</p>
+<div class="toolbar">
+  <button class="b2" onclick="compartirInstalacion()">Compartir instalación</button>
+  <button class="b1" onclick="conectarInstalacionExistente()">Conectar a instalación existente</button>
+  <button class="b6" onclick="prepararParaEntregar()">Preparar copia para otra institución</button>
+</div>
+<div class="helper-note">Use estos botones para conectar otra computadora o celular a la misma base compartida, o para preparar una copia limpia para otra institución.</div>
 <div class="config-list">
 <div><h3>Aulas</h3><div style="display:flex;gap:6px"><input id="newRoom" placeholder="Ej: Aula 2"><button class="b1" onclick="addRoom()">Agregar</button></div><div id="roomPills"></div></div>
 <div><h3>Profesores</h3><div style="display:flex;gap:6px"><input id="newTeacher" placeholder="Ej: Laura"><button class="b1" onclick="addTeacher()">Agregar</button></div><div id="teacherPills"></div></div>
@@ -242,6 +249,25 @@ students=JSON.parse(localStorage.getItem("panel_v10_students")||"[]"),
 attendance=JSON.parse(localStorage.getItem("panel_v10_attendance")||"[]"),
 scriptUrl=localStorage.getItem("panel_v9_script_url")||"",
 autoTimer=null;
+
+// V10.8.2 FINAL - Base compartida incorporada para que el usuario no tenga que buscar la URL técnica.
+// Si ya existe una URL guardada en el equipo, se respeta. Si no existe, se usa esta base del paquete.
+const PANEL_DEFAULT_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwJXywOPHngiPrvMM2JvzqZfYhDlfpjOY9MseFA4krm1X8ho_OTCrt4suEKb-0L7JS-/exec";
+function panelEffectiveScriptUrl(){
+  const saved=String(scriptUrl||localStorage.getItem("panel_v9_script_url")||"").trim();
+  if(panelUrlValida(saved))return saved;
+  const def=String(PANEL_DEFAULT_SCRIPT_URL||"").trim();
+  if(panelUrlValida(def))return def;
+  return "";
+}
+function panelGuardarScriptUrlSiHaceFalta(){
+  const u=panelEffectiveScriptUrl();
+  if(u && !panelUrlValida(scriptUrl)){
+    scriptUrl=u;
+    localStorage.setItem("panel_v9_script_url",u);
+  }
+  return u;
+}
 
 
 function dbg(msg,obj){
@@ -306,6 +332,100 @@ function startAuto(){
   if(autoTimer)clearInterval(autoTimer);
   if(scriptUrl)autoTimer=setInterval(()=>{ if(!isBusy()) loadData(false); },60000);
 }
+
+function panelUrlValida(u){
+  u=String(u||"").trim();
+  return u.startsWith("https://script.google.com/macros/s/") && u.endsWith("/exec");
+}
+function panelConnectionPayload(){
+  const u=panelGuardarScriptUrlSiHaceFalta();
+  if(!u || !panelUrlValida(u)){
+    alert("Esta instalación todavía no tiene una base compartida conectada.");
+    return null;
+  }
+  return {
+    app:"panel_horarios",
+    tipo:"conexion_compartida",
+    version:"V10.8.2",
+    scriptUrl:u,
+    generado:new Date().toISOString()
+  };
+}
+function panelEncodeConnection(payload){
+  return "PHS-"+btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+}
+function panelDecodeConnection(code){
+  const raw=String(code||"").trim();
+  if(!raw)return null;
+  if(panelUrlValida(raw)){
+    return {app:"panel_horarios",tipo:"url_directa",version:"manual",scriptUrl:raw};
+  }
+  const clean=raw.startsWith("PHS-")?raw.slice(4):raw;
+  try{
+    const obj=JSON.parse(decodeURIComponent(escape(atob(clean))));
+    if(obj && obj.app==="panel_horarios" && panelUrlValida(obj.scriptUrl))return obj;
+  }catch(e){}
+  return null;
+}
+async function copiarTextoOMP(txt){
+  try{
+    await navigator.clipboard.writeText(txt);
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+async function compartirInstalacion(){
+  const payload=panelConnectionPayload();
+  if(!payload)return;
+  const code=panelEncodeConnection(payload);
+  const ok=await copiarTextoOMP(code);
+  prompt((ok?"Código copiado. ":"Copie este código. ")+"Péguelo en la otra computadora o celular:",code);
+}
+async function aplicarConexionCompartida(obj,desdeInstalador=false){
+  if(!obj || !panelUrlValida(obj.scriptUrl)){
+    alert("El código de conexión no es válido.");
+    return false;
+  }
+  scriptUrl=obj.scriptUrl.trim();
+  localStorage.setItem("panel_v9_script_url",scriptUrl);
+  if(desdeInstalador){
+    const cfg={
+      appId:"panel_horarios",
+      version:"1.0",
+      estado:"INSTALADA",
+      institucion:"Panel de Horarios",
+      responsable:"Conectado",
+      instalacionId:"OMP-"+Date.now()+"-"+Math.random().toString(16).slice(2),
+      fecha:new Date().toISOString(),
+      dispositivo:/Mobi|Android/i.test(navigator.userAgent)?"celular":"pc",
+      conectadaA:"instalacion_existente"
+    };
+    localStorage.setItem("omp_install_panel_horarios_v1",JSON.stringify(cfg));
+    localStorage.setItem("omp_install_panel_horarios_step","COMPLETA");
+  }
+  startAuto();
+  setMode("Conectando a instalación existente...","");
+  try{
+    await loadData(true);
+    setMode("Instalación conectada correctamente.","ok");
+    return true;
+  }catch(e){
+    setMode("Conexión guardada. Si no ve datos, presione Actualizar.","err");
+    return true;
+  }
+}
+async function conectarInstalacionExistente(){
+  const code=prompt("Pegue el código recibido desde la instalación principal:");
+  if(code===null)return false;
+  const obj=panelDecodeConnection(code);
+  if(!obj){
+    alert("Código no válido. Copie nuevamente el código desde Compartir instalación.");
+    return false;
+  }
+  return await aplicarConexionCompartida(obj,false);
+}
+
 function setScriptUrl(){
   const u=prompt("Pegá acá tu URL de Google Apps Script. Tiene que terminar en /exec:",scriptUrl);
   if(u!==null){
@@ -469,9 +589,35 @@ function addStudent(){const nombre=newStudent.value.trim();if(!nombre)return;con
 function editRoom(i){const v=prompt("Editar aula:",rooms[i]);if(v&&v.trim()){rooms[i]=v.trim();saveShared("aulas",rooms)}}
 function editTeacher(i){const v=prompt("Editar profesor:",teachers[i]);if(v&&v.trim()){teachers[i]=v.trim();saveShared("profesores",teachers)}}
 function editStudent(i){const s=students[i];const nombre=prompt("Alumno:",s.alumno);if(!nombre)return;const contactoV=prompt("Contacto:",s.contacto||"")||"";const whatsappV=prompt("WhatsApp:",s.whatsapp||"")||"";students[i]={...s,alumno:nombre.trim(),contacto:contactoV.trim(),whatsapp:whatsappV.trim()};saveShared("alumnos",students)}
-function removeRoom(i){if(confirm("¿Quitar aula de la lista compartida?")){rooms.splice(i,1);saveShared("aulas",rooms)}}
-function removeTeacher(i){if(confirm("¿Quitar profesor de la lista compartida?")){teachers.splice(i,1);saveShared("profesores",teachers)}}
-function removeStudent(i){if(confirm("¿Quitar alumno de la lista compartida?")){students.splice(i,1);saveShared("alumnos",students)}}
+function confirmDeleteShared(tipo,nombre){
+  nombre=String(nombre||"").trim() || "sin nombre";
+  return confirm('¿Está seguro que desea eliminar '+tipo+' \"'+nombre+'\"?\n\nEsta acción se sincronizará con todos los equipos conectados.');
+}
+function removeRoom(i){
+  const nombre=rooms[i]||"";
+  if(confirmDeleteShared("el aula",nombre)){
+    rooms.splice(i,1);
+    saveShared("aulas",rooms);
+    setMode("Aula eliminada: "+nombre+".","ok");
+  }
+}
+function removeTeacher(i){
+  const nombre=teachers[i]||"";
+  if(confirmDeleteShared("el profesor",nombre)){
+    teachers.splice(i,1);
+    saveShared("profesores",teachers);
+    setMode("Profesor eliminado: "+nombre+".","ok");
+  }
+}
+function removeStudent(i){
+  const s=students[i]||{};
+  const nombre=s.alumno||"";
+  if(confirmDeleteShared("el alumno",nombre)){
+    students.splice(i,1);
+    saveShared("alumnos",students);
+    setMode("Alumno eliminado: "+nombre+".","ok");
+  }
+}
 function itemKey(x){return[x.dia,fixTime(x.hora),x.aula,(x.alumno||"").trim().toLowerCase()].join("|")}
 async function ensureStudentFromBase(base){if(!base.alumno)return;const i=students.findIndex(s=>(s.alumno||"").trim().toLowerCase()===base.alumno.trim().toLowerCase());const obj={id:Date.now()+Math.random()+"",alumno:base.alumno,contacto:base.contacto,whatsapp:base.whatsapp};if(i>=0){const old=students[i],upd={...old,contacto:base.contacto||old.contacto,whatsapp:base.whatsapp||old.whatsapp};if(upd.contacto!==old.contacto||upd.whatsapp!==old.whatsapp){students[i]=upd;await saveShared("alumnos",students)}}else{students.push(obj);await saveShared("alumnos",students)}}
 
@@ -853,6 +999,70 @@ function renderStudentReport(){
 
 
 
+function showAbout(){
+  alert([
+    "Panel de Horarios",
+    "Versión: V10.8.5 RC",
+    "Estado: distribución final / candidata estable",
+    "",
+    "Incluye:",
+    "- Instalación compartida",
+    "- Conexión entre PC, celular y tablet",
+    "- Datos compartidos sincronizados",
+    "- Asistencia e informes",
+    "- Confirmación clara antes de borrar",
+    "- Preparar copia para otra institución",
+    "- Ventanas principales ajustables",
+    "",
+    "OMP Suite"
+  ].join("\n"));
+}
+
+function limpiarClavesPanelLocal(){
+  const borrar=[];
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(!k)continue;
+    if(k.startsWith("panel_") || k.startsWith("omp_install_panel_horarios")) borrar.push(k);
+  }
+  borrar.forEach(k=>localStorage.removeItem(k));
+}
+
+function prepararParaEntregar(){
+  const aviso=[
+    "PREPARAR COPIA PARA OTRA INSTITUCIÓN",
+    "",
+    "Esta acción deja ESTE ARCHIVO/EQUIPO listo para entregarse a otra institución.",
+    "",
+    "Se borrará SOLO en este equipo:",
+    "- conexión compartida",
+    "- aulas",
+    "- profesores",
+    "- alumnos",
+    "- horarios",
+    "- asistencias",
+    "- datos de instalación OMP",
+    "",
+    "NO borra la base de Google ya compartida con otros equipos.",
+    "NO borra los datos que ya estén en otras computadoras conectadas.",
+    "",
+    "Se recomienda hacer una copia de seguridad antes de continuar.",
+    "",
+    "Para confirmar escriba exactamente: ENTREGAR"
+  ].join("\n");
+  const code=prompt(aviso);
+  if(code!=="ENTREGAR"){
+    alert("Preparación cancelada. No se borró nada.");
+    return;
+  }
+  limpiarClavesPanelLocal();
+  items=[]; rooms=[]; teachers=[]; students=[]; attendance=[]; scriptUrl="";
+  saveLocal();
+  setMode("Copia preparada para otra institución. Cierre y vuelva a abrir la aplicación.","ok");
+  alert("Listo. Esta copia quedó preparada para otra institución. Cierre y vuelva a abrir la aplicación para iniciar como nueva institución.");
+}
+
+
 // ========================
 // OMP INSTALLER v1.0 + flujo maestro Datos compartidos / Cargar horario
 // ========================
@@ -973,6 +1183,17 @@ const OMPInstaller={
     document.body.classList.remove("omp-pending");
     panelStart();
   },
+  async connectExisting(){
+    const code=prompt("Pegue el código recibido desde la instalación principal:");
+    if(code===null)return;
+    const obj=panelDecodeConnection(code);
+    if(!obj){
+      alert("Código no válido. Copie nuevamente el código desde Compartir instalación.");
+      return;
+    }
+    const ok=await aplicarConexionCompartida(obj,true);
+    if(ok)this.openApp();
+  },
   showDiag(){
     let cfg=this.getConfig()||{};
     let diag=[];try{diag=JSON.parse(localStorage.getItem(this.diagKey)||"[]")}catch(e){}
@@ -990,6 +1211,7 @@ const OMPInstaller={
 
 function panelStart(){
   fillSelects();
+  panelGuardarScriptUrlSiHaceFalta();
   if(!scriptUrl){
     setMode("Aplicación instalada correctamente. Si es la primera vez, cargue Datos compartidos y luego Cargar horario.","ok");
     render();
