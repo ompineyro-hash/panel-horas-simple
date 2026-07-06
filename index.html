@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de Horarios V10.8.5 RC - Distribución Final</title>
+<title>Panel de Horarios V11.0 Limpio Entrega</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -132,13 +132,13 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
       <button id="ompOpenBtn" class="b1" style="display:none" onclick="OMPInstaller.openApp()">Abrir aplicación</button>
       <button id="ompConnectBtn" class="b1" onclick="OMPInstaller.connectExisting()">Conectar a instalación existente</button>
     </div>
-    <div class="omp-small">Instalador OMP v1.0 final · distribución V10.8.5 RC</div>
+    <div class="omp-small">Instalador OMP v1.0 final · versión limpia de entrega</div>
   </div>
 </div>
 
 <header><h1>Panel de Horarios</h1><div id="clock"></div></header>
 <div class="wrap">
-<div id="mode" class="notice ok">Sincronización activa sin interrumpir.</div>
+<div id="mode" class="notice ok">Copia limpia lista para configurar.</div>
 <div class="toolbar">
 <button class="b1" onclick="openLoad()">+ Cargar horario</button><button class="b2" onclick="loadData(true)">Actualizar</button><button class="b3" onclick="openConfig()">Datos compartidos</button><button class="b7" onclick="openReports()">📊 Informes</button><button class="b7" onclick="printSchedule()">Imprimir</button><button class="b4" onclick="showAbout()">Acerca de</button><button class="b5" onclick="clearAll()">Limpiar</button>
 </div>
@@ -242,19 +242,21 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
 </div></div>
 <script>
 const DAYS=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"], WORKDAYS=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
-let items=JSON.parse(localStorage.getItem("panel_v9_items")||"[]"), 
-rooms=JSON.parse(localStorage.getItem("panel_v9_rooms")||'[]'), 
-teachers=JSON.parse(localStorage.getItem("panel_v9_teachers")||'[]'), 
-students=JSON.parse(localStorage.getItem("panel_v10_students")||"[]"),
-attendance=JSON.parse(localStorage.getItem("panel_v10_attendance")||"[]"),
-scriptUrl=localStorage.getItem("panel_v9_script_url")||"",
-autoTimer=null;
+let items=JSON.parse(localStorage.getItem("panel_entrega_v9_items")||"[]"), 
+rooms=JSON.parse(localStorage.getItem("panel_entrega_v9_rooms")||'[]'), 
+teachers=JSON.parse(localStorage.getItem("panel_entrega_v9_teachers")||'[]'), 
+students=JSON.parse(localStorage.getItem("panel_entrega_v10_students")||"[]"),
+attendance=JSON.parse(localStorage.getItem("panel_entrega_v10_attendance")||"[]"),
+scriptUrl=localStorage.getItem("panel_entrega_v9_script_url")||"",
+autoTimer=null,
+syncFailCount=0,
+SYNC_FAIL_VISIBLE_AFTER=3;
 
 // V10.8.2 FINAL - Base compartida incorporada para que el usuario no tenga que buscar la URL técnica.
 // Si ya existe una URL guardada en el equipo, se respeta. Si no existe, se usa esta base del paquete.
-const PANEL_DEFAULT_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwJXywOPHngiPrvMM2JvzqZfYhDlfpjOY9MseFA4krm1X8ho_OTCrt4suEKb-0L7JS-/exec";
+const PANEL_DEFAULT_SCRIPT_URL="";
 function panelEffectiveScriptUrl(){
-  const saved=String(scriptUrl||localStorage.getItem("panel_v9_script_url")||"").trim();
+  const saved=String(scriptUrl||localStorage.getItem("panel_entrega_v9_script_url")||"").trim();
   if(panelUrlValida(saved))return saved;
   const def=String(PANEL_DEFAULT_SCRIPT_URL||"").trim();
   if(panelUrlValida(def))return def;
@@ -264,7 +266,7 @@ function panelGuardarScriptUrlSiHaceFalta(){
   const u=panelEffectiveScriptUrl();
   if(u && !panelUrlValida(scriptUrl)){
     scriptUrl=u;
-    localStorage.setItem("panel_v9_script_url",u);
+    localStorage.setItem("panel_entrega_v9_script_url",u);
   }
   return u;
 }
@@ -275,7 +277,7 @@ function dbg(msg,obj){
   console.log('[ASISTENCIA]', msg, obj || '');
 }
 
-function saveLocal(){localStorage.setItem("panel_v9_items",JSON.stringify(items));localStorage.setItem("panel_v9_rooms",JSON.stringify(rooms));localStorage.setItem("panel_v9_teachers",JSON.stringify(teachers));localStorage.setItem("panel_v10_students",JSON.stringify(students));localStorage.setItem("panel_v10_attendance",JSON.stringify(attendance))}
+function saveLocal(){localStorage.setItem("panel_entrega_v9_items",JSON.stringify(items));localStorage.setItem("panel_entrega_v9_rooms",JSON.stringify(rooms));localStorage.setItem("panel_entrega_v9_teachers",JSON.stringify(teachers));localStorage.setItem("panel_entrega_v10_students",JSON.stringify(students));localStorage.setItem("panel_entrega_v10_attendance",JSON.stringify(attendance))}
 function tick(){clock.textContent=new Date().toLocaleString("es-AR",{weekday:"long",hour:"2-digit",minute:"2-digit"})}setInterval(tick,1000);tick();
 function nowInfo(){const d=new Date();return{day:DAYS[d.getDay()],hm:String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}}
 function fixTime(v){if(!v)return"";v=String(v);const m=v.match(/(\d{1,2}):(\d{2})/);return m?String(m[1]).padStart(2,"0")+":"+m[2]:v}
@@ -388,7 +390,7 @@ async function aplicarConexionCompartida(obj,desdeInstalador=false){
     return false;
   }
   scriptUrl=obj.scriptUrl.trim();
-  localStorage.setItem("panel_v9_script_url",scriptUrl);
+  localStorage.setItem("panel_entrega_v9_script_url",scriptUrl);
   if(desdeInstalador){
     const cfg={
       appId:"panel_horarios",
@@ -401,8 +403,8 @@ async function aplicarConexionCompartida(obj,desdeInstalador=false){
       dispositivo:/Mobi|Android/i.test(navigator.userAgent)?"celular":"pc",
       conectadaA:"instalacion_existente"
     };
-    localStorage.setItem("omp_install_panel_horarios_v1",JSON.stringify(cfg));
-    localStorage.setItem("omp_install_panel_horarios_step","COMPLETA");
+    localStorage.setItem("omp_install_panel_horarios_entrega_v1",JSON.stringify(cfg));
+    localStorage.setItem("omp_install_panel_horarios_entrega_step","COMPLETA");
   }
   startAuto();
   setMode("Conectando a instalación existente...","");
@@ -432,7 +434,7 @@ function setScriptUrl(){
     const val=u.trim();
     if(!val){
       scriptUrl="";
-      localStorage.removeItem("panel_v9_script_url");
+      localStorage.removeItem("panel_entrega_v9_script_url");
       setMode("Sin base conectada. Presioná Conectar base para pegar tu URL /exec.","err");
       render();
       return;
@@ -442,7 +444,7 @@ function setScriptUrl(){
       return;
     }
     scriptUrl=val;
-    localStorage.setItem("panel_v9_script_url",scriptUrl);
+    localStorage.setItem("panel_entrega_v9_script_url",scriptUrl);
     startAuto();
     loadData(true);
   }
@@ -471,18 +473,30 @@ async function loadData(force=false){
       if(Array.isArray(data.profesores) && data.profesores.length) teachers=data.profesores.map(String);
       students=(data.alumnos||[]).map(normalizeStudent);
       attendance=(data.asistencia||[]);
-      localStorage.setItem("panel_v9_rooms",JSON.stringify(rooms));
-      localStorage.setItem("panel_v9_teachers",JSON.stringify(teachers));
-      localStorage.setItem("panel_v10_students",JSON.stringify(students));
-      localStorage.setItem("panel_v10_attendance",JSON.stringify(attendance));
+      localStorage.setItem("panel_entrega_v9_rooms",JSON.stringify(rooms));
+      localStorage.setItem("panel_entrega_v9_teachers",JSON.stringify(teachers));
+      localStorage.setItem("panel_entrega_v10_students",JSON.stringify(students));
+      localStorage.setItem("panel_entrega_v10_attendance",JSON.stringify(attendance));
     }
     applyAttendanceToItems();
-    localStorage.setItem("panel_v9_items",JSON.stringify(items));
+    localStorage.setItem("panel_entrega_v9_items",JSON.stringify(items));
     fillSelects();
-    if(force) setMode("Datos sincronizados.","ok");
+    const veniaFallando = syncFailCount > 0;
+    syncFailCount = 0;
+    if(force || veniaFallando){
+      setMode("Datos sincronizados.","ok");
+      setTimeout(()=>{
+        if(syncFailCount===0 && mode && mode.className.includes("ok")) setMode("Sincronización activa sin interrumpir.","ok");
+      },4000);
+    }
     render();
   }catch(e){
-    setMode("Sin conexión. La app reintentará sola.","err");
+    syncFailCount++;
+    if(force || syncFailCount>=SYNC_FAIL_VISIBLE_AFTER){
+      setMode("Sin conexión. La app reintentará sola.","err");
+    }else{
+      console.warn("Reintento de sincronización pendiente", syncFailCount, e);
+    }
     render();
   }
 }
@@ -552,7 +566,7 @@ function closeConfig(){configModal.classList.remove("show");fillSelects();render
 function renderConfig(){
   roomPills.innerHTML=rooms.map((r,i)=>`<span class="pill">${r}<button onclick="editRoom(${i})">✎</button><button onclick="removeRoom(${i})">×</button></span>`).join("");
   teacherPills.innerHTML=teachers.map((t,i)=>`<span class="pill">${t}<button onclick="editTeacher(${i})">✎</button><button onclick="removeTeacher(${i})">×</button></span>`).join("");
-  studentPills.innerHTML=students.map((s,i)=>`<span class="pill">${s.alumno}${s.contacto?" · "+s.contacto:""}<button onclick="editStudent(${i})">✎</button><button onclick="removeStudent(${i})">×</button></span>`).join("");
+  studentPills.innerHTML=students.map((s,i)=>`<span class="pill">${s.alumno}${s.contacto?" · "+s.contacto:""}<button title="Editar alumno" onclick="editStudent(${i})">✎</button><button title="Eliminar alumno" onclick="removeStudent(${i})">🗑</button></span>`).join("");
 }
 async function saveShared(kind,values){
   saveLocal();
@@ -688,13 +702,13 @@ async function clearAll(){
   const code=prompt("Para confirmar escribí: BORRAR");
   if(code!=="BORRAR"){alert("Limpieza cancelada.");return}
   const backup={fecha:new Date().toISOString(),items:[...items]};
-  localStorage.setItem("panel_v10_backup_"+Date.now(),JSON.stringify(backup));
+  localStorage.setItem("panel_entrega_v10_backup_"+Date.now(),JSON.stringify(backup));
   if(scriptUrl){
     try{
       setMode("Limpiando datos...","");
       await apiPost({action:"clear"});
       items=[];
-      localStorage.setItem("panel_v9_items","[]");
+      localStorage.setItem("panel_entrega_v9_items","[]");
       render();
       setMode("Datos limpiados. Se guardó una copia de seguridad local.","ok");
       await loadData(true);
@@ -1002,8 +1016,8 @@ function renderStudentReport(){
 function showAbout(){
   alert([
     "Panel de Horarios",
-    "Versión: V10.8.5 RC",
-    "Estado: distribución final / candidata estable",
+    "Versión: V11.0 Limpio Entrega",
+    "Estado: copia limpia para nueva institución",
     "",
     "Incluye:",
     "- Instalación compartida",
@@ -1069,9 +1083,9 @@ function prepararParaEntregar(){
 const OMPInstaller={
   appId:"panel_horarios",
   version:"1.0",
-  configKey:"omp_install_panel_horarios_v1",
-  stepKey:"omp_install_panel_horarios_step",
-  diagKey:"omp_install_panel_horarios_diag",
+  configKey:"omp_install_panel_horarios_entrega_v1",
+  stepKey:"omp_install_panel_horarios_entrega_step",
+  diagKey:"omp_install_panel_horarios_entrega_diag",
   state:"checking",
   log(msg){
     const row={fecha:new Date().toISOString(),mensaje:String(msg||"")};
@@ -1085,7 +1099,7 @@ const OMPInstaller={
     const d=document.createElement("div");d.className="omp-step"+(cls?" "+cls:"");d.textContent=msg;box.appendChild(d);
   },
   hasLegacyInstall(){
-    return !!(localStorage.getItem("panel_v9_items")||localStorage.getItem("panel_v9_rooms")||localStorage.getItem("panel_v9_teachers")||localStorage.getItem("panel_v10_students")||localStorage.getItem("panel_v9_script_url"));
+    return !!(localStorage.getItem("panel_entrega_v9_items")||localStorage.getItem("panel_entrega_v9_rooms")||localStorage.getItem("panel_entrega_v9_teachers")||localStorage.getItem("panel_entrega_v10_students")||localStorage.getItem("panel_entrega_v9_script_url"));
   },
   checkStorage(){
     try{localStorage.setItem("omp_test","ok");localStorage.removeItem("omp_test");return true}catch(e){return false}
@@ -1116,16 +1130,17 @@ const OMPInstaller={
       ompText.textContent="Encontramos datos de Panel de Horarios en este equipo. No vamos a instalar encima.";
       ompForm.style.display="none";
       ompMainBtn.textContent="Abrir aplicación";
-      ompOpenBtn.style.display="inline-block";
-      this.setStatus("Puede abrir la aplicación sin modificar nada.");
+      ompMainBtn.style.display="inline-block";
+      ompOpenBtn.style.display="none";
+      this.setStatus("Este equipo ya tiene Panel de Horarios instalado. Puede abrir la aplicación o conectar a otra instalación.");
       return;
     }
     this.state="new";
     ompTitle.textContent="Panel de Horarios";
-    ompText.textContent="Vamos a preparar la aplicación para comenzar a usarla.";
+    ompText.textContent="Esta copia está limpia. Cree una nueva institución o conéctese a una existente.";
     ompForm.style.display="grid";
     ompMainBtn.textContent="Instalar aplicación";
-    this.setStatus("Complete los datos y presione Instalar aplicación.");
+    this.setStatus("Para empezar desde cero, complete los datos y presione Instalar aplicación.");
   },
   async mainAction(){
     if(this.state==="found"){this.openApp();return;}
