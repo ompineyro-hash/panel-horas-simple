@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de Horarios V12.2</title>
+<title>Panel de Horarios V12.3</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -144,7 +144,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
     </div>
 
     <div id="ompConnectDevice" style="display:none">
-      <div class="helper-note">Pegue el mensaje de conexión recibido desde un dispositivo que ya funciona.</div>
+      <div class="helper-note">Si recibió una invitación sin enlace automático, pegue aquí el mensaje completo.</div>
       <textarea id="ompConnectionInput" placeholder="Pegue aquí el mensaje recibido..." style="width:100%;min-height:135px;border:1px solid #d6e0ee;border-radius:10px;padding:12px;font-size:16px"></textarea>
       <div class="omp-actions">
         <button class="b1" onclick="OMPInstaller.activateDevice()">Activar este dispositivo</button>
@@ -170,7 +170,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
       </div>
     </div>
 
-    <div class="omp-small">Panel de Horarios V12.2</div>
+    <div class="omp-small">Panel de Horarios V12.3</div>
   </div>
 </div>
 
@@ -261,33 +261,6 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
 </div>
 </div><br><button class="b6" onclick="closeConfig()">Cerrar</button></div></div>
 
-
-<div id="deviceTransferModal" class="modal"><div class="box">
-<h2>📱 Cambiar de dispositivo</h2>
-<p class="shared-note">Use esta pantalla para llevar la misma instalación a otro celular, tablet o computadora, sin buscar Apps Script.</p>
-
-<div class="card" style="box-shadow:none">
-  <h3>1. En este dispositivo</h3>
-  <p>Genere el código de conexión y envíelo al dispositivo nuevo.</p>
-  <div class="toolbar">
-    <button class="b2" onclick="copyDeviceCode()">📋 Copiar código</button>
-    <button class="b1" onclick="shareDeviceCodeWhatsApp()">📲 Enviar por WhatsApp</button>
-  </div>
-  <textarea id="deviceTransferCode" readonly style="width:100%;min-height:110px;border:1px solid #d6e0ee;border-radius:10px;padding:10px;font-size:14px"></textarea>
-</div>
-
-<div class="card" style="box-shadow:none">
-  <h3>2. En el dispositivo nuevo</h3>
-  <p>Pegue el código recibido y presione Conectar.</p>
-  <textarea id="deviceImportCode" placeholder="Pegue aquí el código PHS-..." style="width:100%;min-height:110px;border:1px solid #d6e0ee;border-radius:10px;padding:10px;font-size:14px"></textarea>
-  <div class="toolbar">
-    <button class="b1" onclick="connectDeviceFromCode()">Conectar este dispositivo</button>
-  </div>
-</div>
-
-<div class="helper-note">Los horarios, alumnos, profesores y asistencias se recuperan desde la base compartida. No hace falta copiar los datos manualmente.</div>
-<button class="b6" onclick="closeDeviceTransfer()">Cerrar</button>
-</div></div>
 
 <div id="reportsModal" class="modal"><div class="box"><h2>📊 Informes de asistencia</h2>
 <p class="shared-note">Resumen automático usando las asistencias guardadas. Si falta marcar un alumno, no cuenta como presente ni ausente.</p>
@@ -424,11 +397,21 @@ function panelEncodeConnection(payload){
   return "PHS-"+btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
 }
 function panelDecodeConnection(code){
-  const raw=String(code||"").trim();
+  let raw=String(code||"").trim();
   if(!raw)return null;
+
+  const hashMatch=raw.match(/#conectar=([^\s]+)/);
+  if(hashMatch){
+    try{ raw=decodeURIComponent(hashMatch[1]); }catch(e){ raw=hashMatch[1]; }
+  }
+
+  const codeMatch=raw.match(/PHS-[A-Za-z0-9+/=]+/);
+  if(codeMatch) raw=codeMatch[0];
+
   if(panelUrlValida(raw)){
     return {app:"panel_horarios",tipo:"url_directa",version:"manual",scriptUrl:raw};
   }
+
   const clean=raw.startsWith("PHS-")?raw.slice(4):raw;
   try{
     const obj=JSON.parse(decodeURIComponent(escape(atob(clean))));
@@ -1141,76 +1124,6 @@ function renderStudentReport(){
 
 
 
-function openDeviceTransfer(){
-  const modal=document.getElementById("deviceTransferModal");
-  const out=document.getElementById("deviceTransferCode");
-  const payload=panelConnectionPayload();
-  if(payload){
-    out.value=panelEncodeConnection(payload);
-  }else{
-    out.value="";
-  }
-  document.getElementById("deviceImportCode").value="";
-  modal.classList.add("show");
-}
-function closeDeviceTransfer(){
-  document.getElementById("deviceTransferModal").classList.remove("show");
-}
-async function copyDeviceCode(){
-  const out=document.getElementById("deviceTransferCode");
-  let code=String(out.value||"").trim();
-  if(!code){
-    const payload=panelConnectionPayload();
-    if(!payload)return;
-    code=panelEncodeConnection(payload);
-    out.value=code;
-  }
-  const ok=await copiarTextoOMP(code);
-  if(ok) alert("Código copiado. Ya puede pegarlo en WhatsApp o en el dispositivo nuevo.");
-  else prompt("Copie este código:",code);
-}
-async function shareDeviceCodeWhatsApp(){
-  const out=document.getElementById("deviceTransferCode");
-  let code=String(out.value||"").trim();
-  if(!code){
-    const payload=panelConnectionPayload();
-    if(!payload)return;
-    code=panelEncodeConnection(payload);
-    out.value=code;
-  }
-  const msg=[
-    "Panel de Horarios",
-    "",
-    "Código para conectar un nuevo dispositivo:",
-    code,
-    "",
-    "En el dispositivo nuevo:",
-    "1. Abra Panel de Horarios.",
-    "2. Toque Conectar a instalación existente.",
-    "3. Pegue este código."
-  ].join("\n");
-  const url="https://wa.me/?text="+encodeURIComponent(msg);
-  window.open(url,"_blank","noopener");
-}
-async function connectDeviceFromCode(){
-  const input=document.getElementById("deviceImportCode");
-  const code=String(input.value||"").trim();
-  if(!code){
-    alert("Pegue primero el código recibido.");
-    return;
-  }
-  const obj=panelDecodeConnection(code);
-  if(!obj){
-    alert("El código no es válido. Cópielo nuevamente desde el dispositivo anterior.");
-    return;
-  }
-  const ok=await aplicarConexionCompartida(obj,false);
-  if(ok){
-    alert("Dispositivo conectado correctamente.");
-    closeDeviceTransfer();
-  }
-}
-
 function showAbout(){
   alert([
     "Panel de Horarios",
@@ -1280,7 +1193,7 @@ function prepararParaEntregar(){
 // ========================
 const OMPInstaller={
   appId:"panel_horarios",
-  version:"12.2",
+  version:"12.3",
   configKey:"omp_install_panel_horarios_v1",
   stepKey:"omp_install_panel_horarios_step",
 
@@ -1410,12 +1323,14 @@ const OMPInstaller={
   sendWhatsApp(){
     const code=String(ompConnectionOutput.value||"").trim();
     if(!code)return;
-    const link=PANEL_PUBLIC_URL+"?v=12.2#conectar="+encodeURIComponent(code);
+    const link=PANEL_PUBLIC_URL+"?v=12.3#conectar="+encodeURIComponent(code);
     const msg=[
       "Panel de Horarios",
       "",
-      "Toque este enlace para conectar el dispositivo:",
-      link
+      "Abrí este enlace en el dispositivo que querés conectar:",
+      link,
+      "",
+      "La conexión se realizará automáticamente."
     ].join("\n");
     window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank","noopener");
   },
@@ -1497,7 +1412,7 @@ async function panelAutoConnectFromLink(){
 
     if(ok){
       OMPInstaller.setTitle("Dispositivo conectado correctamente","Ya puede comenzar a trabajar.");
-      ompStatus.textContent="Todos los cambios se sincronizarán automáticamente.";
+      ompStatus.textContent="Este dispositivo ya comparte la misma información.";
       ompActions.innerHTML='<button class="b2" onclick="OMPInstaller.openApp()">Abrir Panel de Horarios</button>';
       setTimeout(()=>OMPInstaller.openApp(),1800);
       return true;
