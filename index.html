@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de Horarios V12.1.1</title>
+<title>Panel de Horarios V12.2</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -157,7 +157,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
       <textarea id="ompConnectionOutput" readonly style="display:none"></textarea>
       <div class="omp-actions">
         <button class="b1" onclick="OMPInstaller.sendWhatsApp()">📲 Enviar por WhatsApp</button>
-        <button class="b2" onclick="OMPInstaller.copyConnection()">📋 Copiar conexión</button>
+        
         <button class="b4" onclick="OMPInstaller.start()">Volver</button>
       </div>
       <div class="omp-status">No se crea una copia. Todos los cambios se sincronizan automáticamente.</div>
@@ -170,7 +170,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
       </div>
     </div>
 
-    <div class="omp-small">Panel de Horarios V12.1</div>
+    <div class="omp-small">Panel de Horarios V12.2</div>
   </div>
 </div>
 
@@ -178,7 +178,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
 <div class="wrap">
 <div id="mode" class="notice ok">Sincronización activa sin interrumpir.</div>
 <div class="toolbar">
-<button class="b1" onclick="openLoad()">+ Cargar horario</button><button class="b2" onclick="loadData(true)">Actualizar</button><button class="b3" onclick="openConfig()">Datos compartidos</button><button class="b1" onclick="openDeviceTransfer()">📱 Cambiar de dispositivo</button><button class="b7" onclick="openReports()">📊 Informes</button><button class="b7" onclick="printSchedule()">Imprimir</button><button class="b4" onclick="showAbout()">Acerca de</button><button class="b5" onclick="clearAll()">Limpiar</button>
+<button class="b1" onclick="openLoad()">+ Cargar horario</button><button class="b2" onclick="loadData(true)">Actualizar</button><button class="b3" onclick="openConfig()">Datos compartidos</button><button class="b1" onclick="OMPInstaller.showSendConnection()">📱 Conectar otro dispositivo</button><button class="b7" onclick="openReports()">📊 Informes</button><button class="b7" onclick="printSchedule()">Imprimir</button><button class="b4" onclick="showAbout()">Acerca de</button><button class="b5" onclick="clearAll()">Limpiar</button>
 </div>
 <section id="nowCard" class="card"><h2>Ahora en cada aula</h2><div id="nowRooms" class="room-grid"></div></section>
 <section id="nextCard" class="card"><h2>Próximo horario</h2><div id="nextTitle" style="color:#475467;margin-bottom:8px"></div><div id="nextRooms" class="room-grid"></div></section>
@@ -1280,7 +1280,7 @@ function prepararParaEntregar(){
 // ========================
 const OMPInstaller={
   appId:"panel_horarios",
-  version:"12.0",
+  version:"12.2",
   configKey:"omp_install_panel_horarios_v1",
   stepKey:"omp_install_panel_horarios_step",
 
@@ -1410,7 +1410,7 @@ const OMPInstaller={
   sendWhatsApp(){
     const code=String(ompConnectionOutput.value||"").trim();
     if(!code)return;
-    const link=PANEL_PUBLIC_URL+"#conectar="+encodeURIComponent(code);
+    const link=PANEL_PUBLIC_URL+"?v=12.2#conectar="+encodeURIComponent(code);
     const msg=[
       "Panel de Horarios",
       "",
@@ -1489,7 +1489,7 @@ async function panelAutoConnectFromLink(){
     OMPInstaller.hideAll();
     OMPInstaller.setTitle("Conectando este dispositivo","Espere un momento...");
     ompHome.style.display="block";
-    ompStatus.textContent="Estamos conectando este dispositivo a la información compartida.";
+    ompStatus.textContent="La aplicación está preparando este dispositivo automáticamente.";
     ompActions.innerHTML="";
 
     const ok=await aplicarConexionCompartida(obj,true);
