@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de Horarios V13.1</title>
+<title>Panel de Horarios V13.2</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -170,7 +170,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
       </div>
     </div>
 
-    <div class="omp-small">Panel de Horarios V13.1</div>
+    <div class="omp-small">Panel de Horarios V13.2</div>
   </div>
 </div>
 
@@ -329,8 +329,48 @@ function saveLocal(){localStorage.setItem("panel_v9_items",JSON.stringify(items)
 function tick(){clock.textContent=new Date().toLocaleString("es-AR",{weekday:"long",hour:"2-digit",minute:"2-digit"})}setInterval(tick,1000);tick();
 function nowInfo(){const d=new Date();return{day:DAYS[d.getDay()],hm:String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}}
 function fixTime(v){if(!v)return"";v=String(v);const m=v.match(/(\d{1,2}):(\d{2})/);return m?String(m[1]).padStart(2,"0")+":"+m[2]:v}
+function extractHourFromLegacyDate(v){
+  const s=String(v||"").trim();
+  let m=s.match(/\b(\d{1,2}):(\d{2})(?::\d{2})?\b/);
+  if(m)return String(m[1]).padStart(2,"0")+":"+m[2];
+  return fixTime(s);
+}
+function isWeekday(v){
+  return WORKDAYS.includes(String(v||"").trim());
+}
+function looksLikeLegacyShiftedHorario(x){
+  const dia=String(x?.dia||"");
+  const hora=String(x?.hora||"");
+  return (
+    isWeekday(x?.id) &&
+    (/1899/.test(dia) || /GMT|hora estándar|Sat Dec 30/i.test(dia)) &&
+    !/^\d{1,2}:\d{2}$/.test(hora)
+  );
+}
 function normalize(x){
-  x={...x,hora:fixTime(x.hora||""),id:String(x.id||"")};
+  x={...(x||{})};
+
+  // Recuperación automática de filas que quedaron corridas cuando se agregó
+  // y luego se retiró la columna institucionId. No modifica la planilla:
+  // solamente reconstruye correctamente día, hora, aula, alumno y profesor.
+  if(looksLikeLegacyShiftedHorario(x)){
+    const repaired={
+      id:String(x._idOriginal||("REC-"+[
+        x.id,x.dia,x.hora,x.aula,x.alumno,x.profesor,x.actividad,x.contacto
+      ].join("|"))),
+      dia:String(x.id||""),
+      hora:extractHourFromLegacyDate(x.dia),
+      aula:String(x.hora||""),
+      alumno:String(x.aula||""),
+      profesor:String(x.alumno||""),
+      actividad:String(x.profesor||""),
+      contacto:String(x.actividad||""),
+      whatsapp:String(x.contacto||""),
+      asistencia:String(x.asistencia||"")
+    };
+    return repaired;
+  }
+
   return {
     id:String(x.id||""),
     dia:String(x.dia||""),
@@ -535,7 +575,12 @@ async function loadData(force=false){
     if(Array.isArray(data)){
       items=data.map(normalize);
     }else{
-      items=(data.horarios||[]).map(normalize);
+      const rawHorarios=(data.horarios||[]);
+      const repairedCount=rawHorarios.filter(looksLikeLegacyShiftedHorario).length;
+      items=rawHorarios.map(normalize);
+      if(repairedCount){
+        console.warn("Se recuperaron automáticamente "+repairedCount+" horario(s) con columnas corridas.");
+      }
       if(Array.isArray(data.aulas) && data.aulas.length) rooms=data.aulas.map(String);
       if(Array.isArray(data.profesores) && data.profesores.length) teachers=data.profesores.map(String);
       students=(data.alumnos||[]).map(normalizeStudent);
@@ -1210,7 +1255,7 @@ function prepararParaEntregar(){
 // ========================
 const OMPInstaller={
   appId:"panel_horarios",
-  version:"13.1",
+  version:"13.2",
   configKey:"omp_install_panel_horarios_v1",
   stepKey:"omp_install_panel_horarios_step",
 
