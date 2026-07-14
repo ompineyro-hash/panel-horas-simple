@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de Horarios V12.3</title>
+<title>Panel de Horarios V13.0</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -144,23 +144,23 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
     </div>
 
     <div id="ompConnectDevice" style="display:none">
-      <div class="helper-note">Si recibió una invitación sin enlace automático, pegue aquí el mensaje completo.</div>
-      <textarea id="ompConnectionInput" placeholder="Pegue aquí el mensaje recibido..." style="width:100%;min-height:135px;border:1px solid #d6e0ee;border-radius:10px;padding:12px;font-size:16px"></textarea>
+      <div class="helper-note">Ingrese el código de acceso generado por el responsable.</div>
+      <input id="ompConnectionInput" inputmode="numeric" maxlength="6" placeholder="Código de 6 números" style="width:100%;font-size:28px;text-align:center;letter-spacing:8px">
       <div class="omp-actions">
-        <button class="b1" onclick="OMPInstaller.activateDevice()">Activar este dispositivo</button>
+        <button class="b1" onclick="OMPInstaller.activateDevice()">Ingresar con código</button>
         <button class="b4" onclick="OMPInstaller.start()">Volver</button>
       </div>
     </div>
 
     <div id="ompSendConnection" style="display:none">
-      <div class="helper-note">Envíe esta conexión al dispositivo que desea agregar.</div>
-      <textarea id="ompConnectionOutput" readonly style="display:none"></textarea>
+      <div class="helper-note">Dígale este código al usuario del dispositivo nuevo.</div>
+      <div id="ompConnectionOutput" class="omp-status" style="font-size:40px;font-weight:bold;text-align:center;letter-spacing:10px"></div>
+      <div id="ompCodeExpiry" class="omp-small" style="text-align:center"></div>
       <div class="omp-actions">
-        <button class="b1" onclick="OMPInstaller.sendWhatsApp()">📲 Enviar por WhatsApp</button>
-        
+        <button class="b1" onclick="OMPInstaller.generateAccessCode()">Generar otro código</button>
         <button class="b4" onclick="OMPInstaller.start()">Volver</button>
       </div>
-      <div class="omp-status">No se crea una copia. Todos los cambios se sincronizan automáticamente.</div>
+      <div class="omp-status">El código es temporal, de un solo uso y pertenece únicamente a esta institución.</div>
     </div>
 
     <div id="ompTestResult" style="display:none">
@@ -170,7 +170,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
       </div>
     </div>
 
-    <div class="omp-small">Panel de Horarios V12.3</div>
+    <div class="omp-small">Panel de Horarios V13.0</div>
   </div>
 </div>
 
@@ -178,7 +178,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
 <div class="wrap">
 <div id="mode" class="notice ok">Sincronización activa sin interrumpir.</div>
 <div class="toolbar">
-<button class="b1" onclick="openLoad()">+ Cargar horario</button><button class="b2" onclick="loadData(true)">Actualizar</button><button class="b3" onclick="openConfig()">Datos compartidos</button><button class="b1" onclick="OMPInstaller.showSendConnection()">📱 Conectar otro dispositivo</button><button class="b7" onclick="openReports()">📊 Informes</button><button class="b7" onclick="printSchedule()">Imprimir</button><button class="b4" onclick="showAbout()">Acerca de</button><button class="b5" onclick="clearAll()">Limpiar</button>
+<button class="b1" onclick="openLoad()">+ Cargar horario</button><button class="b2" onclick="loadData(true)">Actualizar</button><button class="b3" onclick="openConfig()">Datos compartidos</button><button class="b1" onclick="OMPInstaller.showSendConnection()">📱 Agregar otro dispositivo</button><button class="b7" onclick="openReports()">📊 Informes</button><button class="b7" onclick="printSchedule()">Imprimir</button><button class="b4" onclick="showAbout()">Acerca de</button><button class="b5" onclick="clearAll()">Limpiar</button>
 </div>
 <section id="nowCard" class="card"><h2>Ahora en cada aula</h2><div id="nowRooms" class="room-grid"></div></section>
 <section id="nextCard" class="card"><h2>Próximo horario</h2><div id="nextTitle" style="color:#475467;margin-bottom:8px"></div><div id="nextRooms" class="room-grid"></div></section>
@@ -281,6 +281,14 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
 </div></div>
 <script>
 const PANEL_PUBLIC_URL="https://ompineyro-hash.github.io/panel-horas-simple/";
+function ompCurrentConfig(){
+  try{return JSON.parse(localStorage.getItem("omp_install_panel_horarios_v1")||"null")}catch(e){return null}
+}
+function ompInstitutionId(){
+  const cfg=ompCurrentConfig();
+  return String(cfg?.institucionId||"").trim();
+}
+
 const DAYS=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"], WORKDAYS=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 let items=JSON.parse(localStorage.getItem("panel_v9_items")||"[]"), 
 rooms=JSON.parse(localStorage.getItem("panel_v9_rooms")||'[]'), 
@@ -499,14 +507,24 @@ function setScriptUrl(){
     loadData(true);
   }
 }
-async function apiGet(){const r=await fetch(scriptUrl+"?ts="+Date.now());return await r.json()}
+async function apiGet(){
+  const endpoint=panelEffectiveScriptUrl()||PANEL_DEFAULT_SCRIPT_URL;
+  const q=new URLSearchParams({ts:String(Date.now()),institucionId:ompInstitutionId()});
+  const r=await fetch(endpoint+"?"+q.toString());
+  const data=await r.json();
+  if(data && data.ok===false) throw new Error(data.error||"Error de conexión");
+  return data;
+}
 async function apiPost(payload){
-  const r=await fetch(scriptUrl,{
+  const endpoint=panelEffectiveScriptUrl()||PANEL_DEFAULT_SCRIPT_URL;
+  const r=await fetch(endpoint,{
     method:"POST",
     headers:{"Content-Type":"text/plain"},
-    body:JSON.stringify({...payload})
+    body:JSON.stringify({...payload,institucionId:payload.institucionId||ompInstitutionId()})
   });
-  return await r.json();
+  const data=await r.json();
+  if(data && data.ok===false) throw new Error(data.error||"Error del servidor");
+  return data;
 }
 
 async function loadData(force=false){
@@ -1193,7 +1211,7 @@ function prepararParaEntregar(){
 // ========================
 const OMPInstaller={
   appId:"panel_horarios",
-  version:"12.3",
+  version:"13.0",
   configKey:"omp_install_panel_horarios_v1",
   stepKey:"omp_install_panel_horarios_step",
 
@@ -1231,10 +1249,10 @@ const OMPInstaller={
         "Este dispositivo ya está conectado",
         "Puede comenzar a trabajar o agregar otro dispositivo."
       );
-      ompStatus.textContent="Todos los cambios se sincronizan automáticamente entre los dispositivos conectados.";
+      ompStatus.textContent="Todos los dispositivos autorizados trabajan sobre la misma institución.";
       ompActions.innerHTML=`
         <button class="b2" onclick="OMPInstaller.openApp()">Abrir Panel de Horarios</button>
-        <button class="b1" onclick="OMPInstaller.showSendConnection()">Conectar otro dispositivo</button>
+        <button class="b1" onclick="OMPInstaller.showSendConnection()">Agregar otro dispositivo</button>
         ${location.protocol==="file:"?'<button class="omp-dev" onclick="OMPInstaller.simulateNewDevice()">🧪 Simular dispositivo nuevo</button>':""}
       `;
     }else{
@@ -1246,7 +1264,7 @@ const OMPInstaller={
       ompActions.innerHTML=`
         <button class="b2" onclick="OMPInstaller.showNewInstitution()">Crear una nueva institución</button>
         <div class="omp-secondary">Para comenzar un Panel de Horarios nuevo.</div>
-        <button class="b1" onclick="OMPInstaller.showConnectDevice()">Conectar este dispositivo</button>
+        <button class="b1" onclick="OMPInstaller.showConnectDevice()">Ingresar con código</button>
         <div class="omp-secondary">Para usar la misma información que ya utilizan otros dispositivos.</div>
       `;
     }
@@ -1261,18 +1279,33 @@ const OMPInstaller={
   showConnectDevice(){
     this.hideAll();
     ompConnectDevice.style.display="block";
-    this.setTitle("Conectar este dispositivo","Pegue la conexión recibida.");
+    this.setTitle("Ingresar con código","Ingrese el código autorizado por el responsable.");
     ompConnectionInput.value="";
     setTimeout(()=>ompConnectionInput.focus(),100);
   },
-  showSendConnection(){
-    const payload=panelConnectionPayload();
-    if(!payload)return;
-    const code=panelEncodeConnection(payload);
-    ompConnectionOutput.value=code;
+  async showSendConnection(){
+    const cfg=this.getConfig();
+    if(!cfg?.institucionId){
+      alert("Esta instalación no tiene una institución registrada.");
+      return;
+    }
     this.hideAll();
     ompSendConnection.style.display="block";
-    this.setTitle("Conectar otro dispositivo","Elija cómo enviar la conexión.");
+    this.setTitle("Agregar otro dispositivo","Genere un código temporal.");
+    await this.generateAccessCode();
+  },
+  async generateAccessCode(){
+    try{
+      ompConnectionOutput.textContent="······";
+      ompCodeExpiry.textContent="Generando código...";
+      const res=await apiPost({action:"generateAccessCode"});
+      ompConnectionOutput.textContent=String(res.code||"");
+      ompCodeExpiry.textContent="Válido por 15 minutos y para un solo dispositivo.";
+    }catch(e){
+      ompConnectionOutput.textContent="ERROR";
+      ompCodeExpiry.textContent="No se pudo generar el código.";
+      alert(e.message||"No se pudo generar el código.");
+    }
   },
   async createInstitution(){
     const inst=(ompInstitution.value||"").trim();
@@ -1281,58 +1314,41 @@ const OMPInstaller={
       alert("Complete el nombre de la institución y su nombre.");
       return;
     }
-    const cfg={
-      appId:this.appId,
-      version:this.version,
-      estado:"INSTALADA",
-      institucion:inst,
-      responsable:resp,
-      instalacionId:"OMP-"+Date.now()+"-"+Math.random().toString(16).slice(2),
-      fecha:new Date().toISOString(),
-      dispositivo:"dispositivo"
-    };
-    localStorage.setItem(this.configKey,JSON.stringify(cfg));
-    localStorage.setItem(this.stepKey,"COMPLETA");
-    alert("Institución creada correctamente.");
-    this.openApp();
+    try{
+      const res=await apiPost({action:"createInstitution",institucionId:"",institucion:inst,responsable:resp});
+      const cfg={
+        appId:this.appId,version:this.version,estado:"INSTALADA",
+        institucion:res.institucion,responsable:res.responsable,
+        institucionId:res.institucionId,fecha:new Date().toISOString(),
+        dispositivo:"responsable"
+      };
+      localStorage.setItem(this.configKey,JSON.stringify(cfg));
+      localStorage.setItem(this.stepKey,"COMPLETA");
+      scriptUrl=PANEL_DEFAULT_SCRIPT_URL;
+      localStorage.setItem("panel_v9_script_url",scriptUrl);
+      alert("Institución creada correctamente.");
+      this.openApp();
+    }catch(e){ alert(e.message||"No se pudo crear la institución."); }
   },
   async activateDevice(){
-    const raw=String(ompConnectionInput.value||"").trim();
-    if(!raw){
-      alert("Pegue primero el mensaje recibido.");
-      return;
-    }
-    const obj=panelDecodeConnection(raw);
-    if(!obj){
-      alert("No pudimos leer la conexión. Vuelva a copiar el mensaje completo.");
-      return;
-    }
-    const ok=await aplicarConexionCompartida(obj,true);
-    if(ok){
-      alert("¡Listo! Este dispositivo quedó conectado.");
+    const code=String(ompConnectionInput.value||"").replace(/\D/g,"").trim();
+    if(code.length!==6){ alert("Ingrese el código de 6 números."); return; }
+    try{
+      const res=await apiPost({action:"connectByCode",institucionId:"",code});
+      const cfg={
+        appId:this.appId,version:this.version,estado:"INSTALADA",
+        institucion:res.institucion,responsable:res.responsable,
+        institucionId:res.institucionId,fecha:new Date().toISOString(),
+        dispositivo:"conectado"
+      };
+      localStorage.setItem(this.configKey,JSON.stringify(cfg));
+      localStorage.setItem(this.stepKey,"COMPLETA");
+      scriptUrl=PANEL_DEFAULT_SCRIPT_URL;
+      localStorage.setItem("panel_v9_script_url",scriptUrl);
+      await loadData(true);
+      alert("¡Listo! Este dispositivo quedó conectado a "+res.institucion+".");
       this.openApp();
-    }
-  },
-  async copyConnection(){
-    const code=String(ompConnectionOutput.value||"").trim();
-    if(!code)return;
-    const ok=await copiarTextoOMP(code);
-    if(ok) alert("Conexión copiada. Envíela al dispositivo nuevo.");
-    else prompt("Copie esta conexión:",code);
-  },
-  sendWhatsApp(){
-    const code=String(ompConnectionOutput.value||"").trim();
-    if(!code)return;
-    const link=PANEL_PUBLIC_URL+"?v=12.3#conectar="+encodeURIComponent(code);
-    const msg=[
-      "Panel de Horarios",
-      "",
-      "Abrí este enlace en el dispositivo que querés conectar:",
-      link,
-      "",
-      "La conexión se realizará automáticamente."
-    ].join("\n");
-    window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank","noopener");
+    }catch(e){ alert(e.message||"Código inválido o vencido."); }
   },
   async simulateNewDevice(){
     this.hideAll();
