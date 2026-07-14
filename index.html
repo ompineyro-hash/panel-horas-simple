@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de Horarios V14.0 LIMPIO</title>
+<title>Panel de Horarios V14.0.1 LIMPIO</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -170,7 +170,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
       </div>
     </div>
 
-    <div class="omp-small">Panel de Horarios V14.0 LIMPIO</div>
+    <div class="omp-small">Panel de Horarios V14.0.1 LIMPIO</div>
   </div>
 </div>
 
@@ -933,6 +933,21 @@ async function clearAll(){
   saveLocal();
   render();
   setMode("Datos limpiados. Se guardó una copia de seguridad local.","ok");
+}
+
+
+function safeAttr(v){
+  return String(v||"")
+    .replace(/&/g,"&amp;")
+    .replace(/"/g,"&quot;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+}
+function groupText(x){
+  const a=String(x.actividad||"").trim();
+  if(!a)return "";
+  const m=a.match(/\b(K|[1-6]\s*[A-Z]?|[1-6]|Inicial|Apoyo|Inglés)\b/i);
+  return m ? m[0].toUpperCase().replace(/\s+/g,"") : a.slice(0,4).toUpperCase();
 }
 
 function movementInfo(p,compareList=[]){
