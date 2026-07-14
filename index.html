@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de Horarios V13.2</title>
+<title>Panel de Horarios V13.2.1</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -170,7 +170,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
       </div>
     </div>
 
-    <div class="omp-small">Panel de Horarios V13.2</div>
+    <div class="omp-small">Panel de Horarios V13.2.1</div>
   </div>
 </div>
 
@@ -673,12 +673,58 @@ function openLoad(index=""){
 }
 
 function closeLoad(){loadModal.classList.remove("show")}
-function openConfig(){renderConfig();configModal.classList.add("show")}
+async function openConfig(){
+  configModal.classList.add("show");
+  setMode("Actualizando datos compartidos...","");
+  try{
+    await loadData(true);
+  }catch(e){
+    console.warn("No se pudieron actualizar los datos compartidos",e);
+  }
+  renderConfig();
+}
 function closeConfig(){configModal.classList.remove("show");fillSelects();render();loadData(true)}
+function uniqueClean(values){
+  return [...new Set((values||[]).map(v=>String(v||"").trim()).filter(Boolean))];
+}
 function renderConfig(){
-  roomPills.innerHTML=rooms.map((r,i)=>`<span class="pill">${r}<button onclick="editRoom(${i})">✎</button><button onclick="removeRoom(${i})">×</button></span>`).join("");
-  teacherPills.innerHTML=teachers.map((t,i)=>`<span class="pill">${t}<button onclick="editTeacher(${i})">✎</button><button onclick="removeTeacher(${i})">×</button></span>`).join("");
-  studentPills.innerHTML=students.map((s,i)=>`<span class="pill">${s.alumno}${s.contacto?" · "+s.contacto:""}<button title="Editar alumno" onclick="editStudent(${i})">✎</button><button title="Eliminar alumno" onclick="removeStudent(${i})">🗑</button></span>`).join("");
+  // Si una lista todavía no llegó desde el servidor, se reconstruye con
+  // los horarios existentes para que nunca aparezca vacía por caché.
+  if(!Array.isArray(rooms) || !rooms.length){
+    rooms=uniqueClean(items.map(x=>x.aula));
+  }else{
+    rooms=uniqueClean(rooms);
+  }
+  if(!Array.isArray(teachers) || !teachers.length){
+    teachers=uniqueClean(items.map(x=>x.profesor));
+  }else{
+    teachers=uniqueClean(teachers);
+  }
+
+  const roomsEl=document.getElementById("roomPills");
+  const teachersEl=document.getElementById("teacherPills");
+  const studentsEl=document.getElementById("studentPills");
+
+  if(roomsEl){
+    roomsEl.innerHTML=rooms.length
+      ? rooms.map((r,i)=>`<span class="pill">${safeAttr(r)}<button onclick="editRoom(${i})">✎</button><button onclick="removeRoom(${i})">×</button></span>`).join("")
+      : `<div class="helper-note">No hay aulas cargadas.</div>`;
+  }
+  if(teachersEl){
+    teachersEl.innerHTML=teachers.length
+      ? teachers.map((t,i)=>`<span class="pill">${safeAttr(t)}<button onclick="editTeacher(${i})">✎</button><button onclick="removeTeacher(${i})">×</button></span>`).join("")
+      : `<div class="helper-note">No hay profesores cargados.</div>`;
+  }
+  if(studentsEl){
+    studentsEl.innerHTML=students.length
+      ? students.map((s,i)=>`<span class="pill">${safeAttr(s.alumno)}${s.contacto?" · "+safeAttr(s.contacto):""}<button title="Editar alumno" onclick="editStudent(${i})">✎</button><button title="Eliminar alumno" onclick="removeStudent(${i})">🗑</button></span>`).join("")
+      : `<div class="helper-note">No hay alumnos cargados.</div>`;
+  }
+
+  localStorage.setItem("panel_v9_rooms",JSON.stringify(rooms));
+  localStorage.setItem("panel_v9_teachers",JSON.stringify(teachers));
+  fillSelects();
+  setMode("Datos compartidos actualizados.","ok");
 }
 async function saveShared(kind,values){
   saveLocal();
