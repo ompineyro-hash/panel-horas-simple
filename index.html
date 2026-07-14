@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de Horarios V13.0</title>
+<title>Panel de Horarios V13.1</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -170,7 +170,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
       </div>
     </div>
 
-    <div class="omp-small">Panel de Horarios V13.0</div>
+    <div class="omp-small">Panel de Horarios V13.1</div>
   </div>
 </div>
 
@@ -509,8 +509,7 @@ function setScriptUrl(){
 }
 async function apiGet(){
   const endpoint=panelEffectiveScriptUrl()||PANEL_DEFAULT_SCRIPT_URL;
-  const q=new URLSearchParams({ts:String(Date.now()),institucionId:ompInstitutionId()});
-  const r=await fetch(endpoint+"?"+q.toString());
+  const r=await fetch(endpoint+"?ts="+Date.now());
   const data=await r.json();
   if(data && data.ok===false) throw new Error(data.error||"Error de conexión");
   return data;
@@ -520,7 +519,7 @@ async function apiPost(payload){
   const r=await fetch(endpoint,{
     method:"POST",
     headers:{"Content-Type":"text/plain"},
-    body:JSON.stringify({...payload,institucionId:payload.institucionId||ompInstitutionId()})
+    body:JSON.stringify(payload)
   });
   const data=await r.json();
   if(data && data.ok===false) throw new Error(data.error||"Error del servidor");
@@ -1211,7 +1210,7 @@ function prepararParaEntregar(){
 // ========================
 const OMPInstaller={
   appId:"panel_horarios",
-  version:"13.0",
+  version:"13.1",
   configKey:"omp_install_panel_horarios_v1",
   stepKey:"omp_install_panel_horarios_step",
 
@@ -1284,15 +1283,32 @@ const OMPInstaller={
     setTimeout(()=>ompConnectionInput.focus(),100);
   },
   async showSendConnection(){
-    const cfg=this.getConfig();
-    if(!cfg?.institucionId){
-      alert("Esta instalación no tiene una institución registrada.");
-      return;
+    try{
+      let cfg=this.getConfig()||{};
+      const res=await apiPost({
+        action:"ensureInstitution",
+        institucion:cfg.institucion||"Panel de horas",
+        responsable:cfg.responsable||"Responsable"
+      });
+      cfg={
+        ...cfg,
+        appId:this.appId,
+        version:this.version,
+        estado:"INSTALADA",
+        institucion:res.institucion,
+        responsable:res.responsable,
+        institucionId:res.institucionId
+      };
+      localStorage.setItem(this.configKey,JSON.stringify(cfg));
+      localStorage.setItem(this.stepKey,"COMPLETA");
+
+      this.hideAll();
+      ompSendConnection.style.display="block";
+      this.setTitle("Agregar otro dispositivo","Genere un código temporal.");
+      await this.generateAccessCode();
+    }catch(e){
+      alert(e.message||"No se pudo registrar la instalación.");
     }
-    this.hideAll();
-    ompSendConnection.style.display="block";
-    this.setTitle("Agregar otro dispositivo","Genere un código temporal.");
-    await this.generateAccessCode();
   },
   async generateAccessCode(){
     try{
@@ -1315,11 +1331,15 @@ const OMPInstaller={
       return;
     }
     try{
-      const res=await apiPost({action:"createInstitution",institucionId:"",institucion:inst,responsable:resp});
+      const res=await apiPost({action:"createInstitution",institucion:inst,responsable:resp});
       const cfg={
-        appId:this.appId,version:this.version,estado:"INSTALADA",
-        institucion:res.institucion,responsable:res.responsable,
-        institucionId:res.institucionId,fecha:new Date().toISOString(),
+        appId:this.appId,
+        version:this.version,
+        estado:"INSTALADA",
+        institucion:res.institucion,
+        responsable:res.responsable,
+        institucionId:res.institucionId,
+        fecha:new Date().toISOString(),
         dispositivo:"responsable"
       };
       localStorage.setItem(this.configKey,JSON.stringify(cfg));
@@ -1328,17 +1348,26 @@ const OMPInstaller={
       localStorage.setItem("panel_v9_script_url",scriptUrl);
       alert("Institución creada correctamente.");
       this.openApp();
-    }catch(e){ alert(e.message||"No se pudo crear la institución."); }
+    }catch(e){
+      alert(e.message||"No se pudo crear la institución.");
+    }
   },
   async activateDevice(){
     const code=String(ompConnectionInput.value||"").replace(/\D/g,"").trim();
-    if(code.length!==6){ alert("Ingrese el código de 6 números."); return; }
+    if(code.length!==6){
+      alert("Ingrese el código de 6 números.");
+      return;
+    }
     try{
-      const res=await apiPost({action:"connectByCode",institucionId:"",code});
+      const res=await apiPost({action:"connectByCode",code});
       const cfg={
-        appId:this.appId,version:this.version,estado:"INSTALADA",
-        institucion:res.institucion,responsable:res.responsable,
-        institucionId:res.institucionId,fecha:new Date().toISOString(),
+        appId:this.appId,
+        version:this.version,
+        estado:"INSTALADA",
+        institucion:res.institucion,
+        responsable:res.responsable,
+        institucionId:res.institucionId,
+        fecha:new Date().toISOString(),
         dispositivo:"conectado"
       };
       localStorage.setItem(this.configKey,JSON.stringify(cfg));
@@ -1346,9 +1375,11 @@ const OMPInstaller={
       scriptUrl=PANEL_DEFAULT_SCRIPT_URL;
       localStorage.setItem("panel_v9_script_url",scriptUrl);
       await loadData(true);
-      alert("¡Listo! Este dispositivo quedó conectado a "+res.institucion+".");
+      alert("¡Listo! Este dispositivo quedó conectado.");
       this.openApp();
-    }catch(e){ alert(e.message||"Código inválido o vencido."); }
+    }catch(e){
+      alert(e.message||"Código inválido o vencido.");
+    }
   },
   async simulateNewDevice(){
     this.hideAll();
