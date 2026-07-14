@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de Horarios V13.2.1</title>
+<title>Panel de Horarios V14.0 LIMPIO</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -170,7 +170,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
       </div>
     </div>
 
-    <div class="omp-small">Panel de Horarios V13.2.1</div>
+    <div class="omp-small">Panel de Horarios V14.0 LIMPIO</div>
   </div>
 </div>
 
@@ -241,15 +241,10 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
 
 <div id="configModal" class="modal"><div class="box"><h2>Datos compartidos</h2>
 <p class="shared-note">Primero cargue aquí las aulas, profesores y alumnos. Después use Cargar horario para asignarlos a días y horarios.</p>
-<div class="toolbar">
-  <button class="b2" onclick="compartirInstalacion()">Compartir instalación</button>
-  <button class="b1" onclick="conectarInstalacionExistente()">Conectar a instalación existente</button>
-  <button class="b6" onclick="prepararParaEntregar()">Preparar copia para otra institución</button>
-</div>
-<div class="helper-note">Use estos botones para conectar otra computadora o celular a la misma base compartida, o para preparar una copia limpia para otra institución.</div>
+
 <div class="config-list">
 <div><h3>Aulas</h3><div style="display:flex;gap:6px"><input id="newRoom" placeholder="Ej: Aula 2"><button class="b1" onclick="addRoom()">Agregar</button></div><div id="roomPills"></div></div>
-<div><h3>Profesores</h3><div style="display:flex;gap:6px"><input id="newTeacher" placeholder="Ej: Laura"><button class="b1" onclick="addTeacher()">Agregar</button></div><div id="teacherPills"></div></div>
+<div><h3>Profesores</h3><div style="display:flex;gap:6px"><input id="newTeacher" placeholder="Ej: "><button class="b1" onclick="addTeacher()">Agregar</button></div><div id="teacherPills"></div></div>
 <div class="full"><h3>Alumnos</h3>
 <div class="form">
 <div><label>Alumno</label><input id="newStudent" placeholder="Nombre del alumno"></div>
@@ -281,21 +276,13 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
 </div></div>
 <script>
 const PANEL_PUBLIC_URL="https://ompineyro-hash.github.io/panel-horas-simple/";
-function ompCurrentConfig(){
-  try{return JSON.parse(localStorage.getItem("omp_install_panel_horarios_v1")||"null")}catch(e){return null}
-}
-function ompInstitutionId(){
-  const cfg=ompCurrentConfig();
-  return String(cfg?.institucionId||"").trim();
-}
-
 const DAYS=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"], WORKDAYS=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
-let items=JSON.parse(localStorage.getItem("panel_v9_items")||"[]"), 
-rooms=JSON.parse(localStorage.getItem("panel_v9_rooms")||'[]'), 
-teachers=JSON.parse(localStorage.getItem("panel_v9_teachers")||'[]'), 
-students=JSON.parse(localStorage.getItem("panel_v10_students")||"[]"),
-attendance=JSON.parse(localStorage.getItem("panel_v10_attendance")||"[]"),
-scriptUrl=localStorage.getItem("panel_v9_script_url")||"",
+let items=[],
+rooms=[],
+teachers=[],
+students=[],
+attendance=[],
+scriptUrl=PANEL_DEFAULT_SCRIPT_URL,
 autoTimer=null,
 syncFailCount=0,
 SYNC_FAIL_VISIBLE_AFTER=3;
@@ -325,7 +312,17 @@ function dbg(msg,obj){
   console.log('[ASISTENCIA]', msg, obj || '');
 }
 
-function saveLocal(){localStorage.setItem("panel_v9_items",JSON.stringify(items));localStorage.setItem("panel_v9_rooms",JSON.stringify(rooms));localStorage.setItem("panel_v9_teachers",JSON.stringify(teachers));localStorage.setItem("panel_v10_students",JSON.stringify(students));localStorage.setItem("panel_v10_attendance",JSON.stringify(attendance))}
+function saveLocal(){ /* V14: Google Sheets es la única fuente de verdad */ }
+function clearLegacyBrowserDataOnce(){
+  const key="panel_v14_legacy_cleaned";
+  if(localStorage.getItem(key)==="SI")return;
+  [
+    "panel_v9_items","panel_v9_rooms","panel_v9_teachers",
+    "panel_v10_students","panel_v10_attendance"
+  ].forEach(k=>localStorage.removeItem(k));
+  localStorage.setItem(key,"SI");
+}
+clearLegacyBrowserDataOnce();
 function tick(){clock.textContent=new Date().toLocaleString("es-AR",{weekday:"long",hour:"2-digit",minute:"2-digit"})}setInterval(tick,1000);tick();
 function nowInfo(){const d=new Date();return{day:DAYS[d.getDay()],hm:String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}}
 function fixTime(v){if(!v)return"";v=String(v);const m=v.match(/(\d{1,2}):(\d{2})/);return m?String(m[1]).padStart(2,"0")+":"+m[2]:v}
@@ -427,104 +424,7 @@ function panelUrlValida(u){
   u=String(u||"").trim();
   return u.startsWith("https://script.google.com/macros/s/") && u.endsWith("/exec");
 }
-function panelConnectionPayload(){
-  const u=panelGuardarScriptUrlSiHaceFalta();
-  if(!u || !panelUrlValida(u)){
-    alert("Esta instalación todavía no tiene una base compartida conectada.");
-    return null;
-  }
-  return {
-    app:"panel_horarios",
-    tipo:"conexion_compartida",
-    version:"V10.8.2",
-    scriptUrl:u,
-    generado:new Date().toISOString()
-  };
-}
-function panelEncodeConnection(payload){
-  return "PHS-"+btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-}
-function panelDecodeConnection(code){
-  let raw=String(code||"").trim();
-  if(!raw)return null;
 
-  const hashMatch=raw.match(/#conectar=([^\s]+)/);
-  if(hashMatch){
-    try{ raw=decodeURIComponent(hashMatch[1]); }catch(e){ raw=hashMatch[1]; }
-  }
-
-  const codeMatch=raw.match(/PHS-[A-Za-z0-9+/=]+/);
-  if(codeMatch) raw=codeMatch[0];
-
-  if(panelUrlValida(raw)){
-    return {app:"panel_horarios",tipo:"url_directa",version:"manual",scriptUrl:raw};
-  }
-
-  const clean=raw.startsWith("PHS-")?raw.slice(4):raw;
-  try{
-    const obj=JSON.parse(decodeURIComponent(escape(atob(clean))));
-    if(obj && obj.app==="panel_horarios" && panelUrlValida(obj.scriptUrl))return obj;
-  }catch(e){}
-  return null;
-}
-async function copiarTextoOMP(txt){
-  try{
-    await navigator.clipboard.writeText(txt);
-    return true;
-  }catch(e){
-    return false;
-  }
-}
-async function compartirInstalacion(){
-  const payload=panelConnectionPayload();
-  if(!payload)return;
-  const code=panelEncodeConnection(payload);
-  const ok=await copiarTextoOMP(code);
-  prompt((ok?"Código copiado. ":"Copie este código. ")+"Péguelo en la otra computadora o celular:",code);
-}
-async function aplicarConexionCompartida(obj,desdeInstalador=false){
-  if(!obj || !panelUrlValida(obj.scriptUrl)){
-    alert("El código de conexión no es válido.");
-    return false;
-  }
-  scriptUrl=obj.scriptUrl.trim();
-  localStorage.setItem("panel_v9_script_url",scriptUrl);
-  if(desdeInstalador){
-    const cfg={
-      appId:"panel_horarios",
-      version:"1.0",
-      estado:"INSTALADA",
-      institucion:"Panel de Horarios",
-      responsable:"Conectado",
-      instalacionId:"OMP-"+Date.now()+"-"+Math.random().toString(16).slice(2),
-      fecha:new Date().toISOString(),
-      dispositivo:/Mobi|Android/i.test(navigator.userAgent)?"celular":"pc",
-      conectadaA:"instalacion_existente"
-    };
-    localStorage.setItem("omp_install_panel_horarios_v1",JSON.stringify(cfg));
-    localStorage.setItem("omp_install_panel_horarios_step","COMPLETA");
-  }
-  startAuto();
-  setMode("Conectando a instalación existente...","");
-  try{
-    await loadData(true);
-    setMode("Instalación conectada correctamente.","ok");
-    return true;
-  }catch(e){
-    setMode("Conexión guardada. Si no ve datos, presione Actualizar.","err");
-    return true;
-  }
-}
-async function conectarInstalacionExistente(){
-  const code=prompt("Pegue el código recibido desde la instalación principal:");
-  if(code===null)return false;
-  const obj=panelDecodeConnection(code);
-  if(!obj){
-    alert("Código no válido. Copie nuevamente el código desde Compartir instalación.");
-    return false;
-  }
-  return await aplicarConexionCompartida(obj,false);
-}
 
 function setScriptUrl(){
   const u=prompt("Pegá acá tu URL de Google Apps Script. Tiene que terminar en /exec:",scriptUrl);
@@ -567,7 +467,8 @@ async function apiPost(payload){
 }
 
 async function loadData(force=false){
-  if(!scriptUrl){render();return}
+  scriptUrl=panelEffectiveScriptUrl()||PANEL_DEFAULT_SCRIPT_URL;
+  if(!scriptUrl){setMode("No se encontró la base compartida.","err");render();return}
   if(!force && isBusy()) return;
   try{
     if(force) setMode("Actualizando datos...","");
@@ -581,17 +482,12 @@ async function loadData(force=false){
       if(repairedCount){
         console.warn("Se recuperaron automáticamente "+repairedCount+" horario(s) con columnas corridas.");
       }
-      if(Array.isArray(data.aulas) && data.aulas.length) rooms=data.aulas.map(String);
-      if(Array.isArray(data.profesores) && data.profesores.length) teachers=data.profesores.map(String);
+      rooms=Array.isArray(data.aulas)?data.aulas.map(String):[];
+      teachers=Array.isArray(data.profesores)?data.profesores.map(String):[];
       students=(data.alumnos||[]).map(normalizeStudent);
       attendance=(data.asistencia||[]);
-      localStorage.setItem("panel_v9_rooms",JSON.stringify(rooms));
-      localStorage.setItem("panel_v9_teachers",JSON.stringify(teachers));
-      localStorage.setItem("panel_v10_students",JSON.stringify(students));
-      localStorage.setItem("panel_v10_attendance",JSON.stringify(attendance));
     }
     applyAttendanceToItems();
-    localStorage.setItem("panel_v9_items",JSON.stringify(items));
     fillSelects();
     const veniaFallando = syncFailCount > 0;
     syncFailCount = 0;
@@ -676,53 +572,30 @@ function closeLoad(){loadModal.classList.remove("show")}
 async function openConfig(){
   configModal.classList.add("show");
   setMode("Actualizando datos compartidos...","");
-  try{
-    await loadData(true);
-  }catch(e){
-    console.warn("No se pudieron actualizar los datos compartidos",e);
-  }
+  await loadData(true);
   renderConfig();
 }
-function closeConfig(){configModal.classList.remove("show");fillSelects();render();loadData(true)}
+function closeConfig(){configModal.classList.remove("show");fillSelects();render()}
 function uniqueClean(values){
   return [...new Set((values||[]).map(v=>String(v||"").trim()).filter(Boolean))];
 }
 function renderConfig(){
-  // Si una lista todavía no llegó desde el servidor, se reconstruye con
-  // los horarios existentes para que nunca aparezca vacía por caché.
-  if(!Array.isArray(rooms) || !rooms.length){
-    rooms=uniqueClean(items.map(x=>x.aula));
-  }else{
-    rooms=uniqueClean(rooms);
-  }
-  if(!Array.isArray(teachers) || !teachers.length){
-    teachers=uniqueClean(items.map(x=>x.profesor));
-  }else{
-    teachers=uniqueClean(teachers);
-  }
+  rooms=uniqueClean(rooms);
+  teachers=uniqueClean(teachers);
+  students=(students||[]).filter(s=>String(s.alumno||"").trim());
 
-  const roomsEl=document.getElementById("roomPills");
-  const teachersEl=document.getElementById("teacherPills");
-  const studentsEl=document.getElementById("studentPills");
+  roomPills.innerHTML=rooms.length
+    ? rooms.map((r,i)=>`<span class="pill">${safeAttr(r)}<button onclick="editRoom(${i})">✎</button><button onclick="removeRoom(${i})">×</button></span>`).join("")
+    : `<div class="helper-note">No hay aulas cargadas.</div>`;
 
-  if(roomsEl){
-    roomsEl.innerHTML=rooms.length
-      ? rooms.map((r,i)=>`<span class="pill">${safeAttr(r)}<button onclick="editRoom(${i})">✎</button><button onclick="removeRoom(${i})">×</button></span>`).join("")
-      : `<div class="helper-note">No hay aulas cargadas.</div>`;
-  }
-  if(teachersEl){
-    teachersEl.innerHTML=teachers.length
-      ? teachers.map((t,i)=>`<span class="pill">${safeAttr(t)}<button onclick="editTeacher(${i})">✎</button><button onclick="removeTeacher(${i})">×</button></span>`).join("")
-      : `<div class="helper-note">No hay profesores cargados.</div>`;
-  }
-  if(studentsEl){
-    studentsEl.innerHTML=students.length
-      ? students.map((s,i)=>`<span class="pill">${safeAttr(s.alumno)}${s.contacto?" · "+safeAttr(s.contacto):""}<button title="Editar alumno" onclick="editStudent(${i})">✎</button><button title="Eliminar alumno" onclick="removeStudent(${i})">🗑</button></span>`).join("")
-      : `<div class="helper-note">No hay alumnos cargados.</div>`;
-  }
+  teacherPills.innerHTML=teachers.length
+    ? teachers.map((t,i)=>`<span class="pill">${safeAttr(t)}<button onclick="editTeacher(${i})">✎</button><button onclick="removeTeacher(${i})">×</button></span>`).join("")
+    : `<div class="helper-note">No hay profesores cargados.</div>`;
 
-  localStorage.setItem("panel_v9_rooms",JSON.stringify(rooms));
-  localStorage.setItem("panel_v9_teachers",JSON.stringify(teachers));
+  studentPills.innerHTML=students.length
+    ? students.map((s,i)=>`<span class="pill">${safeAttr(s.alumno)}${s.contacto?" · "+safeAttr(s.contacto):""}<button title="Editar alumno" onclick="editStudent(${i})">✎</button><button title="Eliminar alumno" onclick="removeStudent(${i})">🗑</button></span>`).join("")
+    : `<div class="helper-note">No hay alumnos cargados.</div>`;
+
   fillSelects();
   setMode("Datos compartidos actualizados.","ok");
 }
@@ -940,17 +813,7 @@ async function clearAll(){
   render();
   setMode("Datos limpiados. Se guardó una copia de seguridad local.","ok");
 }
-async function seedDemo(){const n=nowInfo(),h1=n.hm;let d=new Date();d.setMinutes(d.getMinutes()+30);const h2=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"),demo=[{dia:n.day,hora:h1,aula:"Aula 1",alumno:"Camila Abad",profesor:"Laura",actividad:"Apoyo"},{dia:n.day,hora:h1,aula:"Inglés",alumno:"Tomás Ríos",profesor:"Ana",actividad:"Inglés"},{dia:n.day,hora:h2,aula:"Aula 1",alumno:"Tomás Ríos",profesor:"Laura",actividad:"Apoyo"},{dia:n.day,hora:h2,aula:"Inglés",alumno:"Sofía Núñez",profesor:"Ana",actividad:"Inglés"}];if(scriptUrl){for(const obj of demo)await apiPost({action:"add",...obj});await loadData(true)}else{for(const obj of demo)if(!items.some(x=>itemKey(x)===itemKey(obj)))items.push({...obj,id:Date.now()+Math.random()+""});saveLocal();render()}}
 
-
-
-function safeAttr(v){return String(v||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
-function groupText(x){
-  const a=String(x.actividad||"").trim();
-  if(!a)return "";
-  const m=a.match(/\b(K|[1-6]\s*[A-Z]?|[1-6]|Inicial|Apoyo|Inglés)\b/i);
-  return m ? m[0].toUpperCase().replace(/\s+/g,"") : a.slice(0,4).toUpperCase();
-}
 function movementInfo(p,compareList=[]){
   const prev=compareList.find(x=>cleanKeyPart(x.alumno)===cleanKeyPart(p.alumno));
   if(!prev)return {txt:"Ingresa",cls:"in"};
