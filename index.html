@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de Horarios V14.0.1 LIMPIO</title>
+<title>Panel de Horarios V14.0.2 BASE ÚNICA</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -170,7 +170,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
       </div>
     </div>
 
-    <div class="omp-small">Panel de Horarios V14.0.1 LIMPIO</div>
+    <div class="omp-small">Panel de Horarios V14.0.2 BASE ÚNICA</div>
   </div>
 </div>
 
@@ -304,15 +304,14 @@ SYNC_FAIL_VISIBLE_AFTER=3;
 // Si ya existe una URL guardada en el equipo, se respeta. Si no existe, se usa esta base del paquete.
 const PANEL_DEFAULT_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwJXywOPHngiPrvMM2JvzqZfYhDlfpjOY9MseFA4krm1X8ho_OTCrt4suEKb-0L7JS-/exec";
 function panelEffectiveScriptUrl(){
-  const saved=String(scriptUrl||localStorage.getItem("panel_v9_script_url")||"").trim();
-  if(panelUrlValida(saved))return saved;
+  // V14.0.2: esta instalación usa una sola base oficial.
+  // Se ignoran URLs antiguas que hayan quedado guardadas en el navegador.
   const def=String(PANEL_DEFAULT_SCRIPT_URL||"").trim();
-  if(panelUrlValida(def))return def;
-  return "";
+  return panelUrlValida(def)?def:"";
 }
 function panelGuardarScriptUrlSiHaceFalta(){
   const u=panelEffectiveScriptUrl();
-  if(u && !panelUrlValida(scriptUrl)){
+  if(u){
     scriptUrl=u;
     localStorage.setItem("panel_v9_script_url",u);
   }
@@ -334,6 +333,8 @@ function clearLegacyPanelCacheOnce(){
   localStorage.setItem(flag,"SI");
 }
 clearLegacyPanelCacheOnce();
+localStorage.setItem("panel_v9_script_url", PANEL_DEFAULT_SCRIPT_URL);
+scriptUrl=PANEL_DEFAULT_SCRIPT_URL;
 
 function tick(){clock.textContent=new Date().toLocaleString("es-AR",{weekday:"long",hour:"2-digit",minute:"2-digit"})}setInterval(tick,1000);tick();
 function nowInfo(){const d=new Date();return{day:DAYS[d.getDay()],hm:String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}}
