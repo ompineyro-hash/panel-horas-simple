@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de Horarios V14.0.2 BASE ÚNICA</title>
+<title>Panel de Horarios V14.0.3 DISPOSITIVOS</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -170,7 +170,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
       </div>
     </div>
 
-    <div class="omp-small">Panel de Horarios V14.0.2 BASE ÚNICA</div>
+    <div class="omp-small">Panel de Horarios V14.0.3 DISPOSITIVOS</div>
   </div>
 </div>
 
@@ -1375,6 +1375,8 @@ const OMPInstaller={
   },
   async showSendConnection(){
     try{
+      // Mostrar el instalador también cuando se abre desde el interior de la app.
+      document.body.classList.add("omp-pending");
       let cfg=this.getConfig()||{};
       const res=await apiPost({
         action:"ensureInstitution",
@@ -1398,6 +1400,7 @@ const OMPInstaller={
       this.setTitle("Agregar otro dispositivo","Genere un código temporal.");
       await this.generateAccessCode();
     }catch(e){
+      document.body.classList.remove("omp-pending");
       alert(e.message||"No se pudo registrar la instalación.");
     }
   },
