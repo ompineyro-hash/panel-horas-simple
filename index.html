@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de Horarios V14.0.3 DISPOSITIVOS</title>
+<title>Panel de Horarios V14.0.4 CONEXIÓN NUEVA</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -170,7 +170,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
       </div>
     </div>
 
-    <div class="omp-small">Panel de Horarios V14.0.3 DISPOSITIVOS</div>
+    <div class="omp-small">Panel de Horarios V14.0.4 CONEXIÓN NUEVA</div>
   </div>
 </div>
 
@@ -1309,12 +1309,14 @@ const OMPInstaller={
     try{return JSON.parse(localStorage.getItem(this.configKey)||"null")}catch(e){return null}
   },
   hasLegacyInstall(){
+    // V14.0.4: la URL técnica está incluida en el paquete y NO demuestra
+    // que este navegador haya sido autorizado. Solo cuentan instalaciones
+    // antiguas que realmente tengan datos locales propios.
     return !!(
       localStorage.getItem("panel_v9_items") ||
       localStorage.getItem("panel_v9_rooms") ||
       localStorage.getItem("panel_v9_teachers") ||
-      localStorage.getItem("panel_v10_students") ||
-      localStorage.getItem("panel_v9_script_url")
+      localStorage.getItem("panel_v10_students")
     );
   },
   hideAll(){
