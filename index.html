@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de Horarios V14.0.4 CONEXIÓN NUEVA</title>
+<title>Panel de Horarios V15.0 INFORMES FILTRADOS</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -55,6 +55,16 @@ table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1
 .report-card h3{margin:0 0 8px;font-size:20px}.report-num{font-size:24px;font-weight:bold;margin:4px 0}.warn{background:#fff6d8;border-left:6px solid #c96a00;border-radius:10px;padding:9px;margin:6px 0}
 .report-actions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.report-actions button{font-size:14px;padding:8px 10px}
 @media(max-width:800px){.report-grid{grid-template-columns:1fr}}
+
+.report-filter-box{background:#f8fbff;border:1px solid #d6e0ee;border-radius:14px;padding:12px;margin:12px 0}
+.report-filters{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-items:end}
+.report-filters label{display:block;font-size:13px;font-weight:bold;color:#344054;margin-bottom:4px}
+.report-filters input,.report-filters select{width:100%}
+.report-result-summary{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.report-chip{background:#eef4ff;border-radius:999px;padding:7px 10px;font-weight:bold}
+.report-print-title{display:none}
+@media(max-width:850px){.report-filters{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.report-filters{grid-template-columns:1fr}}
 
 /* V10.7 DOCENTE - vista compacta */
 .room-grid{grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
@@ -170,7 +180,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
       </div>
     </div>
 
-    <div class="omp-small">Panel de Horarios V14.0.4 CONEXIÓN NUEVA</div>
+    <div class="omp-small">Panel de Horarios V15.0 INFORMES FILTRADOS</div>
   </div>
 </div>
 
@@ -263,11 +273,41 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
 
 
 <div id="reportsModal" class="modal"><div class="box"><h2>📊 Informes de asistencia</h2>
-<p class="shared-note">Resumen automático usando las asistencias guardadas. Si falta marcar un alumno, no cuenta como presente ni ausente.</p>
-<div class="report-actions"><button class="b2" onclick="refreshReports()">Actualizar informes</button><button class="b6" onclick="closeReports()">Cerrar</button></div>
+<p class="shared-note">Consulte las asistencias por período, alumno y estado. Los alumnos sin marcar no se cuentan como presentes ni ausentes.</p>
+
+<div class="report-filter-box">
+  <h3 style="margin-top:0">Buscar asistencias</h3>
+  <div class="report-filters">
+    <div><label>Desde</label><input id="reportFrom" type="date"></div>
+    <div><label>Hasta</label><input id="reportTo" type="date"></div>
+    <div><label>Alumno</label><select id="reportFilterStudent"><option value="">Todos los alumnos</option></select></div>
+    <div><label>Estado</label>
+      <select id="reportFilterStatus">
+        <option value="">Presentes y ausentes</option>
+        <option value="presente">Solo presentes</option>
+        <option value="ausente">Solo ausentes</option>
+      </select>
+    </div>
+  </div>
+  <div class="report-actions">
+    <button class="b2" onclick="applyReportFilters()">Buscar</button>
+    <button class="b4" onclick="clearReportFilters()">Limpiar filtros</button>
+    <button class="b7" onclick="printFilteredReport()">🖨️ Imprimir resultados</button>
+    <button class="b6" onclick="closeReports()">Cerrar</button>
+  </div>
+</div>
+
+<div id="filteredReportSummary" class="report-result-summary"></div>
+<div id="filteredReportTable" style="overflow:auto"></div>
+
+<hr style="border:0;border-top:1px solid #d6e0ee;margin:18px 0">
+<h3>Resumen general</h3>
+<div class="report-actions"><button class="b2" onclick="refreshReports()">Actualizar informes</button></div>
 <div id="reportsSummary" class="report-grid"></div>
+
 <h3>Alumnos con más ausencias del mes</h3>
 <div style="overflow:auto"><table><thead><tr><th>Alumno</th><th>Ausentes</th><th>Presentes</th><th>% asistencia</th></tr></thead><tbody id="reportsRanking"></tbody></table></div>
+
 <h3>Ausentes por día</h3>
 <div class="absent-filter">
   <div><label>Día</label><select id="absentDay" onchange="renderAbsentsByDay()"><option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option><option>Sábado</option></select></div>
@@ -1167,12 +1207,140 @@ function summaryCard(title,list){
 async function openReports(){
   reportsModal.classList.add("show");
   await refreshReports();
+  initializeReportFilters();
+  applyReportFilters();
 }
 function closeReports(){reportsModal.classList.remove("show")}
 async function refreshReports(){
   if(scriptUrl){try{await loadData(true)}catch(e){}}
   renderReports();
 }
+
+function initializeReportFilters(){
+  const records=finalAttendanceRecords();
+  const today=todayISO();
+  const monthStart=today.slice(0,8)+"01";
+
+  if(reportFrom && !reportFrom.value) reportFrom.value=monthStart;
+  if(reportTo && !reportTo.value) reportTo.value=today;
+
+  const names=[...new Set(records.map(r=>String(r.alumno||"").trim()).filter(Boolean))]
+    .sort((a,b)=>a.localeCompare(b));
+  const old=reportFilterStudent?.value||"";
+  reportFilterStudent.innerHTML=`<option value="">Todos los alumnos</option>`+
+    names.map(n=>`<option value="${safeAttr(n)}">${n}</option>`).join("");
+  if(names.includes(old)) reportFilterStudent.value=old;
+}
+
+function reportFilteredRecords(){
+  const from=reportFrom?.value||"";
+  const to=reportTo?.value||"";
+  const student=String(reportFilterStudent?.value||"").trim();
+  const status=String(reportFilterStatus?.value||"").trim().toLowerCase();
+
+  return finalAttendanceRecords().filter(r=>{
+    const fecha=dateKey(r.fecha);
+    if(from && fecha<from) return false;
+    if(to && fecha>to) return false;
+    if(student && String(r.alumno||"").trim()!==student) return false;
+    if(status && String(r.estado||"").toLowerCase()!==status) return false;
+    return true;
+  }).sort((a,b)=>
+    String(a.fecha).localeCompare(String(b.fecha)) ||
+    fixTime(a.hora).localeCompare(fixTime(b.hora)) ||
+    String(a.alumno||"").localeCompare(String(b.alumno||""))
+  );
+}
+
+function formatReportDate(iso){
+  const m=String(iso||"").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : String(iso||"");
+}
+
+function applyReportFilters(){
+  if(reportFrom?.value && reportTo?.value && reportFrom.value>reportTo.value){
+    alert("La fecha Desde no puede ser posterior a la fecha Hasta.");
+    return;
+  }
+
+  const list=reportFilteredRecords();
+  const c=countRecords(list);
+  filteredReportSummary.innerHTML=
+    `<span class="report-chip">Resultados: ${list.length}</span>`+
+    `<span class="report-chip">Presentes: ${c.presentes}</span>`+
+    `<span class="report-chip">Ausentes: ${c.ausentes}</span>`+
+    `<span class="report-chip">Asistencia: ${c.pct}</span>`;
+
+  filteredReportTable.innerHTML=
+    `<table><thead><tr><th>Fecha</th><th>Día</th><th>Hora</th><th>Alumno</th><th>Aula</th><th>Profesor</th><th>Estado</th></tr></thead><tbody>`+
+    (list.map(r=>`<tr>
+      <td>${formatReportDate(r.fecha)}</td>
+      <td>${r.dia||""}</td>
+      <td>${fixTime(r.hora)}</td>
+      <td><b>${r.alumno||""}</b></td>
+      <td>${r.aula||""}</td>
+      <td>${r.profesor||""}</td>
+      <td><b>${String(r.estado||"").toUpperCase()}</b></td>
+    </tr>`).join("") ||
+    `<tr><td colspan="7" class="empty">No hay asistencias que coincidan con los filtros seleccionados.</td></tr>`)+
+    `</tbody></table>`;
+}
+
+function clearReportFilters(){
+  const today=todayISO();
+  reportFrom.value=today.slice(0,8)+"01";
+  reportTo.value=today;
+  reportFilterStudent.value="";
+  reportFilterStatus.value="";
+  applyReportFilters();
+}
+
+function printFilteredReport(){
+  const list=reportFilteredRecords();
+  if(!list.length){
+    alert("No hay resultados para imprimir.");
+    return;
+  }
+  const c=countRecords(list);
+  const from=reportFrom?.value ? formatReportDate(reportFrom.value) : "Inicio";
+  const to=reportTo?.value ? formatReportDate(reportTo.value) : "Hoy";
+  const student=reportFilterStudent?.value||"Todos los alumnos";
+  const status=reportFilterStatus?.value
+    ? (reportFilterStatus.value==="presente"?"Solo presentes":"Solo ausentes")
+    : "Presentes y ausentes";
+
+  const rows=list.map(r=>`<tr>
+    <td>${formatReportDate(r.fecha)}</td><td>${r.dia||""}</td><td>${fixTime(r.hora)}</td>
+    <td>${r.alumno||""}</td><td>${r.aula||""}</td><td>${r.profesor||""}</td>
+    <td>${String(r.estado||"").toUpperCase()}</td>
+  </tr>`).join("");
+
+  const w=window.open("","_blank");
+  if(!w){
+    alert("El navegador bloqueó la ventana de impresión.");
+    return;
+  }
+  w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8">
+  <title>Informe de asistencia</title>
+  <style>
+    body{font-family:Arial,sans-serif;padding:20px;color:#111}
+    h1{margin-bottom:6px}.meta{margin:4px 0 14px}
+    table{width:100%;border-collapse:collapse}
+    th,td{border:1px solid #777;padding:7px;text-align:left;font-size:12px}
+    th{background:#eee}
+    .totals{margin:12px 0;font-weight:bold}
+  </style></head><body>
+  <h1>Informe de asistencia</h1>
+  <div class="meta">Período: ${from} al ${to}</div>
+  <div class="meta">Alumno: ${student} · Estado: ${status}</div>
+  <div class="totals">Resultados: ${list.length} · Presentes: ${c.presentes} · Ausentes: ${c.ausentes} · Asistencia: ${c.pct}</div>
+  <table><thead><tr><th>Fecha</th><th>Día</th><th>Hora</th><th>Alumno</th><th>Aula</th><th>Profesor</th><th>Estado</th></tr></thead>
+  <tbody>${rows}</tbody></table>
+  <script>window.onload=()=>{window.print();}<\/script>
+  </body></html>`);
+  w.document.close();
+}
+
 function renderReports(){
   const now=new Date();
   const todayStart=new Date(now.getFullYear(),now.getMonth(),now.getDate());
