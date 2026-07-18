@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de Horarios V16.1 INSTITUCIONES SEGURAS</title>
+<title>Panel de Horarios V16.1.1 AUTORIZACIÓN CORREGIDA</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -180,7 +180,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
       </div>
     </div>
 
-    <div class="omp-small">Panel de Horarios V16.1 INSTITUCIONES SEGURAS</div>
+    <div class="omp-small">Panel de Horarios V16.1.1 AUTORIZACIÓN CORREGIDA</div>
   </div>
 </div>
 
@@ -1502,7 +1502,15 @@ const OMPInstaller={
     ompActions.innerHTML="";
 
     const cfg=this.getConfig();
-    const connected=!!(cfg && cfg.estado==="INSTALADA");
+    // Un dispositivo está realmente conectado solamente cuando conserva
+    // la institución y el token permanente entregados al autorizarlo.
+    const connected=!!(
+      cfg &&
+      cfg.estado==="INSTALADA" &&
+      String(cfg.institucionId||"").trim() &&
+      String(cfg.accessToken||"").trim()
+    );
+    const pendingAuthorization=!!(cfg && cfg.estado==="INSTALADA" && !connected);
 
     if(connected){
       this.setTitle(
@@ -1517,10 +1525,14 @@ const OMPInstaller={
       `;
     }else{
       this.setTitle(
-        "Panel de Horarios",
-        "Seleccione una opción para comenzar."
+        pendingAuthorization ? "Autorizar este dispositivo" : "Panel de Horarios",
+        pendingAuthorization
+          ? "Este equipo necesita un código solamente esta primera vez."
+          : "Seleccione una opción para comenzar."
       );
-      ompStatus.textContent="No se crea una copia. Todos los dispositivos trabajan sobre la misma información compartida.";
+      ompStatus.textContent=pendingAuthorization
+        ? "Ingrese un código de 6 números generado por el responsable. Después quedará conectado permanentemente."
+        : "No se crea una copia. Todos los dispositivos trabajan sobre la misma información compartida.";
       ompActions.innerHTML=`
         <button class="b2" onclick="OMPInstaller.showNewInstitution()">Crear una nueva institución</button>
         <div class="omp-secondary">Para comenzar un Panel de Horarios nuevo.</div>
