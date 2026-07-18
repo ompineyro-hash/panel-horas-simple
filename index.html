@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de Horarios V15.0 INFORMES FILTRADOS</title>
+<title>Panel de Horarios V16.0 INSTITUCIONES SEGURAS</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -180,7 +180,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
       </div>
     </div>
 
-    <div class="omp-small">Panel de Horarios V15.0 INFORMES FILTRADOS</div>
+    <div class="omp-small">Panel de Horarios V16.0 INSTITUCIONES SEGURAS</div>
   </div>
 </div>
 
@@ -526,12 +526,9 @@ async function copiarTextoOMP(txt){
   }
 }
 async function compartirInstalacion(){
-  const payload=panelConnectionPayload();
-  if(!payload)return;
-  const code=panelEncodeConnection(payload);
-  const ok=await copiarTextoOMP(code);
-  prompt((ok?"Código copiado. ":"Copie este código. ")+"Péguelo en la otra computadora o celular:",code);
+  OMPInstaller.showSendConnection();
 }
+
 async function aplicarConexionCompartida(obj,desdeInstalador=false){
   if(!obj || !panelUrlValida(obj.scriptUrl)){
     alert("El código de conexión no es válido.");
@@ -566,14 +563,8 @@ async function aplicarConexionCompartida(obj,desdeInstalador=false){
   }
 }
 async function conectarInstalacionExistente(){
-  const code=prompt("Pegue el código recibido desde la instalación principal:");
-  if(code===null)return false;
-  const obj=panelDecodeConnection(code);
-  if(!obj){
-    alert("Código no válido. Copie nuevamente el código desde Compartir instalación.");
-    return false;
-  }
-  return await aplicarConexionCompartida(obj,false);
+  document.body.classList.add("omp-pending");
+  OMPInstaller.showConnectDevice();
 }
 
 function setScriptUrl(){
@@ -597,19 +588,28 @@ function setScriptUrl(){
     loadData(true);
   }
 }
+function ompAuthData(){
+  const cfg=ompCurrentConfig()||{};
+  return {institucionId:String(cfg.institucionId||"").trim(),accessToken:String(cfg.accessToken||"").trim()};
+}
 async function apiGet(){
   const endpoint=panelEffectiveScriptUrl()||PANEL_DEFAULT_SCRIPT_URL;
-  const r=await fetch(endpoint+"?ts="+Date.now());
+  const auth=ompAuthData();
+  const q=new URLSearchParams({ts:String(Date.now()),institucionId:auth.institucionId,accessToken:auth.accessToken});
+  const r=await fetch(endpoint+"?"+q.toString());
   const data=await r.json();
   if(data && data.ok===false) throw new Error(data.error||"Error de conexión");
   return data;
 }
 async function apiPost(payload){
   const endpoint=panelEffectiveScriptUrl()||PANEL_DEFAULT_SCRIPT_URL;
+  const action=String(payload?.action||"");
+  const publicAction=["createInstitution","connectByCode"].includes(action);
+  const body=publicAction?{...payload}:{...payload,...ompAuthData()};
   const r=await fetch(endpoint,{
     method:"POST",
     headers:{"Content-Type":"text/plain"},
-    body:JSON.stringify(payload)
+    body:JSON.stringify(body)
   });
   const data=await r.json();
   if(data && data.ok===false) throw new Error(data.error||"Error del servidor");
@@ -1469,7 +1469,7 @@ function prepararParaEntregar(){
 // ========================
 const OMPInstaller={
   appId:"panel_horarios",
-  version:"13.2",
+  version:"16.0",
   configKey:"omp_install_panel_horarios_v1",
   stepKey:"omp_install_panel_horarios_step",
 
@@ -1502,7 +1502,7 @@ const OMPInstaller={
     ompActions.innerHTML="";
 
     const cfg=this.getConfig();
-    const connected=!!(cfg && cfg.estado==="INSTALADA") || this.hasLegacyInstall();
+    const connected=!!(cfg && cfg.estado==="INSTALADA");
 
     if(connected){
       this.setTitle(
@@ -1560,7 +1560,8 @@ const OMPInstaller={
         estado:"INSTALADA",
         institucion:res.institucion,
         responsable:res.responsable,
-        institucionId:res.institucionId
+        institucionId:res.institucionId,
+        accessToken:res.accessToken
       };
       localStorage.setItem(this.configKey,JSON.stringify(cfg));
       localStorage.setItem(this.stepKey,"COMPLETA");
@@ -1603,6 +1604,7 @@ const OMPInstaller={
         institucion:res.institucion,
         responsable:res.responsable,
         institucionId:res.institucionId,
+        accessToken:res.accessToken,
         fecha:new Date().toISOString(),
         dispositivo:"responsable"
       };
@@ -1631,6 +1633,7 @@ const OMPInstaller={
         institucion:res.institucion,
         responsable:res.responsable,
         institucionId:res.institucionId,
+        accessToken:res.accessToken,
         fecha:new Date().toISOString(),
         dispositivo:"conectado"
       };
@@ -1735,15 +1738,31 @@ async function panelAutoConnectFromLink(){
   return false;
 }
 
-function panelStart(){
+async function panelEnsureSecureAccess(){
+  let cfg=ompCurrentConfig()||{};
+  if(!cfg || cfg.estado!=="INSTALADA") return false;
+  if(cfg.institucionId && cfg.accessToken) return true;
+  const res=await apiPost({action:"ensureInstitution",institucionId:cfg.institucionId||"",institucion:cfg.institucion||"Panel de Horarios",responsable:cfg.responsable||"Responsable"});
+  cfg={...cfg,institucionId:res.institucionId,accessToken:res.accessToken,institucion:res.institucion,responsable:res.responsable,estado:"INSTALADA"};
+  localStorage.setItem("omp_install_panel_horarios_v1",JSON.stringify(cfg));
+  return true;
+}
+async function panelStart(){
   fillSelects();
   panelGuardarScriptUrlSiHaceFalta();
   if(!scriptUrl){
     setMode("Aplicación instalada correctamente. Si es la primera vez, cargue Datos compartidos y luego Cargar horario.","ok");
     render();
-  }else{
+    return;
+  }
+  try{
+    await panelEnsureSecureAccess();
     startAuto();
-    loadData(true);
+    await loadData(true);
+  }catch(e){
+    setMode("Este dispositivo necesita un código nuevo del responsable.","err");
+    document.body.classList.add("omp-pending");
+    OMPInstaller.start();
   }
 }
 
