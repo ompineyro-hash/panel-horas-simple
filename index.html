@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de Horarios V16.0 INSTITUCIONES SEGURAS</title>
+<title>Panel de Horarios V16.1 INSTITUCIONES SEGURAS</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
 header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
@@ -180,7 +180,7 @@ body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:c
       </div>
     </div>
 
-    <div class="omp-small">Panel de Horarios V16.0 INSTITUCIONES SEGURAS</div>
+    <div class="omp-small">Panel de Horarios V16.1 INSTITUCIONES SEGURAS</div>
   </div>
 </div>
 
@@ -1469,7 +1469,7 @@ function prepararParaEntregar(){
 // ========================
 const OMPInstaller={
   appId:"panel_horarios",
-  version:"16.0",
+  version:"16.1",
   configKey:"omp_install_panel_horarios_v1",
   stepKey:"omp_install_panel_horarios_step",
 
@@ -1545,26 +1545,31 @@ const OMPInstaller={
   },
   async showSendConnection(){
     try{
-      // Mostrar el instalador también cuando se abre desde el interior de la app.
+      // El dispositivo ya autorizado NO debe volver a migrar la institución.
+      // Usa directamente su institucionId + accessToken para generar el código.
       document.body.classList.add("omp-pending");
       let cfg=this.getConfig()||{};
-      const res=await apiPost({
-        action:"ensureInstitution",
-        institucion:cfg.institucion||"Panel de horas",
-        responsable:cfg.responsable||"Responsable"
-      });
-      cfg={
-        ...cfg,
-        appId:this.appId,
-        version:this.version,
-        estado:"INSTALADA",
-        institucion:res.institucion,
-        responsable:res.responsable,
-        institucionId:res.institucionId,
-        accessToken:res.accessToken
-      };
-      localStorage.setItem(this.configKey,JSON.stringify(cfg));
-      localStorage.setItem(this.stepKey,"COMPLETA");
+
+      if(!cfg.institucionId || !cfg.accessToken){
+        const res=await apiPost({
+          action:"ensureInstitution",
+          institucionId:cfg.institucionId||"",
+          institucion:cfg.institucion||"Panel de Horarios",
+          responsable:cfg.responsable||"Responsable"
+        });
+        cfg={
+          ...cfg,
+          appId:this.appId,
+          version:this.version,
+          estado:"INSTALADA",
+          institucion:res.institucion,
+          responsable:res.responsable,
+          institucionId:res.institucionId,
+          accessToken:res.accessToken
+        };
+        localStorage.setItem(this.configKey,JSON.stringify(cfg));
+        localStorage.setItem(this.stepKey,"COMPLETA");
+      }
 
       this.hideAll();
       ompSendConnection.style.display="block";
@@ -1572,7 +1577,7 @@ const OMPInstaller={
       await this.generateAccessCode();
     }catch(e){
       document.body.classList.remove("omp-pending");
-      alert(e.message||"No se pudo registrar la instalación.");
+      alert(e.message||"No se pudo generar el código de acceso.");
     }
   },
   async generateAccessCode(){
