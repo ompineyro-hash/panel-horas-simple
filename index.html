@@ -1,1160 +1,1812 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gastos con Amigos V9.2 FINAL</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel de Horarios V16.1.1 AUTORIZACIÓN CORREGIDA</title>
 <style>
-*{box-sizing:border-box}
-body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#eef2f5;color:#1f2937}
-header{background:#0f766e;color:white;padding:14px;text-align:center}
-h1{margin:0;font-size:23px}
-.wrap{max-width:900px;margin:auto;padding:12px}
-.card{background:white;border-radius:14px;padding:14px;margin:10px 0;box-shadow:0 3px 12px #0001}
-button{border:0;border-radius:9px;padding:10px 12px;background:#0f766e;color:white;font-weight:bold;cursor:pointer;margin:3px}
-button.secondary{background:#2563eb}
-button.gray{background:#64748b}
-input,select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:9px;margin:5px 0;font-size:16px}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
-.row>*{flex:1}
-.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#ecfeff;color:#155e75;font-size:12px;font-weight:bold}
-.hidden{display:none!important}
-.person{display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;border-radius:999px;padding:7px 10px;margin:4px}
-.expense{border-left:5px solid #0f766e;background:#f8fafc;border-radius:10px;padding:9px;margin:8px 0}
-.resultLine{background:#f0fdf4;border-left:5px solid #16a34a;padding:10px;border-radius:10px;margin:7px 0;font-weight:bold}
-.linkbox{background:#f8fafc;border:1px dashed #94a3b8;border-radius:10px;padding:10px;word-break:break-all}
-.notice{background:#fff7ed;border-left:5px solid #f97316;border-radius:10px;padding:10px;margin:8px 0}
-.ok{background:#f0fdf4;border-left-color:#16a34a}
-.small{font-size:13px;color:#64748b}
-.topline{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-.status{font-size:13px;padding:7px 9px;border-radius:9px;background:#eef6ff;color:#1f4f8b}
-.groupItem{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:11px;margin:8px 0}
-.groupInfo{min-width:0}.groupInfo b{display:block;font-size:17px}.groupInfo .small{margin-top:3px}
-.emptyGroups{padding:14px;text-align:center;background:#f8fafc;border-radius:12px;color:#64748b}
-.groupActions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
-.groupActions button{margin:0;padding:8px 10px}
-.danger{background:#b91c1c}
-.sectionTitle{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.techToggle{background:#475569}
-.welcome{background:#eff6ff;border-left:5px solid #2563eb;border-radius:10px;padding:12px;margin:10px 0}
-.person button{padding:2px 6px;margin:0;background:#b91c1c;border-radius:999px;font-size:11px}
-.closeCard{border:2px solid #0f766e}
-.memberSummary{background:#f8fafc;border-radius:10px;padding:10px;margin:7px 0}
-.memberSummary b{display:block;margin-bottom:4px}
-.closedBanner{background:#eff6ff;border-left:5px solid #2563eb;border-radius:10px;padding:11px;margin:10px 0}
-.pending{background:#fff7ed;border-left-color:#f97316}
-.settled{background:#f0fdf4;border-left-color:#16a34a}
-.paymentRow{display:flex;gap:8px;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:10px;padding:9px;margin:7px 0}
-.paymentRow button{margin:0;padding:7px 9px}
-@media(max-width:650px){.paymentRow{display:block}.paymentRow button{width:100%;margin-top:7px}}
-@media(max-width:650px){.row{display:block}button{width:100%;margin:4px 0}.topline{display:block}.groupItem{display:block}.groupItem button{margin-top:9px}.groupActions{display:block}.groupActions button{width:100%}}
-
-/* V6.1 UX: participantes cerca y compactos */
-.groupHeaderCard{padding:12px 14px 10px}
-.backBtn{padding:7px 10px;margin-bottom:6px}
-.groupTopline h2{margin:4px 0 2px}
-.groupMeta{margin-top:4px}
-.groupMiniSummary{margin-top:5px}
-.participantsCompact{margin-top:10px;padding-top:8px;border-top:1px solid #e2e8f0}
-.participantsHead h3{margin:0 0 5px;font-size:17px}
-.participantsCompact .person{padding:5px 8px;margin:2px;font-size:14px}
-.participantsCompact .person button{font-size:10px;padding:1px 5px}
-.addParticipantCompact{display:flex;gap:6px;align-items:center;margin-top:6px}
-.addParticipantCompact input{margin:0;padding:8px;min-width:0}
-.addParticipantCompact button{margin:0;padding:8px 10px;white-space:nowrap;flex:0 0 auto}
-.expenseCard{margin-top:8px}
-.expenseCard h3,.shareCard h3{margin:0 0 8px}
-.compactNotice{margin:6px 0;padding:8px}
-.shareActions{display:flex;gap:6px;flex-wrap:wrap}
-.shareActions button{margin:0}
-@media(max-width:650px){
-  .addParticipantCompact{display:flex}
-  .addParticipantCompact input{width:auto;flex:1}
-  .addParticipantCompact button{width:auto}
-  .shareActions{display:block}
-  .shareActions button{width:100%;margin:4px 0}
-}
-
-/* V6.2 COMPACTA: datos fijos juntos y movimientos con scroll */
-header{padding:7px 10px}
-header h1{font-size:20px;line-height:1.05}
-header .small{font-size:11px;line-height:1.1}
-.wrap{padding:7px 10px}
-.card{padding:10px 12px;margin:7px 0;border-radius:12px}
-h2,h3{margin-top:4px;margin-bottom:7px}
-.fixedWorkspace{display:grid;grid-template-columns:1fr 1.12fr;gap:8px;align-items:start}
-.fixedWorkspace>.card{margin:0;height:100%}
-.groupHeaderCard{padding:9px 11px}
-.backBtn{padding:5px 8px;margin:0 0 4px;font-size:12px}
-.groupTopline{gap:4px}
-.groupTopline h2{font-size:21px;margin:1px 0}
-.status{font-size:12px;padding:5px 7px}
-.badge{padding:4px 7px;font-size:11px}
-.groupMiniSummary{font-size:12px;margin-top:3px}
-.participantsCompact{margin-top:6px;padding-top:5px}
-.participantsHead h3{font-size:15px;margin:0 0 3px}
-.participantsCompact .person{padding:3px 6px;margin:1px;font-size:13px}
-.addParticipantCompact{margin-top:4px;gap:4px}
-.addParticipantCompact input{padding:6px 8px;font-size:14px;height:32px}
-.addParticipantCompact button{padding:6px 8px;font-size:12px;height:32px}
-.expenseCard{padding:9px 11px}
-.expenseCard h3{font-size:17px;margin:0 0 4px}
-.compactNotice{font-size:12px;padding:5px 7px;margin:4px 0}
-.expenseCard label{font-size:13px}
-.expenseCard input,.expenseCard select{padding:7px 8px;margin:3px 0;font-size:14px;height:34px}
-.expenseCard button{padding:7px 9px;font-size:13px}
-.expensesCard{padding:9px 11px}
-.expensesCard h3{margin:0 0 5px;font-size:17px}
-.expensesScroll{max-height:210px;overflow-y:auto;padding-right:4px;scrollbar-gutter:stable}
-.expensesScroll .expense{padding:7px;margin:5px 0}
-.expensesScroll .expense button{padding:6px 8px;font-size:12px}
-.resultLine{padding:7px 8px;margin:5px 0}
-.memberSummary{padding:7px 8px;margin:5px 0}
-.closedBanner{padding:7px 8px;margin:6px 0}
-.paymentRow{padding:7px 8px;margin:5px 0}
-.closeCard,.shareCard{padding:9px 11px}
-.closeCard h3,.shareCard h3{margin:0 0 6px}
-@media(max-width:760px){
-  .fixedWorkspace{display:block}
-  .fixedWorkspace>.card{margin:7px 0;height:auto}
-  .expensesScroll{max-height:260px}
-}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fb;color:#0b1728}
+header{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:3}
+h1{margin:0;font-size:23px}.wrap{max-width:1180px;margin:auto;padding:14px}
+.notice{background:#fff2c6;border-radius:10px;padding:10px 12px;margin:10px 0;color:#5b4100}.notice.ok{background:#dff7e9;color:#064a34}.notice.err{background:#ffe4e0;color:#7a150d}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+button,input,select{font-size:16px;border-radius:10px;border:1px solid #d6e0ee;padding:10px}
+button{border:0;color:white;font-weight:bold;cursor:pointer}.b1{background:#0876d8}.b2{background:#12805c}.b3{background:#6941c6}.b4{background:#475467}.b5{background:#d92d20}.b6{background:#c96a00}.b7{background:#0f766e}button:disabled{opacity:.55}
+.card{background:white;border:1px solid #d6e0ee;border-radius:16px;box-shadow:0 4px 14px #0001;padding:14px;margin-bottom:14px}.card h2{font-size:28px;margin:0 0 12px}
+.room-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.room{border:1px solid #d6e0ee;border-radius:15px;padding:12px;background:#fbfdff;min-height:160px}.room h3{margin:0 0 10px;font-size:25px}
+.person{background:#fff;border-radius:13px;border-left:8px solid #0876d8;padding:12px;margin:8px 0;box-shadow:0 2px 8px #00000012}.person b{font-size:22px}.sub{color:#344054;margin-top:4px}.same{border-left-color:#12805c}.change{border-left-color:#c96a00}
+.tag{display:inline-block;margin-top:8px;padding:6px 9px;border-radius:999px;background:#eef4ff;font-size:14px;font-weight:bold}.empty{text-align:center;color:#555;padding:30px 8px}.next-mini{margin-top:8px;background:#fff6d8;color:#5b4100;border-radius:10px;padding:9px;font-weight:bold}
+table{width:100%;border-collapse:collapse;background:white}th,td{border-bottom:1px solid #d6e0ee;padding:10px;text-align:left}th{background:#eef4fb}.actions button{padding:7px 9px;margin:2px;font-size:14px}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:12px;z-index:20}.modal.show{display:flex}.box{background:white;border-radius:18px;padding:16px;width:min(820px,96vw);max-height:92vh;overflow:auto;resize:both;min-width:320px;min-height:240px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}.form label{font-weight:bold;margin-bottom:4px;display:block}.form input,.form select{width:100%}.full{grid-column:1/-1}
+.days{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.daycheck{display:flex;align-items:center;gap:8px;background:#f8fbff;border:1px solid #d6e0ee;border-radius:10px;padding:8px}.daycheck input{width:auto}
+.config-list{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pill{display:inline-flex;align-items:center;gap:6px;background:#eef4fb;border-radius:999px;padding:7px 10px;margin:4px}.pill button{background:#d92d20;padding:2px 7px;border-radius:999px}
+.print-only{display:none}
 
 
-/* V6.3 SCROLL: zona fija arriba y todo lo variable desplazable abajo */
-body.group-open{overflow:hidden}
-body.group-open .wrap{height:calc(100vh - 48px);overflow:hidden;display:block}
-body.group-open #groupView{height:100%;display:flex;flex-direction:column;min-height:0}
-body.group-open .fixedWorkspace{flex:0 0 auto}
-.variableScroll{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:4px;margin-top:7px;scrollbar-gutter:stable}
-.variableScroll>.card:first-child{margin-top:0}
-.variableScroll>.card:last-child{margin-bottom:4px}
-.variableScroll .expensesScroll{max-height:none;overflow:visible;padding-right:0}
-@media(max-width:760px){
-  body.group-open .wrap{height:calc(100vh - 48px)}
-  .variableScroll{margin-top:4px;padding-right:2px}
-}
+.contact-links{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.contact-links a{display:inline-block;text-decoration:none;color:white;font-weight:bold;border-radius:999px;padding:5px 8px;font-size:13px}
+.wa{background:#12805c}.tel{background:#0876d8}
+.contact-small{font-size:12px;color:#475467;margin-top:3px}
 
-/* V6.4: movimientos en dos columnas para aprovechar el ancho */
-#expensesList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
-#expensesList .expense{margin:0;min-width:0;height:100%;display:flex;flex-direction:column}
-#expensesList .expense>div{margin-top:auto!important;padding-top:5px}
-#expensesList .expense button{margin:2px 2px 0 0}
-@media(max-width:760px){
-  #expensesList{grid-template-columns:1fr}
-}
+.filters{display:grid;grid-template-columns:repeat(6,1fr) auto;gap:8px;margin:8px 0 14px;align-items:end}
+.filters label{font-size:13px;font-weight:bold;color:#344054;display:block;margin-bottom:3px}
+.filters input,.filters select{width:100%;padding:9px}
+.filters .filter-btn{align-self:end}
+@media(max-width:900px){.filters{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.filters{grid-template-columns:1fr}}
 
-/* V6.5 PULIDA: misma lógica, mejor lectura y menos altura */
-.expenseCard .row{display:grid;grid-template-columns:1.15fr .85fr;gap:7px}
-.expenseCard #concept{margin-bottom:4px}
-#saveExpenseBtn{min-width:145px}
-#expensesList .expense{padding:8px 9px;border-left-width:4px}
-.expenseTop{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
-.expensePayer{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.expenseAmount{font-size:16px;color:#0f766e;white-space:nowrap}
-.expenseConcept{font-size:13px;color:#475569;margin-top:3px;line-height:1.25;min-height:16px;overflow-wrap:anywhere}
-.expenseActions{display:flex;justify-content:flex-end;gap:4px;margin-top:auto;padding-top:6px}
-.expenseActions button{padding:5px 7px!important;font-size:11px!important}
-.variableScroll>.card:not(.expensesCard){padding:8px 10px}
-.variableScroll>.card:not(.expensesCard) h3{font-size:16px;margin:0 0 5px}
-#summaryBox .resultLine{font-size:13px}
-#resultsBox{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
-#resultsBox .resultLine{margin:0;font-size:13px}
-#memberSummaryBox{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
-#memberSummaryBox .memberSummary{margin:0}
-.shareCard .notice{margin-bottom:6px}
-@media(max-width:760px){
-  .expenseCard .row{grid-template-columns:1fr}
-  #resultsBox,#memberSummaryBox{grid-template-columns:1fr}
-  #saveExpenseBtn{width:100%}
-}
+@media(max-width:800px){.box{resize:none;width:96vw;max-height:92vh}.room-grid,.form,.config-list{grid-template-columns:1fr}.days{grid-template-columns:1fr 1fr}.toolbar button{flex:1}.card h2{font-size:23px}.room h3{font-size:22px}.person b{font-size:20px}}
+@media(max-width:480px){header{align-items:flex-start;flex-direction:column}button,input,select{width:100%;font-size:17px}.toolbar{flex-direction:column}.days{grid-template-columns:1fr}}
+@media print{header,.notice,.toolbar,#nowCard,#nextCard,.actions,.modal{display:none!important}body{background:white}.wrap{max-width:none;padding:0}.card{box-shadow:none;border:0}.print-only{display:block}th,td{font-size:12px;padding:6px;border:1px solid #777}th{background:#eee!important}}
 
+.assist{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.assist button{font-size:13px;padding:6px 9px;border-radius:999px}
+.bp{background:#12805c}.ba{background:#d92d20}.assist button.off{background:#98a2b3;color:#fff;opacity:.72}.assist button.on{outline:3px solid #11182722;transform:scale(1.02)}
+.person.presente{border-left-color:#12805c;background:#f3fff8}
+.person.ausente{border-left-color:#d92d20;background:#fff6f4}
+.status{display:inline-block;margin-top:5px;font-size:12px;font-weight:bold;border-radius:999px;padding:4px 7px;background:#eef4ff}
+.status.presente{background:#dff7e9;color:#064a34}
+.status.ausente{background:#ffe4e0;color:#7a150d}
+.shared-note{font-size:13px;color:#475467;margin:0 0 10px}
 
-/* V6.6 GUIADA: ayuda clara, participantes y cierre compactos */
-.nextStepBox{background:#eff6ff;border-left:5px solid #2563eb;border-radius:10px;padding:7px 9px;margin:6px 0 0;display:flex;gap:8px;align-items:flex-start}
-.nextStepIcon{font-size:18px;line-height:1}
-.nextStepText{font-size:13px;line-height:1.3;color:#334155}
-.nextStepText b{display:block;color:#1e3a8a;margin-bottom:1px}
-.participantsCompact #participantsList{display:flex;flex-wrap:wrap;gap:3px;max-height:58px;overflow-y:auto;padding-right:2px}
-.participantsCompact .person{margin:0}
-.addParticipantToggle{background:#2563eb;padding:5px 8px!important;font-size:12px!important;margin:4px 0 0!important}
-.addParticipantCompact.hiddenForm{display:none}
-.addParticipantCompact{animation:openForm .15s ease-out}
-@keyframes openForm{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
-#expensesList .expense{min-height:78px}
-.expenseActions{padding-top:3px}
-.expenseActions button{padding:4px 6px!important}
-.memberSummary{display:flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:12px;line-height:1.25}
-.memberSummary b{display:inline;margin:0;font-size:13px}
-.memberSummary .memberNumbers{color:#475569}
-.memberSummary .positive{color:#15803d;font-weight:bold}
-.memberSummary .negative{color:#b91c1c;font-weight:bold}
-#paymentsBox h4{margin:7px 0 4px}
-@media(max-width:760px){
-  .nextStepBox{padding:7px 8px}
-  .participantsCompact #participantsList{max-height:82px}
-  #expensesList .expense{min-height:auto}
-}
+.report-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}
+.report-card{background:#f8fbff;border:1px solid #d6e0ee;border-radius:14px;padding:12px}
+.report-card h3{margin:0 0 8px;font-size:20px}.report-num{font-size:24px;font-weight:bold;margin:4px 0}.warn{background:#fff6d8;border-left:6px solid #c96a00;border-radius:10px;padding:9px;margin:6px 0}
+.report-actions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.report-actions button{font-size:14px;padding:8px 10px}
+@media(max-width:800px){.report-grid{grid-template-columns:1fr}}
 
-/* V6.7 CIERRE SIMPLE: guía de una línea y terminación visual */
-.nextStepBox{padding:6px 8px;margin-top:5px;align-items:center;gap:6px;min-height:32px}
-.nextStepIcon{font-size:16px}
-.nextStepText{font-size:12.5px;line-height:1.2}
-.nextStepText b{display:inline;margin:0 5px 0 0}
-.nextStepBox.step-info{background:#eff6ff;border-left-color:#2563eb}
-.nextStepBox.step-info .nextStepText b{color:#1e3a8a}
-.nextStepBox.step-warn{background:#fffbeb;border-left-color:#f59e0b}
-.nextStepBox.step-warn .nextStepText b{color:#92400e}
-.nextStepBox.step-done{background:#f0fdf4;border-left-color:#16a34a}
-.nextStepBox.step-done .nextStepText b{color:#166534}
-.closeCard{border-width:1px}
-.closeCard .closedBanner{padding:6px 8px;margin:4px 0 6px}
-#memberSummaryBox{gap:4px}
-.memberSummary{padding:6px 7px}
-.paymentRow{padding:7px 8px}
-#closeGroupBtn,#reopenGroupBtn{padding:8px 11px}
-@media(max-width:760px){.nextStepText b{display:block;margin-bottom:1px}}
+.report-filter-box{background:#f8fbff;border:1px solid #d6e0ee;border-radius:14px;padding:12px;margin:12px 0}
+.report-filters{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-items:end}
+.report-filters label{display:block;font-size:13px;font-weight:bold;color:#344054;margin-bottom:4px}
+.report-filters input,.report-filters select{width:100%}
+.report-result-summary{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.report-chip{background:#eef4ff;border-radius:999px;padding:7px 10px;font-weight:bold}
+.report-print-title{display:none}
+@media(max-width:850px){.report-filters{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.report-filters{grid-template-columns:1fr}}
 
-/* V6.8: Resultado con estado por color y cierre sin datos repetidos */
-#resultsBox .resultPending{background:#fffbeb;border-left-color:#f59e0b;color:#78350f}
-#resultsBox .resultDone{background:#f0fdf4;border-left-color:#16a34a;color:#14532d}
-.closeCard #paymentsBox{margin-top:2px}
-
-/* V7.1 MÓVIL: un único scroll natural en celular; escritorio queda igual */
-@media(max-width:760px){
-  body.group-open{overflow-y:auto;overflow-x:hidden}
-  body.group-open .wrap{height:auto;overflow:visible;display:block}
-  body.group-open #groupView{height:auto;display:block;min-height:0}
-  body.group-open .fixedWorkspace{display:block}
-  .variableScroll{flex:none;min-height:0;overflow:visible;padding-right:0;margin-top:4px}
-  .variableScroll .expensesScroll{max-height:none;overflow:visible;padding-right:0}
-  .participantsCompact #participantsList{max-height:none;overflow:visible;padding-right:0}
-}
+/* V10.7 DOCENTE - vista compacta */
+.room-grid{grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+#nowCard .card h2{}
+#nowRooms .room,#nextRooms .room{min-height:120px;padding:10px}
+#nowRooms .room h3,#nextRooms .room h3{font-size:20px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.mini-count{font-size:14px;color:#0876d8;font-weight:bold}
+.student-line{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:7px;align-items:center;padding:7px 0;border-bottom:1px solid #e6edf5;font-size:14px}
+.student-line:last-child{border-bottom:0}
+.student-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:bold}
+.student-time{font-size:12px;color:#475467;white-space:nowrap}
+.group-badge{font-size:12px;font-weight:bold;border-radius:7px;padding:3px 7px;background:#eef4ff;color:#243b6b;white-space:nowrap}
+.present-check{width:18px;height:18px;accent-color:#0876d8;cursor:pointer}
+.assist-cycle{border:1px solid #d6e0ee!important;background:#fff!important;color:#344054!important;border-radius:999px!important;padding:5px 9px!important;font-size:13px!important;min-width:92px;text-align:center}
+.assist-cycle.presente{background:#dff7e9!important;color:#064a34!important;border-color:#9ad9b5!important}
+.assist-cycle.ausente{background:#ffe4e0!important;color:#7a150d!important;border-color:#f2a49b!important}
+.assist-cycle.sinmarcar{background:#fff!important;color:#667085!important}
+.student-line.presente .student-name{color:#064a34}
+.student-line.ausente .student-name{color:#7a150d}
+.compact-empty{font-size:14px;color:#667085;text-align:center;padding:34px 4px}
+#nowRooms .next-mini,#nextRooms .next-mini{font-size:12px;margin-top:8px;padding:7px}
+/* ocultamos contacto/whatsapp/estado visual en la vista rápida */
+#nowRooms .contact-links,#nowRooms .contact-small,#nowRooms .status,#nowRooms .assist,
+#nextRooms .contact-links,#nextRooms .contact-small,#nextRooms .status,#nextRooms .assist{display:none!important}
+@media(max-width:800px){.room-grid{grid-template-columns:1fr 1fr}.student-line{font-size:13px;grid-template-columns:auto minmax(0,1fr) auto}}
+@media(max-width:520px){.room-grid{grid-template-columns:1fr}.student-line{font-size:15px}}
 
 
-/* V8.0: pagos reales y comprobantes */
-.receiptField{margin-top:6px;padding:8px;border:1px dashed #94a3b8;border-radius:10px;background:#f8fafc}
-.receiptField input[type=file]{padding:6px;background:white}
-.receiptPreview{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}
-.receiptBtn{background:#7c3aed}
-.paymentHistory{margin-top:10px}
-.paymentHistoryItem{background:#f8fafc;border-left:4px solid #2563eb;border-radius:9px;padding:8px;margin:6px 0}
-.paymentHistoryActions,.transferActions{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
-.paymentHistoryActions button,.transferActions button{padding:6px 8px;font-size:12px;margin:0}
-.receiptModal{position:fixed;inset:0;background:#000c;z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px}
-.receiptModal.hidden{display:none!important}
-.receiptModalBox{background:white;border-radius:12px;max-width:95vw;max-height:95vh;padding:10px;overflow:auto;text-align:center}
-.receiptModalBox img{max-width:88vw;max-height:78vh;display:block;margin:auto}
-@media(max-width:760px){.transferActions,.paymentHistoryActions{display:block}.transferActions button,.paymentHistoryActions button{width:100%;margin-top:5px}}
+.teacher-block{border-top:1px solid #e6edf5;margin-top:8px;padding-top:7px}
+.teacher-title{font-size:13px;font-weight:bold;color:#243b6b;background:#eef4ff;border-radius:999px;display:inline-block;padding:4px 8px;margin-bottom:4px}
+.move-badge{font-size:11px;font-weight:bold;border-radius:999px;padding:3px 6px;background:#eef4ff;color:#243b6b;white-space:nowrap}
+.move-badge.in{background:#eaf4ff;color:#084c8d}
+.move-badge.same{background:#dff7e9;color:#064a34}
+.move-badge.from{background:#fff6d8;color:#7a4b00}
+.absent-filter{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;margin:10px 0}
+@media(max-width:600px){.absent-filter{grid-template-columns:1fr}.student-line{grid-template-columns:auto minmax(0,1fr) auto}}
 
 
-/* V9 FINAL: un solo scroll general del navegador (PC y celular) */
-body.group-open{overflow-y:auto!important;overflow-x:hidden!important}
-body.group-open .wrap{height:auto!important;overflow:visible!important;display:block!important}
-body.group-open #groupView{height:auto!important;display:block!important;min-height:0!important}
-body.group-open .fixedWorkspace{display:block!important}
-.variableScroll{flex:none!important;min-height:0!important;overflow:visible!important;padding-right:0!important;margin-top:7px!important}
-.variableScroll .expensesScroll,.expensesScroll{max-height:none!important;overflow:visible!important;padding-right:0!important}
-.participantsCompact #participantsList{max-height:none!important;overflow:visible!important;padding-right:0!important}
-.balanceTable{width:100%;border-collapse:collapse;margin-top:7px;font-size:13px}
-.balanceTable th,.balanceTable td{padding:7px;border-bottom:1px solid #e2e8f0;text-align:right}
-.balanceTable th:first-child,.balanceTable td:first-child{text-align:left}
-.balanceOk{color:#15803d;font-weight:bold}.balanceDebt{color:#b91c1c;font-weight:bold}.balanceCredit{color:#2563eb;font-weight:bold}
-@media(max-width:760px){.balanceTable{font-size:12px}.balanceTable th,.balanceTable td{padding:5px}}
+
+/* ========================
+   OMP INSTALLER v1.0
+   ======================== */
+body.omp-pending header,
+body.omp-pending .wrap,
+body.omp-pending .modal{display:none!important}
+#ompInstaller{display:none;min-height:100vh;padding:22px;background:#f2f6fb;color:#0b1728}
+body.omp-pending #ompInstaller{display:flex;align-items:center;justify-content:center}
+.omp-card{width:min(640px,96vw);background:white;border:1px solid #d6e0ee;border-radius:20px;box-shadow:0 10px 30px #0002;padding:22px}
+.omp-card h1{font-size:28px;margin:0 0 8px;color:#0f172a}
+.omp-card p{color:#475467;font-size:16px;line-height:1.45}
+.omp-form{display:grid;gap:12px;margin-top:16px}.omp-form label{font-weight:bold}.omp-form input{width:100%}
+.omp-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.omp-actions button{min-width:180px}
+.omp-status{margin-top:14px;background:#f8fbff;border:1px solid #d6e0ee;border-radius:14px;padding:12px;color:#344054}
+.omp-steps{margin-top:12px;display:grid;gap:7px}.omp-step{padding:8px 10px;border-radius:10px;background:#f8fbff;border:1px solid #d6e0ee;color:#344054}.omp-step.ok{background:#dff7e9;color:#064a34}.omp-step.err{background:#ffe4e0;color:#7a150d}
+.omp-small{font-size:13px;color:#667085;margin-top:10px}
+
+.helper-note{background:#eef4ff;color:#344054;border-radius:10px;padding:8px 10px;margin:8px 0;font-size:14px}
 
 
-/* V9.2 FINAL: resultado a todo el ancho */
-#resultsBox{
-  display:block!important;
-  width:100%!important;
-  max-width:none!important;
-  overflow-x:auto;
-}
-#resultsBox>.small{
-  display:block;
-  width:100%;
-  margin:0 0 7px;
-}
-#resultsBox .balanceTable{
-  display:table;
-  width:100%!important;
-  max-width:none!important;
-  table-layout:fixed;
-  margin:0;
-}
-#resultsBox .balanceTable th:nth-child(1),#resultsBox .balanceTable td:nth-child(1){width:17%;}
-#resultsBox .balanceTable th:nth-child(2),#resultsBox .balanceTable td:nth-child(2){width:14%;}
-#resultsBox .balanceTable th:nth-child(3),#resultsBox .balanceTable td:nth-child(3){width:18%;}
-#resultsBox .balanceTable th:nth-child(4),#resultsBox .balanceTable td:nth-child(4){width:15%;}
-#resultsBox .balanceTable th:nth-child(5),#resultsBox .balanceTable td:nth-child(5){width:13%;}
-#resultsBox .balanceTable th:nth-child(6),#resultsBox .balanceTable td:nth-child(6){width:23%;}
-#resultsBox .balanceTable th,#resultsBox .balanceTable td{
-  white-space:normal;
-  overflow-wrap:anywhere;
-}
-@media(max-width:760px){
-  #resultsBox .balanceTable{min-width:650px;table-layout:auto;}
-  #resultsBox .balanceTable th,#resultsBox .balanceTable td{white-space:nowrap;}
-}
+#ompActions button{width:100%;min-height:60px;font-size:18px}
+.omp-secondary{color:#475467;margin-top:-6px;margin-bottom:6px;line-height:1.35}
+.omp-dev{background:#6941c6!important}
 
 </style>
 </head>
-<body>
-<header>
-<h1>💸 Gastos con Amigos</h1>
-<div class="small" style="color:white">Compartí gastos de forma simple</div>
-</header>
+<body class="omp-pending">
 
-<div class="wrap">
+<div id="ompInstaller">
+  <div class="omp-card">
+    <h1 id="ompTitle">Panel de Horarios</h1>
+    <p id="ompText">Seleccione una opción para comenzar.</p>
 
-
-
-<section id="home">
-<section class="card">
-<div class="sectionTitle">
-  <h2>Inicio</h2>
-</div>
-<div id="welcomeMessage" class="welcome">
-  <b>Bienvenido.</b><br>Elegí un grupo guardado o abrí una invitación.
-</div>
-
-<!-- Configuración reservada: se abre manteniendo presionado el título de la app -->
-<div id="technicalSetup" class="hidden">
-  <div class="notice"><b>Configuración reservada.</b></div>
-  <label>URL del servidor</label>
-  <input id="serverUrl" placeholder="https://script.google.com/macros/s/XXXXX/exec">
-  <button onclick="saveServerUrl()">Guardar conexión</button>
-  <button class="gray" onclick="testConnection()">Probar conexión</button>
-  <div id="serverStatus" class="small"></div>
-</div>
-</section>
-  <div class="card">
-    <div class="sectionTitle">
-      <h2>Mis grupos</h2>
-      <button onclick="showCreateGroup()">➕ Crear grupo nuevo</button>
+    <div id="ompHome">
+      <div id="ompStatus" class="omp-status"></div>
+      <div id="ompActions" class="omp-actions" style="display:grid;gap:12px"></div>
     </div>
-    <div id="myGroupsList"></div>
-  </div>
 
-  <div id="createGroupCard" class="card hidden">
-    <div class="sectionTitle">
-      <h2>Crear grupo nuevo</h2>
-      <div class="small">Disponible para quien administra la aplicación.</div>
-      <button class="gray" onclick="cancelCreateGroup()">Cancelar</button>
-    </div>
-    <label>Nombre del grupo</label>
-    <input id="groupName" placeholder="Ej: Asado sábado / Viaje Bariloche / Regalo de cumple">
-    <div class="row">
-      <div>
-        <label>Participantes iniciales</label>
-        <input id="participantsText" placeholder="Ej: Marcelo, Andrea, Juan">
+    <div id="ompNewInstitution" style="display:none">
+      <div class="omp-form">
+        <div><label>Nombre de la institución</label><input id="ompInstitution" placeholder="Ej: Instituto ABC"></div>
+        <div><label>Su nombre</label><input id="ompResponsible" placeholder="Ej: Andrea Pérez"></div>
       </div>
-      <div><button onclick="createSharedGroup()">Crear grupo</button></div>
+      <div class="omp-actions">
+        <button class="b2" onclick="OMPInstaller.createInstitution()">Crear institución</button>
+        <button class="b4" onclick="OMPInstaller.start()">Volver</button>
+      </div>
+    </div>
+
+    <div id="ompConnectDevice" style="display:none">
+      <div class="helper-note">Ingrese el código de acceso generado por el responsable.</div>
+      <input id="ompConnectionInput" inputmode="numeric" maxlength="6" placeholder="Código de 6 números" style="width:100%;font-size:28px;text-align:center;letter-spacing:8px">
+      <div class="omp-actions">
+        <button class="b1" onclick="OMPInstaller.activateDevice()">Ingresar con código</button>
+        <button class="b4" onclick="OMPInstaller.start()">Volver</button>
+      </div>
+    </div>
+
+    <div id="ompSendConnection" style="display:none">
+      <div class="helper-note">Dígale este código al usuario del dispositivo nuevo.</div>
+      <div id="ompConnectionOutput" class="omp-status" style="font-size:40px;font-weight:bold;text-align:center;letter-spacing:10px"></div>
+      <div id="ompCodeExpiry" class="omp-small" style="text-align:center"></div>
+      <div class="omp-actions">
+        <button class="b1" onclick="OMPInstaller.generateAccessCode()">Generar otro código</button>
+        <button class="b4" onclick="OMPInstaller.start()">Volver</button>
+      </div>
+      <div class="omp-status">El código es temporal, de un solo uso y pertenece únicamente a esta institución.</div>
+    </div>
+
+    <div id="ompTestResult" style="display:none">
+      <div id="ompTestSteps" class="omp-steps"></div>
+      <div class="omp-actions">
+        <button class="b4" onclick="OMPInstaller.start()">Volver</button>
+      </div>
+    </div>
+
+    <div class="omp-small">Panel de Horarios V16.1.1 AUTORIZACIÓN CORREGIDA</div>
+  </div>
+</div>
+
+<header><h1>Panel de Horarios</h1><div id="clock"></div></header>
+<div class="wrap">
+<div id="mode" class="notice ok">Sincronización activa sin interrumpir.</div>
+<div class="toolbar">
+<button class="b1" onclick="openLoad()">+ Cargar horario</button><button class="b2" onclick="loadData(true)">Actualizar</button><button class="b3" onclick="openConfig()">Datos compartidos</button><button class="b1" onclick="OMPInstaller.showSendConnection()">📱 Agregar otro dispositivo</button><button class="b7" onclick="openReports()">📊 Informes</button><button class="b7" onclick="printSchedule()">Imprimir</button><button class="b4" onclick="showAbout()">Acerca de</button><button class="b5" onclick="clearAll()">Limpiar</button>
+</div>
+<section id="nowCard" class="card"><h2>Ahora en cada aula</h2><div id="nowRooms" class="room-grid"></div></section>
+<section id="nextCard" class="card"><h2>Próximo horario</h2><div id="nextTitle" style="color:#475467;margin-bottom:8px"></div><div id="nextRooms" class="room-grid"></div></section>
+<section class="card"><div class="print-only"><h1>Horario semanal</h1><p>Generado desde Panel de Horas Simple</p></div><h2>Agenda completa</h2>
+<div class="filters">
+  <div><label>Alumno</label><input id="filterAlumno" placeholder="Buscar alumno..." oninput="render()"></div>
+  <div><label>Contacto</label><input id="filterContacto" placeholder="Buscar contacto..." oninput="render()"></div><div><label>Profesor</label><input id="filterProfesor" placeholder="Buscar profesor..." oninput="render()"></div>
+  <div><label>Aula</label><input id="filterAula" placeholder="Buscar aula..." oninput="render()"></div>
+  <div><label>Actividad</label><input id="filterActividad" placeholder="Buscar actividad..." oninput="render()"></div>
+  <div><label>Día</label><select id="filterDia" onchange="render()"><option value="">Todos</option><option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option><option>Sábado</option></select></div>
+  <button class="b4 filter-btn" onclick="clearFilters()">Limpiar filtros</button>
+</div>
+<div style="overflow:auto"><table><thead><tr><th>Día</th><th>Hora</th><th>Aula</th><th>Alumno / Contacto</th><th>Profesor</th><th>Actividad</th><th>Asistencia</th><th class="actions">Acción</th></tr></thead><tbody id="agenda"></tbody></table></div></section>
+</div>
+<div id="loadModal" class="modal"><div class="box"><h2 id="loadTitle">Cargar horario</h2><div id="loadHelp" class="helper-note">Use esta pantalla para asignar un alumno ya cargado a un aula, profesor, día y hora.</div><input type="hidden" id="editIndex"><div class="form">
+
+<div class="full">
+<label>Nombre del Alumno</label>
+<input id="alumno" placeholder="Nombre del alumno" oninput="applyStudentData()" onblur="applyStudentData()">
+</div>
+
+<div class="full">
+<label>Día</label>
+<div id="daysBox" class="days"></div>
+<div style="font-size:13px;color:#475467;margin-top:6px">Marcá uno o varios días.</div>
+</div>
+
+<div>
+<label>Hora</label>
+<input id="hora" type="time" value="17:00">
+</div>
+
+<div>
+<label>Aula</label>
+<select id="aula"></select>
+</div>
+
+<div>
+<label>Profesor</label>
+<select id="profesor"></select>
+</div>
+
+<div>
+<label>Actividad</label>
+<input id="actividad" placeholder="Opcional">
+</div>
+
+<div>
+<label>Contacto</label>
+<input id="contacto" placeholder="Madre / Padre / Tutor">
+</div>
+
+<div>
+<label>WhatsApp</label>
+<input id="whatsapp" placeholder="+54 9 ...">
+</div>
+
+<div class="full"><button id="saveBtn" class="b2" onclick="saveItem()">Guardar</button> <button class="b6" onclick="closeLoad()">Cerrar</button></div>
+</div></div></div>
+
+<div id="configModal" class="modal"><div class="box"><h2>Datos compartidos</h2>
+<p class="shared-note">Primero cargue aquí las aulas, profesores y alumnos. Después use Cargar horario para asignarlos a días y horarios.</p>
+<div class="toolbar">
+  <button class="b2" onclick="compartirInstalacion()">Compartir instalación</button>
+  <button class="b1" onclick="conectarInstalacionExistente()">Conectar a instalación existente</button>
+  <button class="b6" onclick="prepararParaEntregar()">Preparar copia para otra institución</button>
+</div>
+<div class="helper-note">Use estos botones para conectar otra computadora o celular a la misma base compartida, o para preparar una copia limpia para otra institución.</div>
+<div class="config-list">
+<div><h3>Aulas</h3><div style="display:flex;gap:6px"><input id="newRoom" placeholder="Ej: Aula 2"><button class="b1" onclick="addRoom()">Agregar</button></div><div id="roomPills"></div></div>
+<div><h3>Profesores</h3><div style="display:flex;gap:6px"><input id="newTeacher" placeholder="Ej: Laura"><button class="b1" onclick="addTeacher()">Agregar</button></div><div id="teacherPills"></div></div>
+<div class="full"><h3>Alumnos</h3>
+<div class="form">
+<div><label>Alumno</label><input id="newStudent" placeholder="Nombre del alumno"></div>
+<div><label>Contacto</label><input id="newStudentContact" placeholder="Madre / Padre / Tutor"></div>
+<div><label>WhatsApp</label><input id="newStudentWhatsapp" placeholder="+54 9 ..."></div>
+<div style="display:flex;align-items:end"><button class="b1" onclick="addStudent()">Agregar alumno</button></div>
+</div>
+<div id="studentPills"></div>
+</div>
+</div><br><button class="b6" onclick="closeConfig()">Cerrar</button></div></div>
+
+
+<div id="reportsModal" class="modal"><div class="box"><h2>📊 Informes de asistencia</h2>
+<p class="shared-note">Consulte las asistencias por período, alumno y estado. Los alumnos sin marcar no se cuentan como presentes ni ausentes.</p>
+
+<div class="report-filter-box">
+  <h3 style="margin-top:0">Buscar asistencias</h3>
+  <div class="report-filters">
+    <div><label>Desde</label><input id="reportFrom" type="date"></div>
+    <div><label>Hasta</label><input id="reportTo" type="date"></div>
+    <div><label>Alumno</label><select id="reportFilterStudent"><option value="">Todos los alumnos</option></select></div>
+    <div><label>Estado</label>
+      <select id="reportFilterStatus">
+        <option value="">Presentes y ausentes</option>
+        <option value="presente">Solo presentes</option>
+        <option value="ausente">Solo ausentes</option>
+      </select>
     </div>
   </div>
-
-  <div class="card">
-    <div class="topline">
-      <h3>Recuperar un grupo</h3>
-      <span class="status" id="connectionBadge">Sin conexión</span>
-    </div>
-    <div class="small">Usá esta opción cuando ya tengas el código del grupo.</div>
-    <label>Código del grupo</label>
-    <input id="joinCode" placeholder="Ej: ABCD-1234">
-    <button class="secondary" onclick="joinGroup()">Entrar</button>
-  </div>
-</section>
-
-<section id="groupView" class="hidden">
-<div class="fixedWorkspace">
-<div class="card groupHeaderCard">
-<button class="gray backBtn" onclick="backHome()">← Volver</button>
-<div class="topline groupTopline">
-<h2 id="title"></h2>
-<span class="status" id="syncStatus">Sin verificar</span>
-</div>
-<div class="groupMeta"><span class="badge">Grupo compartido</span> <span id="groupCode" class="badge"></span></div>
-<div id="groupMiniSummary" class="small groupMiniSummary"></div>
-<div id="nextStepBox" class="nextStepBox"></div>
-
-<div class="participantsCompact">
-  <div class="participantsHead">
-    <h3>Participantes</h3>
-  </div>
-  <div id="participantsList"></div>
-  <button id="addParticipantToggle" class="addParticipantToggle" onclick="toggleParticipantForm()">＋ Agregar participante</button>
-  <div id="addParticipantForm" class="addParticipantCompact hiddenForm">
-    <input id="newParticipant" placeholder="Nombre del participante" onkeydown="if(event.key==='Enter') addParticipant()">
-    <button onclick="addParticipant()">Agregar</button>
-  </div>
-</div>
-</div>
-
-<div class="card expenseCard">
-<h3 id="expenseFormTitle">Cargar gasto</h3>
-<div class="notice ok compactNotice">La selección no cambia mientras cargás. La lista se actualiza después de guardar.</div>
-<div class="row">
-<div><label>Quién pagó</label><select id="payer"></select></div>
-<div><label>Importe</label><input id="amount" type="number" placeholder="Ej: 30000"></div>
-</div>
-<label>Concepto</label>
-<input id="concept" placeholder="Ej: carne, bebidas, hotel">
-<div class="receiptField">
-  <label>📷 Comprobante (opcional)</label>
-  <input id="expenseReceiptFile" type="file" accept="image/*" capture="environment">
-  <div id="expenseReceiptPreview" class="receiptPreview small"></div>
-</div>
-<button id="saveExpenseBtn" onclick="addExpense()">Guardar gasto</button>
-<button id="cancelEditBtn" class="gray hidden" onclick="cancelEditExpense()">Cancelar edición</button>
-<div id="expenseStatus" class="small"></div>
-</div>
-</div>
-
-<div class="variableScroll" id="variableScroll">
-<div class="card expensesCard">
-<h3>Gastos cargados</h3>
-<div id="expensesList" class="expensesScroll"></div>
-</div>
-
-<div class="card">
-<h3>📊 Resultado</h3>
-<div id="summaryBox"></div>
-<div id="resultsBox"></div>
-</div>
-
-<div class="card closeCard">
-  <h3>🔒 Cierre del grupo</h3>
-  <div id="closeStatusBox"></div>
-  <div id="paymentsBox"></div>
-  <div id="paymentHistoryBox" class="paymentHistory"></div>
-  <input id="paymentReceiptFile" class="hidden" type="file" accept="image/*" capture="environment">
-  <button id="closeGroupBtn" onclick="closeGroup()">Cerrar grupo</button>
-  <button id="reopenGroupBtn" class="secondary hidden" onclick="reopenGroup()">Reabrir grupo</button>
-</div>
-
-<div class="card shareCard">
-<h3>Compartir grupo</h3>
-<div class="notice ok compactNotice"><b>Invitación directa:</b> la otra persona toca el enlace y entra sin escribir códigos.</div>
-<div class="shareActions">
-<button class="secondary" onclick="shareInvite()">📤 Compartir invitación</button>
-<button class="secondary" onclick="copyInvite()">📋 Copiar invitación</button>
-<button class="gray" onclick="loadGroup(true)">Actualizar lista</button>
-</div>
-</div>
-</div>
-</section>
-</div>
-<div id="receiptModal" class="receiptModal hidden" onclick="if(event.target===this) closeReceiptModal()">
-  <div class="receiptModalBox">
-    <div id="receiptModalStatus" class="small">Cargando comprobante...</div>
-    <img id="receiptModalImage" class="hidden" alt="Comprobante">
-    <button class="gray" onclick="closeReceiptModal()">Cerrar</button>
+  <div class="report-actions">
+    <button class="b2" onclick="applyReportFilters()">Buscar</button>
+    <button class="b4" onclick="clearReportFilters()">Limpiar filtros</button>
+    <button class="b7" onclick="printFilteredReport()">🖨️ Imprimir resultados</button>
+    <button class="b6" onclick="closeReports()">Cerrar</button>
   </div>
 </div>
 
+<div id="filteredReportSummary" class="report-result-summary"></div>
+<div id="filteredReportTable" style="overflow:auto"></div>
+
+<hr style="border:0;border-top:1px solid #d6e0ee;margin:18px 0">
+<h3>Resumen general</h3>
+<div class="report-actions"><button class="b2" onclick="refreshReports()">Actualizar informes</button></div>
+<div id="reportsSummary" class="report-grid"></div>
+
+<h3>Alumnos con más ausencias del mes</h3>
+<div style="overflow:auto"><table><thead><tr><th>Alumno</th><th>Ausentes</th><th>Presentes</th><th>% asistencia</th></tr></thead><tbody id="reportsRanking"></tbody></table></div>
+
+<h3>Ausentes por día</h3>
+<div class="absent-filter">
+  <div><label>Día</label><select id="absentDay" onchange="renderAbsentsByDay()"><option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option><option>Sábado</option></select></div>
+  <button class="b4" onclick="renderAbsentsByDay()">Filtrar ausentes</button>
+</div>
+<div id="absentsByDay" style="overflow:auto"></div>
+
+<h3>Consulta por alumno</h3>
+<select id="reportStudent" onchange="renderStudentReport()"></select>
+<div id="studentReport" style="margin-top:10px"></div>
+</div></div>
 <script>
-let group=null;
-let autoTimer=null;
-let editingExpenseId=null;
-let existingExpenseReceiptId=null;
-let pendingPaymentReceipt=null;
-
-function getServerUrl(){ return localStorage.getItem('gca_server_url') || ''; }
-
-let adminPressTimer=null;
-function openReservedSetup(){
-  if(!window.technicalSetup)return;
-  technicalSetup.classList.toggle('hidden');
-  if(!technicalSetup.classList.contains('hidden') && window.serverUrl){
-    serverUrl.value=getServerUrl();
-    technicalSetup.scrollIntoView({behavior:'smooth',block:'center'});
-  }
+const PANEL_PUBLIC_URL="https://ompineyro-hash.github.io/panel-horas-simple/";
+function ompCurrentConfig(){
+  try{return JSON.parse(localStorage.getItem("omp_install_panel_horarios_v1")||"null")}catch(e){return null}
 }
-function enableReservedAccess(){
-  const headerTitle=document.querySelector('header h1');
-  if(!headerTitle)return;
-  const start=()=>{ adminPressTimer=setTimeout(openReservedSetup,3000); };
-  const stop=()=>{ clearTimeout(adminPressTimer); adminPressTimer=null; };
-  headerTitle.addEventListener('mousedown',start);
-  headerTitle.addEventListener('mouseup',stop);
-  headerTitle.addEventListener('mouseleave',stop);
-  headerTitle.addEventListener('touchstart',start,{passive:true});
-  headerTitle.addEventListener('touchend',stop);
-  headerTitle.addEventListener('touchcancel',stop);
+function ompInstitutionId(){
+  const cfg=ompCurrentConfig();
+  return String(cfg?.institucionId||"").trim();
 }
 
-function cleanUrl(url){
-  url=String(url||'').trim();
-  const i=url.indexOf('https://script.google.com/macros/s/');
-  if(i>0) url=url.slice(i);
-  return url;
+const DAYS=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"], WORKDAYS=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+let items=[],
+rooms=[],
+teachers=[],
+students=[],
+attendance=[],
+scriptUrl="",
+autoTimer=null,
+syncFailCount=0,
+SYNC_FAIL_VISIBLE_AFTER=3;
+
+// V10.8.2 FINAL - Base compartida incorporada para que el usuario no tenga que buscar la URL técnica.
+// Si ya existe una URL guardada en el equipo, se respeta. Si no existe, se usa esta base del paquete.
+const PANEL_DEFAULT_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwJXywOPHngiPrvMM2JvzqZfYhDlfpjOY9MseFA4krm1X8ho_OTCrt4suEKb-0L7JS-/exec";
+function panelEffectiveScriptUrl(){
+  // V14.0.2: esta instalación usa una sola base oficial.
+  // Se ignoran URLs antiguas que hayan quedado guardadas en el navegador.
+  const def=String(PANEL_DEFAULT_SCRIPT_URL||"").trim();
+  return panelUrlValida(def)?def:"";
 }
-function toggleTechnicalSetup(){
-  technicalSetup.classList.toggle('hidden');
-  if(!technicalSetup.classList.contains('hidden')){ serverUrl.value=getServerUrl(); }
-}
-function saveServerUrl(){
-  const url=cleanUrl(serverUrl.value);
-  if(!url){alert('Pegá la URL del servidor.');return}
-  if(!url.includes('/macros/s/') || !url.endsWith('/exec')){
-    alert('La URL parece incompleta. Tiene que terminar en /exec.');
-    return;
+function panelGuardarScriptUrlSiHaceFalta(){
+  const u=panelEffectiveScriptUrl();
+  if(u){
+    scriptUrl=u;
+    localStorage.setItem("panel_v9_script_url",u);
   }
-  localStorage.setItem('gca_server_url',url);
-  updateConnectionBadge();
+  return u;
 }
-function updateConnectionBadge(){
-  const ok=!!getServerUrl();
-  connectionBadge.textContent=ok?'Conectado':'Esperando invitación';
-  serverStatus.innerHTML=ok?'Conexión guardada.':'';
-  serverUrl.value=getServerUrl();
-  if(window.welcomeMessage){
-    welcomeMessage.innerHTML=ok
-      ? '<b>Aplicación lista.</b><br>Elegí un grupo guardado, creá uno nuevo o abrí una invitación.'
-      : '<b>Bienvenido.</b><br>Abrí la invitación que te enviaron para comenzar.';
+
+
+function dbg(msg,obj){
+  // Diagnóstico interno desactivado en versión limpia.
+  console.log('[ASISTENCIA]', msg, obj || '');
+}
+
+function saveLocal(){ /* V14: Google Sheets es la única fuente de verdad */ }
+function clearLegacyPanelCacheOnce(){
+  const flag="panel_v14_cache_limpia";
+  if(localStorage.getItem(flag)==="SI")return;
+  ["panel_v9_items","panel_v9_rooms","panel_v9_teachers","panel_v10_students","panel_v10_attendance"]
+    .forEach(k=>localStorage.removeItem(k));
+  localStorage.setItem(flag,"SI");
+}
+clearLegacyPanelCacheOnce();
+localStorage.setItem("panel_v9_script_url", PANEL_DEFAULT_SCRIPT_URL);
+scriptUrl=PANEL_DEFAULT_SCRIPT_URL;
+
+function tick(){clock.textContent=new Date().toLocaleString("es-AR",{weekday:"long",hour:"2-digit",minute:"2-digit"})}setInterval(tick,1000);tick();
+function nowInfo(){const d=new Date();return{day:DAYS[d.getDay()],hm:String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}}
+function fixTime(v){if(!v)return"";v=String(v);const m=v.match(/(\d{1,2}):(\d{2})/);return m?String(m[1]).padStart(2,"0")+":"+m[2]:v}
+function extractHourFromLegacyDate(v){
+  const s=String(v||"").trim();
+  let m=s.match(/\b(\d{1,2}):(\d{2})(?::\d{2})?\b/);
+  if(m)return String(m[1]).padStart(2,"0")+":"+m[2];
+  return fixTime(s);
+}
+function isWeekday(v){
+  return WORKDAYS.includes(String(v||"").trim());
+}
+function looksLikeLegacyShiftedHorario(x){
+  const dia=String(x?.dia||"");
+  const hora=String(x?.hora||"");
+  return (
+    isWeekday(x?.id) &&
+    (/1899/.test(dia) || /GMT|hora estándar|Sat Dec 30/i.test(dia)) &&
+    !/^\d{1,2}:\d{2}$/.test(hora)
+  );
+}
+function normalize(x){
+  x={...(x||{})};
+
+  // Recuperación automática de filas que quedaron corridas cuando se agregó
+  // y luego se retiró la columna institucionId. No modifica la planilla:
+  // solamente reconstruye correctamente día, hora, aula, alumno y profesor.
+  if(looksLikeLegacyShiftedHorario(x)){
+    const repaired={
+      id:String(x._idOriginal||("REC-"+[
+        x.id,x.dia,x.hora,x.aula,x.alumno,x.profesor,x.actividad,x.contacto
+      ].join("|"))),
+      dia:String(x.id||""),
+      hora:extractHourFromLegacyDate(x.dia),
+      aula:String(x.hora||""),
+      alumno:String(x.aula||""),
+      profesor:String(x.alumno||""),
+      actividad:String(x.profesor||""),
+      contacto:String(x.actividad||""),
+      whatsapp:String(x.contacto||""),
+      asistencia:String(x.asistencia||"")
+    };
+    return repaired;
   }
+
+  return {
+    id:String(x.id||""),
+    dia:String(x.dia||""),
+    hora:fixTime(x.hora||""),
+    aula:String(x.aula||""),
+    alumno:String(x.alumno||""),
+    profesor:String(x.profesor||""),
+    actividad:String(x.actividad||""),
+    contacto:String(x.contacto||""),
+    whatsapp:String(x.whatsapp||""),
+    asistencia:String(x.asistencia||"")
+  };
 }
-async function testConnection(){
+
+function normalizeStudent(x){return{id:String(x.id||""),alumno:String(x.alumno||x.nombre||""),contacto:String(x.contacto||""),whatsapp:String(x.whatsapp||"")};}
+function todayISO(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function dateKey(v){if(!v)return "";const s=String(v).trim();const m=s.match(/\d{4}-\d{2}-\d{2}/);return m?m[0]:s;}
+function cleanKeyPart(v){return String(v||"").trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\s+/g," ");}
+function attKeyFrom(x,fecha=todayISO()){
+  return [fecha,cleanKeyPart(x.dia),fixTime(x.hora),cleanKeyPart(x.aula),cleanKeyPart(x.alumno)].join("|");
+}
+function oldAttKeyFrom(x,fecha=todayISO()){
+  return [fecha,String(x.id||"").trim()].join("|");
+}
+function applyAttendanceToItems(){
+  const today=todayISO(),map={};
+  attendance.forEach(a=>{
+    const fecha=dateKey(a.fecha);
+    if(fecha!==today)return;
+    const estado=String(a.estado||a.asistencia||"").trim().toLowerCase();
+    if(!estado)return;
+    const fixedKey=String(a.asistenciaKey||a.clave||"").trim() || attKeyFrom(a,fecha);
+    map[fixedKey]=estado;
+    const oldKey=[fecha,String(a.horarioId||"").trim()].join("|");
+    if(a.horarioId) map[oldKey]=estado;
+  });
+  items=items.map(x=>{
+    const fixedKey=attKeyFrom(x,today);
+    const oldKey=oldAttKeyFrom(x,today);
+    return {...x,asistencia:map[fixedKey]||map[oldKey]||""};
+  });
+}
+function applyStudentData(){const name=(alumno.value||"").trim().toLowerCase();const s=students.find(x=>(x.alumno||"").trim().toLowerCase()===name);if(s){if(!contacto.value) contacto.value=s.contacto||"";if(!whatsapp.value) whatsapp.value=s.whatsapp||""}}
+function setMode(text,cls){mode.className="notice"+(cls?" "+cls:"");mode.textContent=text||"Sincronización activa sin interrumpir."}
+function isBusy(){
+  return document.querySelector(".modal.show") || document.activeElement?.tagName==="INPUT" || document.activeElement?.tagName==="SELECT";
+}
+function startAuto(){
+  if(autoTimer)clearInterval(autoTimer);
+  if(scriptUrl)autoTimer=setInterval(()=>{ if(!isBusy()) loadData(false); },60000);
+}
+
+function panelUrlValida(u){
+  u=String(u||"").trim();
+  return u.startsWith("https://script.google.com/macros/s/") && u.endsWith("/exec");
+}
+function panelConnectionPayload(){
+  const u=panelGuardarScriptUrlSiHaceFalta();
+  if(!u || !panelUrlValida(u)){
+    alert("Esta instalación todavía no tiene una base compartida conectada.");
+    return null;
+  }
+  return {
+    app:"panel_horarios",
+    tipo:"conexion_compartida",
+    version:"V10.8.2",
+    scriptUrl:u,
+    generado:new Date().toISOString()
+  };
+}
+function panelEncodeConnection(payload){
+  return "PHS-"+btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+}
+function panelDecodeConnection(code){
+  let raw=String(code||"").trim();
+  if(!raw)return null;
+
+  const hashMatch=raw.match(/#conectar=([^\s]+)/);
+  if(hashMatch){
+    try{ raw=decodeURIComponent(hashMatch[1]); }catch(e){ raw=hashMatch[1]; }
+  }
+
+  const codeMatch=raw.match(/PHS-[A-Za-z0-9+/=]+/);
+  if(codeMatch) raw=codeMatch[0];
+
+  if(panelUrlValida(raw)){
+    return {app:"panel_horarios",tipo:"url_directa",version:"manual",scriptUrl:raw};
+  }
+
+  const clean=raw.startsWith("PHS-")?raw.slice(4):raw;
   try{
-    const r=await fetch(getServerUrl()+'?t='+Date.now());
-    const data=await r.json();
-    serverStatus.innerHTML=data.ok?'<span style="color:#15803d">Servidor responde bien: '+escapeHtml(data.app||'OK')+'</span>':'Servidor respondió pero no OK';
-  }catch(e){ serverStatus.innerHTML='<span style="color:#dc2626">No se pudo conectar: '+escapeHtml(e.message)+'</span>'; }
+    const obj=JSON.parse(decodeURIComponent(escape(atob(clean))));
+    if(obj && obj.app==="panel_horarios" && panelUrlValida(obj.scriptUrl))return obj;
+  }catch(e){}
+  return null;
 }
-function uid(){ return Math.random().toString(36).slice(2,6).toUpperCase()+"-"+Math.floor(1000+Math.random()*9000); }
-function expenseId(){ return "G-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7); }
-function money(n){ return '$ '+Number(n||0).toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:2}); }
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+async function copiarTextoOMP(txt){
+  try{
+    await navigator.clipboard.writeText(txt);
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+async function compartirInstalacion(){
+  OMPInstaller.showSendConnection();
+}
 
-function receiptId(){ return "R-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8); }
-function paymentId(){ return "P-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8); }
-async function fileToCompressedBase64(file){
-  if(!file)return null;
-  if(!String(file.type||'').startsWith('image/'))throw new Error('El comprobante debe ser una imagen.');
-  const dataUrl=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(new Error('No se pudo leer la imagen.'));r.readAsDataURL(file);});
-  const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=()=>reject(new Error('No se pudo abrir la imagen.'));i.src=dataUrl;});
-  const maxSide=1100; let w=img.width,h=img.height; const scale=Math.min(1,maxSide/Math.max(w,h));
-  w=Math.max(1,Math.round(w*scale)); h=Math.max(1,Math.round(h*scale));
-  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);
-  const compressed=canvas.toDataURL('image/jpeg',0.72);
-  return {mimeType:'image/jpeg',name:(file.name||'comprobante').replace(/\.[^.]+$/,'')+'.jpg',base64:compressed.split(',')[1]};
+async function aplicarConexionCompartida(obj,desdeInstalador=false){
+  if(!obj || !panelUrlValida(obj.scriptUrl)){
+    alert("El código de conexión no es válido.");
+    return false;
+  }
+  scriptUrl=obj.scriptUrl.trim();
+  localStorage.setItem("panel_v9_script_url",scriptUrl);
+  if(desdeInstalador){
+    const cfg={
+      appId:"panel_horarios",
+      version:"1.0",
+      estado:"INSTALADA",
+      institucion:"Panel de Horarios",
+      responsable:"Conectado",
+      instalacionId:"OMP-"+Date.now()+"-"+Math.random().toString(16).slice(2),
+      fecha:new Date().toISOString(),
+      dispositivo:/Mobi|Android/i.test(navigator.userAgent)?"celular":"pc",
+      conectadaA:"instalacion_existente"
+    };
+    localStorage.setItem("omp_install_panel_horarios_v1",JSON.stringify(cfg));
+    localStorage.setItem("omp_install_panel_horarios_step","COMPLETA");
+  }
+  startAuto();
+  setMode("Conectando a instalación existente...","");
+  try{
+    await loadData(true);
+    setMode("Instalación conectada correctamente.","ok");
+    return true;
+  }catch(e){
+    setMode("Conexión guardada. Si no ve datos, presione Actualizar.","err");
+    return true;
+  }
 }
-async function uploadReceipt(file,kind){
-  const converted=await fileToCompressedBase64(file);if(!converted)return null;
-  const id=receiptId();
-  await api('saveReceipt',{receipt:{id,groupId:group.id,kind:kind||'general',mimeType:converted.mimeType,name:converted.name,dataBase64:converted.base64,createdAt:new Date().toISOString()}});
-  return id;
+async function conectarInstalacionExistente(){
+  document.body.classList.add("omp-pending");
+  OMPInstaller.showConnectDevice();
 }
-async function deleteReceiptSafe(id){if(!id)return;try{await api('deleteReceipt',{id});}catch(e){console.warn(e);}}
-async function viewReceipt(id){
-  if(!id)return;receiptModal.classList.remove('hidden');receiptModalStatus.textContent='Cargando comprobante...';receiptModalImage.classList.add('hidden');receiptModalImage.removeAttribute('src');
-  try{const data=await api('getReceipt',{id});receiptModalImage.src='data:'+(data.receipt.mimeType||'image/jpeg')+';base64,'+data.receipt.dataBase64;receiptModalImage.classList.remove('hidden');receiptModalStatus.textContent=data.receipt.name||'Comprobante';}
-  catch(e){receiptModalStatus.textContent='No se pudo abrir el comprobante: '+e.message;}
-}
-function closeReceiptModal(){receiptModal.classList.add('hidden');receiptModalImage.removeAttribute('src');}
-function renderExpenseReceiptPreview(){
-  const box=document.getElementById('expenseReceiptPreview');if(!box)return;
-  const file=expenseReceiptFile.files&&expenseReceiptFile.files[0];
-  if(file)box.innerHTML='✅ Nueva imagen seleccionada: '+escapeHtml(file.name);
-  else if(existingExpenseReceiptId&&existingExpenseReceiptId!=='__REMOVE__')box.innerHTML='<button type="button" class="receiptBtn" onclick="viewReceipt(\''+existingExpenseReceiptId+'\')">👁 Ver comprobante actual</button><button type="button" class="danger" onclick="removeCurrentExpenseReceipt()">Quitar comprobante</button>';
-  else if(existingExpenseReceiptId==='__REMOVE__')box.innerHTML='<span style="color:#b91c1c">El comprobante se quitará al guardar.</span>';
-  else box.innerHTML='<span>Podés sacar una foto o elegirla de la galería.</span>';
-}
-function removeCurrentExpenseReceipt(){if(!existingExpenseReceiptId||existingExpenseReceiptId==='__REMOVE__')return;if(!confirm('¿Quitar el comprobante de este gasto?'))return;existingExpenseReceiptId='__REMOVE__';expenseReceiptFile.value='';renderExpenseReceiptPreview();}
 
-
-async function api(action,payload){
-  const url=getServerUrl();
-  if(!url) throw new Error('Todavía no hay conexión. Abrí una invitación válida.');
-  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,...(payload||{})})});
-  const txt=await r.text();
-  let data; try{data=JSON.parse(txt)}catch(e){throw new Error('El servidor no devolvió JSON: '+txt.slice(0,100))}
-  if(!data.ok) throw new Error(data.error || 'Error de servidor.');
+function setScriptUrl(){
+  const u=prompt("Pegá acá tu URL de Google Apps Script. Tiene que terminar en /exec:",scriptUrl);
+  if(u!==null){
+    const val=u.trim();
+    if(!val){
+      scriptUrl="";
+      localStorage.removeItem("panel_v9_script_url");
+      setMode("Sin base conectada. Presioná Conectar base para pegar tu URL /exec.","err");
+      render();
+      return;
+    }
+    if(!val.startsWith("https://script.google.com/macros/s/") || !val.endsWith("/exec")){
+      alert("La URL no parece correcta. Debe empezar con https://script.google.com/macros/s/ y terminar en /exec");
+      return;
+    }
+    scriptUrl=val;
+    localStorage.setItem("panel_v9_script_url",scriptUrl);
+    startAuto();
+    loadData(true);
+  }
+}
+function ompAuthData(){
+  const cfg=ompCurrentConfig()||{};
+  return {institucionId:String(cfg.institucionId||"").trim(),accessToken:String(cfg.accessToken||"").trim()};
+}
+async function apiGet(){
+  const endpoint=panelEffectiveScriptUrl()||PANEL_DEFAULT_SCRIPT_URL;
+  const auth=ompAuthData();
+  const q=new URLSearchParams({ts:String(Date.now()),institucionId:auth.institucionId,accessToken:auth.accessToken});
+  const r=await fetch(endpoint+"?"+q.toString());
+  const data=await r.json();
+  if(data && data.ok===false) throw new Error(data.error||"Error de conexión");
+  return data;
+}
+async function apiPost(payload){
+  const endpoint=panelEffectiveScriptUrl()||PANEL_DEFAULT_SCRIPT_URL;
+  const action=String(payload?.action||"");
+  const publicAction=["createInstitution","connectByCode"].includes(action);
+  const body=publicAction?{...payload}:{...payload,...ompAuthData()};
+  const r=await fetch(endpoint,{
+    method:"POST",
+    headers:{"Content-Type":"text/plain"},
+    body:JSON.stringify(body)
+  });
+  const data=await r.json();
+  if(data && data.ok===false) throw new Error(data.error||"Error del servidor");
   return data;
 }
 
-function getMyGroups(){
+async function loadData(force=false){
+  scriptUrl=panelEffectiveScriptUrl()||PANEL_DEFAULT_SCRIPT_URL;
+  if(!scriptUrl){setMode("No se encontró la base compartida.","err");render();return}
+  if(!force && isBusy()) return;
   try{
-    const data=JSON.parse(localStorage.getItem('gca_my_groups')||'[]');
-    return Array.isArray(data)?data:[];
-  }catch(e){ return []; }
-}
-function saveMyGroups(items){ localStorage.setItem('gca_my_groups',JSON.stringify(items)); }
-function getHiddenGroupIds(){
-  try{
-    const data=JSON.parse(localStorage.getItem('gca_hidden_groups')||'[]');
-    return Array.isArray(data)?data:[];
-  }catch(e){ return []; }
-}
-function saveHiddenGroupIds(items){ localStorage.setItem('gca_hidden_groups',JSON.stringify([...new Set(items)])); }
-function hideGroupId(id){ saveHiddenGroupIds([...getHiddenGroupIds(),id]); }
-function unhideGroupId(id){ saveHiddenGroupIds(getHiddenGroupIds().filter(x=>x!==id)); }
-
-async function syncMyGroupsFromServer(){
-  if(!getServerUrl())return;
-  try{
-    const data=await api('listGroups');
-    const serverGroups=Array.isArray(data.groups)?data.groups:[];
-    if(!serverGroups.length)return;
-
-    const localGroups=getMyGroups();
-    const byId={};
-    localGroups.forEach(item=>{ if(item && item.id) byId[item.id]=item; });
-
-    const hiddenIds=new Set(getHiddenGroupIds());
-    serverGroups.forEach(item=>{
-      if(!item || !item.id || hiddenIds.has(item.id))return;
-      const previous=byId[item.id]||{};
-      byId[item.id]={
-        id:item.id,
-        name:item.name||previous.name||'Grupo sin nombre',
-        participants:Array.isArray(item.participants)?item.participants:(previous.participants||[]),
-        updatedAt:item.updatedAt||previous.updatedAt||''
-      };
-    });
-
-    const merged=Object.values(byId).sort((a,b)=>new Date(b.updatedAt||0)-new Date(a.updatedAt||0));
-    saveMyGroups(merged.slice(0,100));
-    renderMyGroups();
-  }catch(e){
-    console.warn('No se pudo actualizar Mis grupos desde el servidor:',e);
-  }
-}
-function rememberGroup(g){
-  if(!g || !g.id)return;
-  unhideGroupId(g.id);
-  const items=getMyGroups().filter(x=>x.id!==g.id);
-  items.unshift({id:g.id,name:g.name||'Grupo sin nombre',participants:Array.isArray(g.participants)?g.participants:[],updatedAt:g.updatedAt||new Date().toISOString()});
-  saveMyGroups(items.slice(0,50));
-  renderMyGroups();
-}
-function formatLastActivity(value){
-  if(!value)return 'Sin actividad registrada';
-  const d=new Date(value);
-  if(Number.isNaN(d.getTime()))return 'Sin actividad registrada';
-  const now=new Date();
-  const sameDay=d.toDateString()===now.toDateString();
-  const yesterday=new Date(now); yesterday.setDate(now.getDate()-1);
-  if(sameDay)return 'Hoy '+d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-  if(d.toDateString()===yesterday.toDateString())return 'Ayer '+d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-  return d.toLocaleDateString('es-AR')+' '+d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-}
-function renderMyGroups(){
-  if(!window.myGroupsList)return;
-  const items=getMyGroups().sort((a,b)=>new Date(b.updatedAt||0)-new Date(a.updatedAt||0));
-  if(!items.length){ myGroupsList.innerHTML='<div class="emptyGroups">Todavía no hay grupos guardados en este dispositivo.</div>'; return; }
-  myGroupsList.innerHTML=items.map(item=>{
-    const people=(item.participants||[]).join(', ')||'Sin participantes';
-    return '<div class="groupItem"><div class="groupInfo"><b>'+escapeHtml(item.name)+'</b>'+ 
-      '<div class="small">👥 '+escapeHtml(people)+'</div>'+ 
-      '<div class="small">🕒 Última actividad: '+escapeHtml(formatLastActivity(item.updatedAt))+'</div></div>'+ 
-      '<div class="groupActions"><button class="secondary" onclick="openSavedGroup(\''+item.id+'\')">Abrir</button>'+ 
-      '<button onclick="renameSavedGroup(\''+item.id+'\')">✏️ Renombrar</button>'+ 
-      '<button class="danger" onclick="removeSavedGroup(\''+item.id+'\')">🗑 Quitar</button></div></div>';
-  }).join('');
-}
-async function renameSavedGroup(id){
-  const item=getMyGroups().find(x=>x.id===id);
-  if(!item)return;
-  const next=prompt('Nuevo nombre del grupo:',item.name||'');
-  if(next===null)return;
-  const clean=next.trim();
-  if(!clean){alert('El nombre no puede quedar vacío.');return;}
-  try{
-    const data=await api('getGroup',{id});
-    const g=data.group;
-    g.name=clean;
-    g.updatedAt=new Date().toISOString();
-    const saved=await api('saveGroup',{group:g});
-    rememberGroup(saved.group||g);
-    alert('Nombre actualizado.');
-  }catch(e){alert('No se pudo renombrar el grupo: '+e.message);}
-}
-function removeSavedGroup(id){
-  const item=getMyGroups().find(x=>x.id===id);
-  if(!item)return;
-  if(!confirm('¿Quitar "'+item.name+'" de este dispositivo?\n\nEl grupo seguirá existiendo y podrás recuperarlo con su enlace o código.'))return;
-  hideGroupId(id);
-  saveMyGroups(getMyGroups().filter(x=>x.id!==id));
-  renderMyGroups();
-}
-async function openSavedGroup(id){
-  try{ const data=await api('getGroup',{id}); openGroup(data.group); }
-  catch(e){ alert('No se pudo abrir el grupo: '+e.message); }
-}
-function showCreateGroup(){
-  groupName.value=''; participantsText.value=''; createGroupCard.classList.remove('hidden'); groupName.focus(); createGroupCard.scrollIntoView({behavior:'smooth',block:'start'});
-}
-function cancelCreateGroup(){ groupName.value=''; participantsText.value=''; createGroupCard.classList.add('hidden'); }
-
-async function createSharedGroup(){
-  try{
-    if(!getServerUrl()){ alert('Esta instalación todavía no está preparada para crear grupos.'); return; }
-    const name=groupName.value.trim();
-    const participants=participantsText.value.split(',').map(x=>x.trim()).filter(Boolean);
-    if(!name){alert('Escribí el nombre del grupo.');return}
-    if(participants.length<2){alert('Cargá al menos 2 participantes separados por coma.');return}
-    const newGroup={id:uid(),name,participants,expenses:[],status:"open",payments:[],createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
-    const data=await api('saveGroup',{group:newGroup});
-    openGroup(data.group || newGroup);
-  }catch(e){alert(e.message)}
-}
-async function joinGroup(){
-  const id=joinCode.value.trim().toUpperCase();
-  if(!id){alert('Escribí el código del grupo.');return}
-  try{
-    const data=await api('getGroup',{id});
-    openGroup(data.group);
-  }catch(e){alert(e.message)}
-}
-function openGroup(g){
-  if(!g || !g.id){alert('El servidor no devolvió un grupo válido.');return}
-  stopAutoRefresh();
-  group=g;
-  normalizeGroupState();
-  localStorage.setItem('gca_last_group',group.id);
-  rememberGroup(group);
-  home.classList.add('hidden');
-  groupView.classList.remove('hidden');
-  document.body.classList.add('group-open');
-  if(window.variableScroll) variableScroll.scrollTop=0;
-  render();
-  startAutoRefresh();
-}
-function backHome(){
-  stopAutoRefresh();
-  group=null; editingExpenseId=null;
-  groupName.value=''; participantsText.value=''; joinCode.value='';
-  createGroupCard.classList.add('hidden');
-  groupView.classList.add('hidden'); home.classList.remove('hidden');
-  document.body.classList.remove('group-open');
-  renderMyGroups(); window.scrollTo({top:0,behavior:'smooth'});
-}
-function getShareUrl(){
-  const publicBase='https://ompineyro-hash.github.io/gastos-con-amigos/';
-  const server=getServerUrl();
-  return publicBase+'#grupo='+encodeURIComponent(group.id)+'&servidor='+encodeURIComponent(server);
-}
-
-function toggleParticipantForm(forceOpen){
-  const form=document.getElementById('addParticipantForm');
-  const btn=document.getElementById('addParticipantToggle');
-  if(!form || !btn)return;
-  const open=typeof forceOpen==='boolean'?forceOpen:form.classList.contains('hiddenForm');
-  form.classList.toggle('hiddenForm',!open);
-  btn.textContent=open?'− Ocultar':'＋ Agregar participante';
-  if(open && window.newParticipant) setTimeout(()=>newParticipant.focus(),50);
-}
-
-function renderNextStep(){
-  const box=document.getElementById('nextStepBox');
-  if(!box || !group)return;
-  normalizeGroupState();
-  const pending=getPendingTransfers();
-  let icon='🧭', title='Siguiente paso:', text='', state='step-info';
-  if(group.participants.length<2){
-    text='Agregá al menos dos participantes.';
-  }else if(!group.expenses.length){
-    text='Cargá el primer gasto.';
-  }else if(group.status==='open'){
-    text='Cargá los gastos que falten o revisá el resultado.';
-  }else if(pending.length){
-    icon='💳'; text='Registrá los pagos pendientes.'; state='step-warn';
-  }else{
-    icon='✅'; title='Listo:'; text='El grupo está saldado.'; state='step-done';
-  }
-  box.className='nextStepBox '+state;
-  box.innerHTML='<div class="nextStepIcon">'+icon+'</div><div class="nextStepText"><b>'+title+'</b>'+text+'</div>';
-}
-
-function render(){
-  if(!group)return;
-  normalizeGroupState();
-  const payerAnterior = payer ? payer.value : '';
-  title.textContent=group.name;
-  groupCode.textContent='Código: '+group.id;
-  groupMiniSummary.textContent='👥 '+group.participants.length+' participantes · 💰 '+group.expenses.length+' gastos · 🕒 '+formatLastActivity(group.updatedAt);
-  if(window.simpleGroupCode) simpleGroupCode.textContent=group.id;
-  const canEdit=group.status==='open';
-  participantsList.innerHTML=group.participants.map(p=>'<span class="person">'+escapeHtml(p)+(canEdit?' <button title="Quitar participante" onclick="removeParticipant(\''+String(p).replace(/'/g,"\\'")+'\')">×</button>':'')+'</span>').join('');
-  renderNextStep();
-  payer.innerHTML='<option value="">-- Elegir quién pagó --</option>'+group.participants.map(p=>'<option>'+escapeHtml(p)+'</option>').join('');
-  if(payerAnterior && group.participants.includes(payerAnterior)) payer.value=payerAnterior;
-  if(window.shareLink) shareLink.textContent=getShareUrl();
-  expensesList.innerHTML=group.expenses.map(e=>'<div class="expense"><div class="expenseTop"><b class="expensePayer">'+escapeHtml(e.payer)+'</b><b class="expenseAmount">'+money(e.amount)+'</b></div><div class="expenseConcept">'+escapeHtml(e.concept||'Sin concepto')+'</div><div class="expenseActions">'+(e.receiptId?'<button class="receiptBtn" onclick="viewReceipt(\''+e.receiptId+'\')">📷 Ver</button>':'')+(canEdit?'<button class="secondary" onclick="editExpense(\''+e.id+'\')">✏️ Editar</button><button class="gray" onclick="deleteExpense(\''+e.id+'\')">🗑 Eliminar</button>':'<span class="small">🔒 Gasto cerrado</span>')+'</div></div>').join('') || '<div class="small">Todavía no hay gastos cargados.</div>';
-  renderResults();
-  renderCloseSection();
-}
-
-async function saveGroup(){
-  group.updatedAt=new Date().toISOString();
-  const data=await api('saveGroup',{group});
-  group=data.group || group;
-  rememberGroup(group);
-}
-async function loadGroup(force=false){
-  if(!group)return;
-  const escribiendo=(amount && amount.value)||(concept && concept.value)||(payer && payer.value)||editingExpenseId;
-  if(escribiendo && !force){ syncStatus.textContent='Pausa mientras cargás'; return; }
-  try{
-    const currentId=group.id;
-    const previousUpdatedAt=group.updatedAt||'';
-    const data=await api('getGroup',{id:currentId});
-    if(!data.group || data.group.id!==currentId)return;
-    const changed=(data.group.updatedAt||'')!==previousUpdatedAt;
-    group=data.group;
-    normalizeGroupState();
-    rememberGroup(group);
-    if(changed || force) render();
-    syncStatus.textContent=(changed?'Actualizado':'Al día')+': '+new Date().toLocaleTimeString('es-AR');
-  }catch(e){ syncStatus.textContent='Sin conexión'; }
-}
-async function addParticipant(){
-  try{
-    if(group && group.status!=="open"){alert("El grupo está cerrado. Reabrilo para modificarlo.");return;}
-    const p=newParticipant.value.trim();
-    if(!p){alert('Escribí un nombre.');return}
-    if(group.participants.some(x=>x.toLowerCase()===p.toLowerCase())){alert('Ese participante ya está.');return}
-    group.participants.push(p); newParticipant.value='';
-    toggleParticipantForm(false);
-    await saveGroup(); render();
-  }catch(e){alert(e.message)}
-}
-async function removeParticipant(name){
-  if(!group)return;
-  if(group.status!=="open"){alert("El grupo está cerrado. Reabrilo para modificarlo.");return;}
-  if(group.participants.length<=2){ alert('El grupo debe conservar al menos 2 participantes.'); return; }
-  const hasExpenses=group.expenses.some(e=>String(e.payer).toLowerCase()===String(name).toLowerCase());
-  if(hasExpenses){ alert('No se puede quitar a '+name+' porque tiene gastos cargados. Primero editá o eliminá esos gastos.'); return; }
-  if(!confirm('¿Quitar a '+name+' del grupo?'))return;
-  try{
-    group.participants=group.participants.filter(p=>p!==name);
-    await saveGroup();
-    render();
-  }catch(e){ alert(e.message); }
-}
-async function addExpense(){
-  try{
-    if(group && group.status!=="open"){alert("El grupo está cerrado. Reabrilo para cargar o editar gastos.");return;}
-    const payerName=payer.value;
-    const amt=Number(amount.value);
-    const conc=concept.value.trim();
-
-    if(!payerName){alert('Elegí quién pagó.');return}
-    if(!amt || amt<=0){alert('Cargá un importe válido.');return}
-
-    expenseStatus.innerHTML='<span style="color:#475569">Guardando...</span>';
-    const selectedReceipt=expenseReceiptFile.files&&expenseReceiptFile.files[0];
-    let newReceiptId=null;
-    if(selectedReceipt){expenseStatus.innerHTML='<span style="color:#475569">Subiendo comprobante...</span>';newReceiptId=await uploadReceipt(selectedReceipt,'expense');}
-
-    if(editingExpenseId){
-      const expense=group.expenses.find(e=>e.id===editingExpenseId);
-      if(!expense) throw new Error('No se encontró el gasto para editar.');
-      expense.payer=payerName;
-      expense.amount=amt;
-      expense.concept=conc;
-      if(newReceiptId){const oldReceipt=expense.receiptId;expense.receiptId=newReceiptId;if(oldReceipt)await deleteReceiptSafe(oldReceipt);}
-      else if(existingExpenseReceiptId==='__REMOVE__'){const oldReceipt=expense.receiptId;delete expense.receiptId;if(oldReceipt)await deleteReceiptSafe(oldReceipt);}
-      expense.updatedAt=new Date().toISOString();
+    if(force) setMode("Actualizando datos...","");
+    const data=await apiGet();
+    if(Array.isArray(data)){
+      items=data.map(normalize);
     }else{
-      group.expenses.push({
-        id:expenseId(),
-        payer:payerName,
-        amount:amt,
-        concept:conc,
-        receiptId:newReceiptId||null,
-        createdAt:new Date().toISOString()
-      });
+      const rawHorarios=(data.horarios||[]);
+      const repairedCount=rawHorarios.filter(looksLikeLegacyShiftedHorario).length;
+      items=rawHorarios.map(normalize);
+      if(repairedCount){
+        console.warn("Se recuperaron automáticamente "+repairedCount+" horario(s) con columnas corridas.");
+      }
+      rooms=Array.isArray(data.aulas)?data.aulas.map(String):[];
+      teachers=Array.isArray(data.profesores)?data.profesores.map(String):[];
+      students=(data.alumnos||[]).map(normalizeStudent);
+      attendance=(data.asistencia||[]);
     }
-
-    await saveGroup();
+    applyAttendanceToItems();
+    fillSelects();
+    const veniaFallando = syncFailCount > 0;
+    syncFailCount = 0;
+    if(force || veniaFallando){
+      setMode("Datos sincronizados.","ok");
+      setTimeout(()=>{
+        if(syncFailCount===0 && mode && mode.className.includes("ok")) setMode("Sincronización activa sin interrumpir.","ok");
+      },4000);
+    }
     render();
-
-    const edited=!!editingExpenseId;
-    resetExpenseForm();
-    expenseStatus.innerHTML='<span style="color:#15803d">✅ '+(edited?'Gasto actualizado correctamente.':'Gasto guardado correctamente.')+'</span>';
   }catch(e){
-    expenseStatus.innerHTML='';
-    alert(e.message);
-  }
-}
-
-function editExpense(id){
-  if(group && group.status!=="open"){alert("El grupo está cerrado. Reabrilo para editar gastos.");return;}
-  const expense=group.expenses.find(e=>e.id===id);
-  if(!expense){alert('No se encontró el gasto.');return}
-  editingExpenseId=id;
-  payer.value=expense.payer;
-  amount.value=expense.amount;
-  concept.value=expense.concept||'';
-  existingExpenseReceiptId=expense.receiptId||null;expenseReceiptFile.value='';renderExpenseReceiptPreview();
-  expenseFormTitle.textContent='Editar gasto';
-  saveExpenseBtn.textContent='Guardar cambios';
-  cancelEditBtn.classList.remove('hidden');
-  expenseStatus.innerHTML='<span style="color:#475569">Editando gasto seleccionado.</span>';
-  expenseFormTitle.scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-function cancelEditExpense(){
-  resetExpenseForm();
-  expenseStatus.innerHTML='';
-}
-
-function resetExpenseForm(){
-  editingExpenseId=null;
-  payer.value='';
-  amount.value='';
-  concept.value='';
-  expenseReceiptFile.value='';existingExpenseReceiptId=null;renderExpenseReceiptPreview();
-  expenseFormTitle.textContent='Cargar gasto';
-  saveExpenseBtn.textContent='Guardar gasto';
-  cancelEditBtn.classList.add('hidden');
-}
-
-async function deleteExpense(id){
-  if(group && group.status!=="open"){alert("El grupo está cerrado. Reabrilo para eliminar gastos.");return;}
-  const expense=group.expenses.find(e=>e.id===id);
-  if(!expense){alert('No se encontró el gasto.');return}
-  if(!confirm('¿Eliminar este gasto?\n\n'+expense.payer+' - '+money(expense.amount)+' - '+(expense.concept||'Sin concepto'))) return;
-
-  try{
-    group.expenses=group.expenses.filter(e=>e.id!==id);
-    await saveGroup();
-    if(expense.receiptId)await deleteReceiptSafe(expense.receiptId);
-    if(editingExpenseId===id) resetExpenseForm();
-    render();
-    expenseStatus.innerHTML='<span style="color:#15803d">✅ Gasto eliminado correctamente.</span>';
-  }catch(e){
-    alert(e.message);
-  }
-}
-function calculateBaseBalances(){
-  const total=(group.expenses||[]).reduce((a,e)=>a+Number(e.amount||0),0);
-  const per=group.participants.length?total/group.participants.length:0;
-  const paid={}; const balance={};
-  group.participants.forEach(p=>{paid[p]=0;balance[p]=0;});
-  (group.expenses||[]).forEach(e=>{if(paid[e.payer]!==undefined) paid[e.payer]+=Number(e.amount||0);});
-  group.participants.forEach(p=>{balance[p]=paid[p]-per;});
-  return {total,per,paid,balance};
-}
-
-function transfersFromBalance(balance){
-  const debtors=[],creditors=[];
-  Object.entries(balance).forEach(([p,v])=>{if(v<-0.01)debtors.push({p,amount:-v});if(v>0.01)creditors.push({p,amount:v});});
-  debtors.sort((a,b)=>b.amount-a.amount);creditors.sort((a,b)=>b.amount-a.amount);
-  const rows=[];let i=0,j=0,n=1;
-  while(i<debtors.length&&j<creditors.length){
-    const amount=Math.min(debtors[i].amount,creditors[j].amount);
-    if(amount>0.01) rows.push({id:'T'+n++,from:debtors[i].p,to:creditors[j].p,amount:Number(amount.toFixed(2))});
-    debtors[i].amount-=amount;creditors[j].amount-=amount;
-    if(debtors[i].amount<=0.01)i++;if(creditors[j].amount<=0.01)j++;
-  }
-  return rows;
-}
-
-function normalizeGroupState(){
-  if(!group)return;
-  if(!group.status)group.status='open';
-  if(!Array.isArray(group.payments))group.payments=[];
-  group.payments=group.payments.filter(p=>p&&p.from&&p.to&&Number(p.amount||0)>0);
-  if(group.status==='closed'&&!Array.isArray(group.settlementTransfers)){
-    group.settlementTransfers=transfersFromBalance(calculateBaseBalances().balance);
-  }
-}
-
-function getSettlementTransfers(){
-  normalizeGroupState();
-  if(group.status==='closed')return group.settlementTransfers||[];
-  return transfersFromBalance(calculateBaseBalances().balance);
-}
-
-function paidForTransfer(t){
-  return (group.payments||[]).filter(p=>(p.transferId&&p.transferId===t.id)||(!p.transferId&&p.from===t.from&&p.to===t.to)).reduce((a,p)=>a+Number(p.amount||0),0);
-}
-
-function getPendingTransfers(){
-  return getSettlementTransfers().map(t=>({...t,paid:paidForTransfer(t),pending:Number(Math.max(0,t.amount-paidForTransfer(t)).toFixed(2))})).filter(t=>t.pending>0.01);
-}
-
-function renderResults(){
-  if(!group||!group.expenses.length){summaryBox.innerHTML='<div class="small">Todavía no hay gastos para calcular.</div>';resultsBox.innerHTML='';return;}
-  const calc=calculateBaseBalances();
-  summaryBox.innerHTML='<div class="resultLine">Total gastado: '+money(calc.total)+' · Participantes: '+group.participants.length+' · Parte de cada uno: '+money(calc.per)+'</div>';
-  const pendingByPerson={};const receivedByPerson={};
-  group.participants.forEach(p=>{pendingByPerson[p]=0;receivedByPerson[p]=0;});
-  getPendingTransfers().forEach(t=>{pendingByPerson[t.from]+=t.pending;receivedByPerson[t.to]+=t.pending;});
-  const rows=group.participants.map(p=>{
-    const paidDebts=(group.payments||[]).filter(x=>x.from===p).reduce((a,x)=>a+Number(x.amount||0),0);
-    const collected=(group.payments||[]).filter(x=>x.to===p).reduce((a,x)=>a+Number(x.amount||0),0);
-    const pending=pendingByPerson[p]||0;const receivable=receivedByPerson[p]||0;
-    let state='<span class="balanceOk">Equilibrado</span>';
-    if(pending>0.01)state='<span class="balanceDebt">Debe '+money(pending)+'</span>';
-    else if(receivable>0.01)state='<span class="balanceCredit">Recibe '+money(receivable)+'</span>';
-    return '<tr><td><b>'+escapeHtml(p)+'</b></td><td>'+money(calc.paid[p])+'</td><td>'+money(calc.per)+'</td><td>'+money(paidDebts)+'</td><td>'+money(collected)+'</td><td>'+state+'</td></tr>';
-  }).join('');
-  resultsBox.innerHTML='<div class="small"><b>Gastos y pagos se controlan por separado.</b> Los pagos no cambian los gastos originales.</div><table class="balanceTable"><thead><tr><th>Persona</th><th>Aportó</th><th>Le correspondía</th><th>Pagó deudas</th><th>Cobró</th><th>Estado</th></tr></thead><tbody>'+rows+'</tbody></table>';
-}
-
-function renderCloseSection(){
-  if(!group||!window.closeStatusBox)return;normalizeGroupState();
-  const pending=getPendingTransfers();const allSettled=pending.length===0;
-  const label=group.status==='open'?'Grupo abierto':(allSettled?'Grupo cerrado y saldado':'Grupo cerrado con pagos pendientes');
-  const cls=group.status==='open'?'closedBanner':('closedBanner '+(allSettled?'settled':'pending'));
-  closeStatusBox.innerHTML='<div class="'+cls+'"><b>'+label+'</b></div>';
-  if(group.status==='open'){
-    const proposal=getSettlementTransfers();
-    paymentsBox.innerHTML=proposal.length?'<h4>Deudas calculadas</h4>'+proposal.map(t=>'<div class="paymentRow"><div><b>'+escapeHtml(t.from)+'</b> debe '+money(t.amount)+' a <b>'+escapeHtml(t.to)+'</b><br><span class="small">Cerrá el grupo para comenzar a registrar pagos.</span></div></div>').join(''):'<div class="resultLine resultDone">Todos están equilibrados.</div>';
-  }else if(!pending.length){
-    paymentsBox.innerHTML='<div class="resultLine resultDone">✅ Todos cubrieron su parte. El balance general está en cero.</div>';
-  }else{
-    paymentsBox.innerHTML='<h4>Pagos pendientes</h4>'+pending.map(t=>{const id=String(t.id).replace(/'/g,"\\'");return '<div class="paymentRow"><div><b>'+escapeHtml(t.from)+'</b> debe '+money(t.pending)+' a <b>'+escapeHtml(t.to)+'</b><br><span class="small">Deuda original: '+money(t.amount)+' · Pagado: '+money(t.paid)+'</span><div class="transferActions"><button class="secondary" onclick="registerFullPayment(\''+id+'\')">✅ Pago completo</button><button onclick="registerPartialPayment(\''+id+'\')">➗ Pago parcial</button><button class="receiptBtn" onclick="registerPaymentWithReceipt(\''+id+'\')">📷 Pago + comprobante</button></div></div></div>';}).join('');
-  }
-  renderPaymentHistory();
-  closeGroupBtn.classList.toggle('hidden',group.status!=='open');reopenGroupBtn.classList.toggle('hidden',group.status==='open');
-  const disabled=group.status!=='open';['newParticipant','addParticipantToggle','payer','amount','concept','expenseReceiptFile','saveExpenseBtn','cancelEditBtn'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=disabled;});
-}
-
-function renderPaymentHistory(){
-  if(!window.paymentHistoryBox)return;const rows=(group.payments||[]).slice().sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
-  if(!rows.length){paymentHistoryBox.innerHTML='';return;}
-  paymentHistoryBox.innerHTML='<h4>Historial de pagos</h4>'+rows.map(p=>'<div class="paymentHistoryItem"><b>'+escapeHtml(p.from)+'</b> pagó '+money(p.amount)+' a <b>'+escapeHtml(p.to)+'</b><div class="small">'+escapeHtml(formatLastActivity(p.createdAt))+'</div><div class="paymentHistoryActions">'+(p.receiptId?'<button class="receiptBtn" onclick="viewReceipt(\''+p.receiptId+'\')">📷 Ver comprobante</button>':'')+'<button class="danger" onclick="deletePayment(\''+p.id+'\')">🗑 Anular pago</button></div></div>').join('');
-}
-
-async function createPayment(transferId,amount,receiptFile){
-  normalizeGroupState();const transfer=(group.settlementTransfers||[]).find(t=>t.id===transferId);if(!transfer)throw new Error('No se encontró esa deuda.');
-  const pending=getPendingTransfers().find(t=>t.id===transferId);if(!pending)throw new Error('Esa deuda ya está saldada.');
-  amount=Number(amount);if(!amount||amount<=0)throw new Error('El importe del pago no es válido.');if(amount>pending.pending+0.01)throw new Error('El pago supera la deuda pendiente.');
-  let rid=null;if(receiptFile)rid=await uploadReceipt(receiptFile,'payment');
-  group.payments.push({id:paymentId(),transferId,from:transfer.from,to:transfer.to,amount:Number(amount.toFixed(2)),receiptId:rid||null,createdAt:new Date().toISOString()});
-  try{await saveGroup();render();}catch(e){if(rid)await deleteReceiptSafe(rid);throw e;}
-}
-
-async function registerFullPayment(transferId){
-  const t=getPendingTransfers().find(x=>x.id===transferId);if(!t)return;
-  if(!confirm(t.from+' pagó '+money(t.pending)+' a '+t.to+'?'))return;
-  try{await createPayment(transferId,t.pending,null);}catch(e){alert(e.message);}
-}
-async function registerPartialPayment(transferId){
-  const t=getPendingTransfers().find(x=>x.id===transferId);if(!t)return;
-  const raw=prompt('Importe pagado por '+t.from+' a '+t.to+':',String(t.pending).replace('.',','));if(raw===null)return;
-  const amount=Number(String(raw).replace(',','.'));if(!amount||amount<=0){alert('Ingresá un importe válido.');return;}
-  try{await createPayment(transferId,amount,null);}catch(e){alert(e.message);}
-}
-function registerPaymentWithReceipt(transferId){
-  const t=getPendingTransfers().find(x=>x.id===transferId);if(!t)return;
-  const raw=prompt('Importe pagado por '+t.from+' a '+t.to+':',String(t.pending).replace('.',','));if(raw===null)return;
-  const amount=Number(String(raw).replace(',','.'));if(!amount||amount<=0){alert('Ingresá un importe válido.');return;}
-  pendingPaymentReceipt={transferId,amount};paymentReceiptFile.value='';paymentReceiptFile.click();
-}
-async function onPaymentReceiptSelected(){const file=paymentReceiptFile.files&&paymentReceiptFile.files[0];const pending=pendingPaymentReceipt;pendingPaymentReceipt=null;if(!file||!pending)return;try{await createPayment(pending.transferId,pending.amount,file);}catch(e){alert(e.message);}finally{paymentReceiptFile.value='';}}
-async function deletePayment(id){const payment=(group.payments||[]).find(p=>p.id===id);if(!payment)return;if(!confirm('¿Anular este pago registrado?\n\n'+payment.from+' → '+payment.to+' · '+money(payment.amount)))return;try{group.payments=group.payments.filter(p=>p.id!==id);await saveGroup();if(payment.receiptId)await deleteReceiptSafe(payment.receiptId);render();}catch(e){alert(e.message);}}
-async function closeGroup(){
-  if(!group||group.status!=='open')return;if(!group.expenses.length){alert('No hay gastos para cerrar.');return;}
-  if(!confirm('¿Cerrar los gastos y comenzar el período de pagos? Los gastos quedarán fijos.'))return;
-  try{group.status='closed';group.closedAt=new Date().toISOString();group.payments=[];group.settlementTransfers=transfersFromBalance(calculateBaseBalances().balance);await saveGroup();render();}catch(e){alert(e.message);}
-}
-async function reopenGroup(){
-  if(!group||group.status==='open')return;if((group.payments||[]).length){alert('Para reabrir los gastos, primero anulá los pagos registrados.');return;}
-  if(!confirm('¿Reabrir el grupo para modificar gastos o participantes? Se recalcularán las deudas al volver a cerrarlo.'))return;
-  try{group.status='open';delete group.settlementTransfers;group.reopenedAt=new Date().toISOString();await saveGroup();render();}catch(e){alert(e.message);}
-}
-
-function toggleAdvanced(){advancedShare.classList.toggle('hidden');}
-
-async function shareInvite(){
-  const text=inviteText();
-  try{
-    if(navigator.share){
-      await navigator.share({title:'Gastos con Amigos',text});
+    syncFailCount++;
+    if(force || syncFailCount>=SYNC_FAIL_VISIBLE_AFTER){
+      setMode("Trabajando sin conexión con la base compartida. La app reintentará sola.","err");
     }else{
-      await navigator.clipboard.writeText(text);
-      alert('La invitación quedó copiada. Podés pegarla donde quieras.');
+      console.warn("Reintento de sincronización pendiente", syncFailCount, e);
     }
+    render();
+  }
+}
+function optionHtml(v){return `<option value="${safeAttr(v)}">${String(v||"")}</option>`}
+function setSelectValue(sel,val){
+  if(!sel)return;
+  val=String(val||"");
+  if(!val){ sel.value=""; return; }
+  if(![...sel.options].some(o=>o.value===val)){
+    const op=document.createElement("option");op.value=val;op.textContent=val;sel.appendChild(op);
+  }
+  sel.value=val;
+}
+function fillSelects(){
+  aula.innerHTML=rooms.length
+    ? `<option value="">Seleccionar aula...</option>`+rooms.map(optionHtml).join("")
+    : `<option value="">Primero cargue un aula en Datos compartidos</option>`;
+  profesor.innerHTML=teachers.length
+    ? `<option value="">Seleccionar profesor...</option>`+teachers.map(optionHtml).join("")
+    : `<option value="">Primero cargue profesores en Datos compartidos</option>`;
+  let dl=document.getElementById("studentsList");
+  if(!dl){dl=document.createElement("datalist");dl.id="studentsList";document.body.appendChild(dl)}
+  dl.innerHTML=students.map(s=>`<option value="${safeAttr(s.alumno)}"></option>`).join("");
+  if(typeof alumno!=="undefined"){
+    alumno.setAttribute("list","studentsList");
+    alumno.placeholder=students.length?"Elegir alumno cargado...":"Primero cargue alumnos en Datos compartidos";
+  }
+}
+function buildDays(selected=[]){const today=DAYS[new Date().getDay()], def=selected.length?selected:(today!="Domingo"?[today]:["Lunes"]);daysBox.innerHTML=WORKDAYS.map(d=>`<label class="daycheck"><input type="checkbox" value="${d}" ${def.includes(d)?"checked":""}> ${d}</label>`).join("")}
+function selectedDays(){return[...daysBox.querySelectorAll("input:checked")].map(x=>x.value)}
+function openLoad(index=""){
+  fillSelects();
+  editIndex.value=index;
+  loadTitle.textContent=index===""?"Cargar horario":"Editar alumno / contacto";
+  if(index!==""){
+    const x=normalize(items[index]);
+    alumno.value=x.alumno;
+    buildDays([x.dia]);
+    hora.value=fixTime(x.hora);
+    setSelectValue(aula,x.aula);
+    setSelectValue(profesor,x.profesor);
+    actividad.value=x.actividad;
+    contacto.value=x.contacto;
+    whatsapp.value=x.whatsapp;
+  }else{
+    alumno.value="";
+    contacto.value="";
+    whatsapp.value="";
+    actividad.value="";
+    buildDays();
+    if(rooms.length===1) setSelectValue(aula,rooms[0]);
+    else setSelectValue(aula,"");
+    if(teachers.length===1) setSelectValue(profesor,teachers[0]);
+    else setSelectValue(profesor,"");
+    if(!rooms.length || !teachers.length || !students.length){
+      setMode("Antes de cargar horarios, revise Datos compartidos: aulas, profesores y alumnos.","err");
+    }else{
+      setMode("Elegí alumno, aula, profesor, día y hora. Luego guardá.","ok");
+    }
+  }
+  loadModal.classList.add("show");
+}
+
+function closeLoad(){loadModal.classList.remove("show")}
+async function openConfig(){
+  configModal.classList.add("show");
+  setMode("Actualizando datos compartidos...","");
+  try{
+    await loadData(true);
   }catch(e){
-    if(e && e.name==='AbortError') return;
-    try{
-      await navigator.clipboard.writeText(text);
-      alert('La invitación quedó copiada. Podés pegarla donde quieras.');
-    }catch(_){
-      alert('No se pudo compartir la invitación.');
-    }
+    console.warn("No se pudieron actualizar los datos compartidos",e);
   }
+  renderConfig();
 }
+function closeConfig(){configModal.classList.remove("show");fillSelects();render();loadData(true)}
+function uniqueClean(values){
+  return [...new Set((values||[]).map(v=>String(v||"").trim()).filter(Boolean))];
+}
+function renderConfig(){
+  rooms=uniqueClean(rooms);
+  teachers=uniqueClean(teachers);
+  students=(students||[]).filter(s=>String(s.alumno||"").trim());
 
-function copyCode(){
-  navigator.clipboard.writeText(group.id).then(()=>alert('Código copiado: '+group.id));
-}
+  const roomsEl=document.getElementById("roomPills");
+  const teachersEl=document.getElementById("teacherPills");
+  const studentsEl=document.getElementById("studentPills");
 
-function inviteText(){
-  return '📌 Te invito al grupo "'+group.name+'".\n\nTocá este enlace para entrar directamente:\n'+getShareUrl();
-}
-function copyInvite(){ navigator.clipboard.writeText(inviteText()).then(()=>alert('Invitación copiada.')); }
-function openWhatsapp(){ window.open('https://wa.me/?text='+encodeURIComponent(inviteText()),'_blank'); }
-function startAutoRefresh(){
-  stopAutoRefresh();
-  if(!group)return;
-  autoTimer=setInterval(()=>{
-    if(!document.hidden && group) loadGroup(false);
-  },4000);
-}
-function stopAutoRefresh(){
-  if(autoTimer){
-    clearInterval(autoTimer);
-    autoTimer=null;
+  if(roomsEl){
+    roomsEl.innerHTML=rooms.length
+      ? rooms.map((r,i)=>`<span class="pill">${safeAttr(r)}<button onclick="editRoom(${i})">✎</button><button onclick="removeRoom(${i})">×</button></span>`).join("")
+      : `<div class="helper-note">No hay aulas cargadas.</div>`;
   }
-}
-async function openInviteFromLink(){
-  const hash=location.hash.replace(/^#/,'');
-  if(!hash)return;
-
-  const params=new URLSearchParams(hash);
-  const invitedGroup=params.get('grupo');
-  const invitedServer=params.get('servidor');
-
-  if(invitedServer){
-    const clean=cleanUrl(invitedServer);
-    if(clean && clean.includes('/macros/s/') && clean.endsWith('/exec')){
-      localStorage.setItem('gca_server_url',clean);
-      updateConnectionBadge();
-    }
+  if(teachersEl){
+    teachersEl.innerHTML=teachers.length
+      ? teachers.map((t,i)=>`<span class="pill">${safeAttr(t)}<button onclick="editTeacher(${i})">✎</button><button onclick="removeTeacher(${i})">×</button></span>`).join("")
+      : `<div class="helper-note">No hay profesores cargados.</div>`;
+  }
+  if(studentsEl){
+    studentsEl.innerHTML=students.length
+      ? students.map((s,i)=>`<span class="pill">${safeAttr(s.alumno)}${s.contacto?" · "+safeAttr(s.contacto):""}<button title="Editar alumno" onclick="editStudent(${i})">✎</button><button title="Eliminar alumno" onclick="removeStudent(${i})">🗑</button></span>`).join("")
+      : `<div class="helper-note">No hay alumnos cargados.</div>`;
   }
 
-  if(!invitedGroup)return;
-  joinCode.value=invitedGroup.toUpperCase();
+  fillSelects();
+  setMode("Datos compartidos actualizados.","ok");
+}
+async function saveShared(kind,values){
+  saveLocal();
+  renderConfig();
+  fillSelects();
 
-  if(!getServerUrl()){
-    alert('La invitación está incompleta. Pedile al administrador que vuelva a compartirla desde la aplicación actualizada.');
+  if(!scriptUrl){
+    setMode("Datos guardados localmente.","ok");
     return;
   }
 
   try{
-    connectionBadge.textContent='Conectando...';
-    const data=await api('getGroup',{id:invitedGroup.toUpperCase()});
-    openGroup(data.group);
-    syncStatus.textContent='Grupo conectado';
+    setMode("Guardando datos compartidos...","");
+    let payload={action:"saveShared",kind,values};
+
+    if(kind==="alumnos"){
+      payload={action:"saveStudents",alumnos:students};
+    }
+
+    const res=await apiPost(payload);
+    if(!res || !res.ok) throw new Error("No guardó");
+
+    await loadData(true);
+    renderConfig();
+    setMode("Datos compartidos guardados.","ok");
   }catch(e){
-    connectionBadge.textContent='Sin conexión';
-    alert('No se pudo abrir el grupo invitado: '+e.message);
+    setMode("No se pudo guardar. Revisá la conexión y reintentá.","err");
+    alert("No se pudo guardar. Reintentá.");
+  }
+}
+function addRoom(){const v=newRoom.value.trim();if(v&&!rooms.includes(v)){rooms.push(v);newRoom.value="";saveShared("aulas",rooms)}}
+function addTeacher(){const v=newTeacher.value.trim();if(v&&!teachers.includes(v)){teachers.push(v);newTeacher.value="";saveShared("profesores",teachers)}}
+function addStudent(){const nombre=newStudent.value.trim();if(!nombre)return;const obj={id:Date.now()+Math.random()+"",alumno:nombre,contacto:newStudentContact.value.trim(),whatsapp:newStudentWhatsapp.value.trim()};const i=students.findIndex(s=>(s.alumno||"").trim().toLowerCase()===nombre.toLowerCase());if(i>=0)students[i]={...students[i],...obj,id:students[i].id||obj.id};else students.push(obj);newStudent.value="";newStudentContact.value="";newStudentWhatsapp.value="";saveShared("alumnos",students)}
+function editRoom(i){const v=prompt("Editar aula:",rooms[i]);if(v&&v.trim()){rooms[i]=v.trim();saveShared("aulas",rooms)}}
+function editTeacher(i){const v=prompt("Editar profesor:",teachers[i]);if(v&&v.trim()){teachers[i]=v.trim();saveShared("profesores",teachers)}}
+function editStudent(i){const s=students[i];const nombre=prompt("Alumno:",s.alumno);if(!nombre)return;const contactoV=prompt("Contacto:",s.contacto||"")||"";const whatsappV=prompt("WhatsApp:",s.whatsapp||"")||"";students[i]={...s,alumno:nombre.trim(),contacto:contactoV.trim(),whatsapp:whatsappV.trim()};saveShared("alumnos",students)}
+function confirmDeleteShared(tipo,nombre){
+  nombre=String(nombre||"").trim() || "sin nombre";
+  return confirm('¿Está seguro que desea eliminar '+tipo+' \"'+nombre+'\"?\n\nEsta acción se sincronizará con todos los equipos conectados.');
+}
+function removeRoom(i){
+  const nombre=rooms[i]||"";
+  if(confirmDeleteShared("el aula",nombre)){
+    rooms.splice(i,1);
+    saveShared("aulas",rooms);
+    setMode("Aula eliminada: "+nombre+".","ok");
+  }
+}
+function removeTeacher(i){
+  const nombre=teachers[i]||"";
+  if(confirmDeleteShared("el profesor",nombre)){
+    teachers.splice(i,1);
+    saveShared("profesores",teachers);
+    setMode("Profesor eliminado: "+nombre+".","ok");
+  }
+}
+function removeStudent(i){
+  const s=students[i]||{};
+  const nombre=s.alumno||"";
+  if(confirmDeleteShared("el alumno",nombre)){
+    students.splice(i,1);
+    saveShared("alumnos",students);
+    setMode("Alumno eliminado: "+nombre+".","ok");
+  }
+}
+function itemKey(x){return[x.dia,fixTime(x.hora),x.aula,(x.alumno||"").trim().toLowerCase()].join("|")}
+async function ensureStudentFromBase(base){if(!base.alumno)return;const i=students.findIndex(s=>(s.alumno||"").trim().toLowerCase()===base.alumno.trim().toLowerCase());const obj={id:Date.now()+Math.random()+"",alumno:base.alumno,contacto:base.contacto,whatsapp:base.whatsapp};if(i>=0){const old=students[i],upd={...old,contacto:base.contacto||old.contacto,whatsapp:base.whatsapp||old.whatsapp};if(upd.contacto!==old.contacto||upd.whatsapp!==old.whatsapp){students[i]=upd;await saveShared("alumnos",students)}}else{students.push(obj);await saveShared("alumnos",students)}}
+
+function horarioDuplicadoLocal(obj,ignoreIndex=""){
+  const key=itemKey(obj);
+  return items.some((x,i)=>String(ignoreIndex)!=="" && Number(ignoreIndex)===i ? false : itemKey(x)===key);
+}
+
+function limpiarFormularioHorarioCompleto(){
+  editIndex.value="";
+  alumno.value="";
+  contacto.value="";
+  whatsapp.value="";
+  actividad.value="";
+  hora.value="";
+  setSelectValue(aula,"");
+  setSelectValue(profesor,"");
+  daysBox.querySelectorAll("input[type=checkbox]").forEach(x=>x.checked=false);
+  loadTitle.textContent="Cargar horario";
+}
+
+function decidirDespuesDeGuardar(esEdicion){
+  saveBtn.textContent="Guardado";
+  setMode("Horario guardado correctamente.","ok");
+  if(esEdicion){
+    closeLoad();
+    return;
+  }
+  const limpiar=confirm("Horario guardado correctamente.\n\nAceptar = cargar un NUEVO horario y limpiar todo.\nCancelar = dejar todos los datos como están en pantalla.");
+  if(limpiar){
+    limpiarFormularioHorarioCompleto();
+    setMode("Listo para cargar un nuevo horario.","ok");
+  }else{
+    setMode("Los datos quedaron en pantalla para seguir trabajando.","ok");
   }
 }
 
-document.addEventListener('visibilitychange',()=>{
-  if(!document.hidden && group) loadGroup(false);
+async function saveItem(){
+  const ds=selectedDays();
+  const base={
+    hora:fixTime(hora.value),
+    aula:aula.value,
+    alumno:alumno.value.trim(),
+    profesor:profesor.value,
+    actividad:actividad.value.trim(),
+    contacto:contacto.value.trim(),
+    whatsapp:whatsapp.value.trim()
+  };
+
+  if(!ds.length){setMode("Marcá al menos un día.","err");return}
+  if(!base.hora||!base.aula||!base.alumno){setMode("Completá hora, aula y alumno.","err");return}
+  if(!base.profesor){setMode("Elegí un profesor. Se carga una sola vez desde Datos compartidos.","err");return}
+
+  await ensureStudentFromBase(base);
+
+  saveBtn.disabled=true;
+  saveBtn.textContent="Guardando...";
+  setMode("Guardando horario...","");
+
+  try{
+    const esEdicion=editIndex.value!=="";
+
+    if(scriptUrl){
+      if(!esEdicion){
+        let dup=0,guardados=0;
+        for(const d of ds){
+          const obj={dia:d,...base};
+          if(horarioDuplicadoLocal(obj)){
+            dup++;
+            continue;
+          }
+          const res=await apiPost({action:"add",dia:d,...base});
+          if(res && res.duplicate) dup++;
+          else guardados++;
+        }
+        if(dup) alert(dup+" horario/s ya estaban cargados y no se duplicaron.");
+        await loadData(true);
+        decidirDespuesDeGuardar(false);
+        return;
+      }else{
+        const old=items[Number(editIndex.value)];
+        const obj={dia:ds[0],...base};
+        if(horarioDuplicadoLocal(obj,editIndex.value)){
+          alert("Ya existe otro horario igual. No se guardó para evitar duplicados.");
+          setMode("No se guardó: el horario ya existe.","err");
+          return;
+        }
+        await apiPost({action:"update",id:old.id,dia:ds[0],...base});
+        await loadData(true);
+        decidirDespuesDeGuardar(true);
+        return;
+      }
+    }
+
+    if(!esEdicion){
+      let dup=0;
+      for(const d of ds){
+        const obj={dia:d,...base};
+        if(horarioDuplicadoLocal(obj)) dup++;
+        else items.push({...obj,id:Date.now()+Math.random()+""});
+      }
+      if(dup)alert(dup+" horario/s ya estaban cargados y no se duplicaron.");
+    }else{
+      const obj={dia:ds[0],...base};
+      if(horarioDuplicadoLocal(obj,editIndex.value)){
+        alert("Ya existe otro horario igual. No se guardó para evitar duplicados.");
+        setMode("No se guardó: el horario ya existe.","err");
+        return;
+      }
+      items[Number(editIndex.value)]={...items[Number(editIndex.value)],dia:ds[0],...base};
+    }
+    saveLocal();
+    render();
+    decidirDespuesDeGuardar(esEdicion);
+  }catch(e){
+    alert("No pude guardar. Revisá la conexión e intentá nuevamente.");
+    setMode("No se pudo guardar. Revisá la conexión y reintentá.","err");
+  }finally{
+    saveBtn.disabled=false;
+    if(saveBtn.textContent!=="Guardado") saveBtn.textContent="Guardar";
+    setTimeout(()=>{ if(saveBtn && saveBtn.textContent==="Guardado") saveBtn.textContent="Guardar"; },1200);
+  }
+}
+
+async function deleteItem(i){const x=items[i];if(!confirm("¿Eliminar este horario?"))return;if(scriptUrl){try{await apiPost({action:"delete",id:x.id});await loadData(true)}catch(e){alert("No pude borrar. Revisá la conexión e intentá nuevamente.")}return}items.splice(i,1);saveLocal();render()}
+async function clearAll(){
+  if(!confirm("Atención: esto borra TODOS los horarios compartidos. ¿Querés continuar?"))return;
+  const code=prompt("Para confirmar escribí: BORRAR");
+  if(code!=="BORRAR"){alert("Limpieza cancelada.");return}
+  const backup={fecha:new Date().toISOString(),items:[...items]};
+  localStorage.setItem("panel_v10_backup_"+Date.now(),JSON.stringify(backup));
+  if(scriptUrl){
+    try{
+      setMode("Limpiando datos...","");
+      await apiPost({action:"clear"});
+      items=[];
+      localStorage.setItem("panel_v9_items","[]");
+      render();
+      setMode("Datos limpiados. Se guardó una copia de seguridad local.","ok");
+      await loadData(true);
+    }catch(e){
+      setMode("No se pudo limpiar. Revisá conexión e intentá nuevamente.","err");
+    }
+    return;
+  }
+  items=[];
+  saveLocal();
+  render();
+  setMode("Datos limpiados. Se guardó una copia de seguridad local.","ok");
+}
+
+
+function safeAttr(v){
+  return String(v||"")
+    .replace(/&/g,"&amp;")
+    .replace(/"/g,"&quot;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+}
+function groupText(x){
+  const a=String(x.actividad||"").trim();
+  if(!a)return "";
+  const m=a.match(/\b(K|[1-6]\s*[A-Z]?|[1-6]|Inicial|Apoyo|Inglés)\b/i);
+  return m ? m[0].toUpperCase().replace(/\s+/g,"") : a.slice(0,4).toUpperCase();
+}
+
+function movementInfo(p,compareList=[]){
+  const prev=compareList.find(x=>cleanKeyPart(x.alumno)===cleanKeyPart(p.alumno));
+  if(!prev)return {txt:"Ingresa",cls:"in"};
+  if(cleanKeyPart(prev.aula)===cleanKeyPart(p.aula))return {txt:"Sigue",cls:"same"};
+  return {txt:"Viene de "+prev.aula,cls:"from"};
+}
+function assistText(status){
+  status=String(status||"").trim().toLowerCase();
+  if(status==="presente") return "🟢 Presente";
+  if(status==="ausente") return "🔴 Ausente";
+  return "⚪ Sin marcar";
+}
+function nextAssistStatus(status){
+  status=String(status||"").trim().toLowerCase();
+  if(!status) return "presente";
+  if(status==="presente") return "ausente";
+  return "";
+}
+function assistButtonClass(status){
+  status=String(status||"").trim().toLowerCase();
+  return "assist-cycle "+(status||"sinmarcar");
+}
+function studentLineHtml(p,compareList=[]){
+  const st=String(p.asistencia||"").trim().toLowerCase();
+  const badge=groupText(p);
+  const mov=movementInfo(p,compareList);
+  return `<div class="student-line ${st||""}" title="${safeAttr(p.alumno)}">
+    <button class="${assistButtonClass(st)}" aria-label="Asistencia ${safeAttr(p.alumno)}" onclick="event.stopPropagation();cycleAssist('${safeAttr(p.id)}')">${assistText(st)}</button>
+    <span class="student-name" onclick="openLoad(${items.indexOf(p)})">${p.alumno}</span>
+    <span class="move-badge ${mov.cls}">${mov.txt}</span>
+    ${badge?`<span class="group-badge">${badge}</span>`:""}
+  </div>`;
+}
+function assistHtml(x){
+  const st=String(x.asistencia||"").trim().toLowerCase();
+  const label=st?`<span class="status ${st}">Estado actual: ${st==="presente"?"PRESENTE":"AUSENTE"}</span>`:`<span class="status">Estado: Sin marcar</span>`;
+  return `${label}<div class="assist"><button class="${assistButtonClass(st)}" onclick="event.stopPropagation();cycleAssist('${x.id}')">${assistText(st)}</button></div>`;
+}
+async function cycleAssist(id){
+  const i=items.findIndex(x=>String(x.id||"").trim()===String(id||"").trim());
+  if(i<0)return;
+  const current=String(items[i].asistencia||"").trim().toLowerCase();
+  await setAssist(id,nextAssistStatus(current));
+}
+async function setAssist(id,status){
+  const i=items.findIndex(x=>String(x.id||"").trim()===String(id||"").trim());
+  if(i<0)return;
+  const x=items[i],today=todayISO();
+  const fixedKey=attKeyFrom(x,today);
+  status=String(status||"").trim().toLowerCase();
+
+  const existing=attendance.findIndex(a=>{
+    const fecha=dateKey(a.fecha);
+    if(fecha!==today)return false;
+    const k=String(a.asistenciaKey||a.clave||"").trim() || attKeyFrom(a,fecha);
+    const oldK=[fecha,String(a.horarioId||"").trim()].join("|");
+    return k===fixedKey || (a.horarioId && oldK===oldAttKeyFrom(x,today));
+  });
+
+  if(!status){
+    items[i].asistencia="";
+    if(existing>=0) attendance.splice(existing,1);
+    saveLocal();
+    render();
+    setMode("Asistencia sin marcar.","ok");
+    if(scriptUrl){
+      try{
+        await apiPost({action:"saveAttendance",fecha:today,asistenciaKey:fixedKey,clave:fixedKey,horarioId:String(x.id||"").trim(),dia:x.dia,hora:fixTime(x.hora),aula:x.aula,alumno:x.alumno,profesor:x.profesor,estado:""});
+      }catch(e){
+        setMode("No se pudo actualizar asistencia. Reintentá.","err");
+      }
+    }
+    return;
+  }
+
+  const rec={
+    fecha:today,
+    asistenciaKey:fixedKey,
+    clave:fixedKey,
+    horarioId:String(x.id||"").trim(),
+    dia:x.dia,
+    hora:fixTime(x.hora),
+    aula:x.aula,
+    alumno:x.alumno,
+    profesor:x.profesor,
+    estado:status
+  };
+
+  items[i].asistencia=status;
+
+  if(existing>=0)attendance[existing]=rec;
+  else attendance.push(rec);
+
+  saveLocal();
+  render();
+  setMode("Asistencia marcada: "+(status==="presente"?"Presente":"Ausente"),"ok");
+
+  if(scriptUrl){
+    try{
+      const res=await apiPost({action:"saveAttendance",...rec});
+      if(!res||!res.ok)throw new Error("No guardó");
+      setMode("Asistencia guardada.","ok");
+    }catch(e){
+      setMode("No se pudo guardar asistencia. Reintentá.","err");
+    }
+  }
+}
+
+function onlyDigits(s){return String(s||"").replace(/\D/g,"")}
+function contactHtml(x){
+  const wa=onlyDigits(x.whatsapp||"");
+  let out="";
+  if(x.contacto) out+=`<div class="contact-small">Contacto: ${x.contacto}</div>`;
+  if(wa){
+    out+=`<div class="contact-links"><a class="wa" href="https://wa.me/${wa}" target="_blank" onclick="event.stopPropagation()">💬 WhatsApp</a></div>`;
+  }
+  return out;
+}
+
+function txt(v){return String(v||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+function filteredItems(){
+  const fa=txt(filterAlumno?.value), fc=txt(filterContacto?.value), fp=txt(filterProfesor?.value), fau=txt(filterAula?.value), fac=txt(filterActividad?.value), fd=filterDia?.value||"";
+  return items.filter(x=>
+    (!fd || x.dia===fd) &&
+    (!fa || txt(x.alumno).includes(fa)) &&
+    (!fc || txt(x.contacto).includes(fc) || txt(x.whatsapp).includes(fc) || txt(x.telefono).includes(fc)) &&
+    (!fp || txt(x.profesor).includes(fp)) &&
+    (!fau || txt(x.aula).includes(fau)) &&
+    (!fac || txt(x.actividad).includes(fac))
+  );
+}
+function clearFilters(){
+  if(filterAlumno) filterAlumno.value="";
+  if(filterContacto) filterContacto.value="";
+  if(filterProfesor) filterProfesor.value="";
+  if(filterAula) filterAula.value="";
+  if(filterActividad) filterActividad.value="";
+  if(filterDia) filterDia.value="";
+  render();
+}
+
+function printSchedule(){window.print()}
+function byRoom(list){const all=[...new Set([...rooms,...items.map(x=>x.aula).filter(Boolean)])],map={};all.forEach(r=>map[r]=[]);list.forEach(x=>{if(!map[x.aula])map[x.aula]=[];map[x.aula].push(x)});return map}
+function findNextForRoom(room,afterHm){const n=nowInfo();return items.filter(x=>x.dia===n.day&&x.aula===room&&fixTime(x.hora)>afterHm).sort((a,b)=>fixTime(a.hora).localeCompare(fixTime(b.hora)))[0]}
+function renderRooms(elId,list,compareList=[],afterHm="00:00"){
+  const el=document.getElementById(elId),map=byRoom(list);
+  el.innerHTML="";
+  Object.keys(map).forEach(room=>{
+    const box=document.createElement("div");
+    box.className="room";
+    box.innerHTML=`<h3><span>${room}</span><span class="mini-count">👥 ${map[room].length}</span></h3>`;
+
+    if(!map[room].length){
+      box.innerHTML+=`<div class="compact-empty">Sin alumno en este momento</div>`;
+    }
+
+    const byTeacher={};
+    map[room].forEach(p=>{
+      const t=String(p.profesor||"Sin profesor").trim() || "Sin profesor";
+      if(!byTeacher[t])byTeacher[t]=[];
+      byTeacher[t].push(p);
+    });
+
+    Object.keys(byTeacher).sort((a,b)=>a.localeCompare(b)).forEach(t=>{
+      box.innerHTML+=`<div class="teacher-block"><div class="teacher-title">Profesor: ${t}</div>`;
+      byTeacher[t].sort((a,b)=>(a.alumno||"").localeCompare(b.alumno||"")).forEach(p=>{
+        box.innerHTML+=studentLineHtml(p,compareList);
+      });
+      box.innerHTML+=`</div>`;
+    });
+
+    const nx=findNextForRoom(room,afterHm);
+    if(nx)box.innerHTML+=`<div class="next-mini">Próximo: ${fixTime(nx.hora)} · ${nx.alumno}</div>`;
+    el.appendChild(box);
+  });
+}
+function render(){const n=nowInfo(),today=items.filter(x=>x.dia===n.day).sort((a,b)=>fixTime(a.hora).localeCompare(fixTime(b.hora)));let nowTime=[...new Set(today.filter(x=>fixTime(x.hora)<=n.hm).map(x=>fixTime(x.hora)))].pop();if(!nowTime)nowTime=today[0]?fixTime(today[0].hora):"";const nowList=nowTime?today.filter(x=>fixTime(x.hora)===nowTime):[],nextTime=(today.find(x=>fixTime(x.hora)>nowTime)||today.find(x=>fixTime(x.hora)>n.hm)||{}).hora||"",nextFixed=fixTime(nextTime),nextList=nextFixed?today.filter(x=>fixTime(x.hora)===nextFixed):[];renderRooms("nowRooms",nowList,[],nowTime||n.hm);nextTitle.textContent=nextFixed?"Próximo horario: "+nextFixed:"Sin próximo horario cargado para hoy";renderRooms("nextRooms",nextList,nowList,nextFixed||n.hm);agenda.innerHTML=filteredItems().map((x,i)=>({...x,i:items.indexOf(x)})).sort((a,b)=>DAYS.indexOf(a.dia)-DAYS.indexOf(b.dia)||fixTime(a.hora).localeCompare(fixTime(b.hora))||(a.aula||"").localeCompare(b.aula||"")).map(x=>`<tr><td>${x.dia}</td><td>${fixTime(x.hora)}</td><td>${x.aula}</td><td><b>${x.alumno}</b>${contactHtml(x)}</td><td>${x.profesor||""}</td><td>${x.actividad||""}</td><td>${assistHtml(x)}</td><td class="actions"><button class="b1" onclick="openLoad(${x.i})">Editar</button><button class="b5" onclick="deleteItem(${x.i})">Borrar</button></td></tr>`).join("")||`<tr><td colspan="8" class="empty">Todavía no hay horarios cargados</td></tr>`}
+
+function parseISODate(s){
+  const m=String(s||"").match(/(\d{4})-(\d{2})-(\d{2})/);
+  if(!m)return null;
+  return new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
+}
+function isoFromDate(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+function startOfWeekMonday(d){const x=new Date(d);const day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);x.setHours(0,0,0,0);return x}
+function endOfMonth(d){return new Date(d.getFullYear(),d.getMonth()+1,0)}
+function finalAttendanceRecords(){
+  const map={};
+  (attendance||[]).forEach((a,idx)=>{
+    const estado=String(a.estado||a.asistencia||"").trim().toLowerCase();
+    const fecha=dateKey(a.fecha);
+    if(!fecha || !["presente","ausente"].includes(estado))return;
+    const key=String(a.asistenciaKey||a.clave||"").trim() || [fecha,cleanKeyPart(a.dia),fixTime(a.hora),cleanKeyPart(a.aula),cleanKeyPart(a.alumno)].join("|") || [fecha,String(a.horarioId||"").trim()].join("|");
+    map[key]={...a,fecha,estado,_idx:idx,alumno:String(a.alumno||"Sin nombre")};
+  });
+  return Object.values(map).sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha)) || (a._idx||0)-(b._idx||0));
+}
+function recordsBetween(start,end){
+  const s=isoFromDate(start), e=isoFromDate(end);
+  return finalAttendanceRecords().filter(r=>r.fecha>=s && r.fecha<=e);
+}
+function countRecords(list){
+  const presentes=list.filter(r=>r.estado==="presente").length;
+  const ausentes=list.filter(r=>r.estado==="ausente").length;
+  const total=presentes+ausentes;
+  const pct=total?((presentes*100/total).toFixed(1).replace('.',','))+"%":"-";
+  return {presentes,ausentes,total,pct};
+}
+function summaryCard(title,list){
+  const c=countRecords(list);
+  return `<div class="report-card"><h3>${title}</h3><div>Presentes</div><div class="report-num">${c.presentes}</div><div>Ausentes: <b>${c.ausentes}</b></div><div>Total marcado: <b>${c.total}</b></div><div>% asistencia: <b>${c.pct}</b></div></div>`;
+}
+async function openReports(){
+  reportsModal.classList.add("show");
+  await refreshReports();
+  initializeReportFilters();
+  applyReportFilters();
+}
+function closeReports(){reportsModal.classList.remove("show")}
+async function refreshReports(){
+  if(scriptUrl){try{await loadData(true)}catch(e){}}
+  renderReports();
+}
+
+function initializeReportFilters(){
+  const records=finalAttendanceRecords();
+  const today=todayISO();
+  const monthStart=today.slice(0,8)+"01";
+
+  if(reportFrom && !reportFrom.value) reportFrom.value=monthStart;
+  if(reportTo && !reportTo.value) reportTo.value=today;
+
+  const names=[...new Set(records.map(r=>String(r.alumno||"").trim()).filter(Boolean))]
+    .sort((a,b)=>a.localeCompare(b));
+  const old=reportFilterStudent?.value||"";
+  reportFilterStudent.innerHTML=`<option value="">Todos los alumnos</option>`+
+    names.map(n=>`<option value="${safeAttr(n)}">${n}</option>`).join("");
+  if(names.includes(old)) reportFilterStudent.value=old;
+}
+
+function reportFilteredRecords(){
+  const from=reportFrom?.value||"";
+  const to=reportTo?.value||"";
+  const student=String(reportFilterStudent?.value||"").trim();
+  const status=String(reportFilterStatus?.value||"").trim().toLowerCase();
+
+  return finalAttendanceRecords().filter(r=>{
+    const fecha=dateKey(r.fecha);
+    if(from && fecha<from) return false;
+    if(to && fecha>to) return false;
+    if(student && String(r.alumno||"").trim()!==student) return false;
+    if(status && String(r.estado||"").toLowerCase()!==status) return false;
+    return true;
+  }).sort((a,b)=>
+    String(a.fecha).localeCompare(String(b.fecha)) ||
+    fixTime(a.hora).localeCompare(fixTime(b.hora)) ||
+    String(a.alumno||"").localeCompare(String(b.alumno||""))
+  );
+}
+
+function formatReportDate(iso){
+  const m=String(iso||"").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : String(iso||"");
+}
+
+function applyReportFilters(){
+  if(reportFrom?.value && reportTo?.value && reportFrom.value>reportTo.value){
+    alert("La fecha Desde no puede ser posterior a la fecha Hasta.");
+    return;
+  }
+
+  const list=reportFilteredRecords();
+  const c=countRecords(list);
+  filteredReportSummary.innerHTML=
+    `<span class="report-chip">Resultados: ${list.length}</span>`+
+    `<span class="report-chip">Presentes: ${c.presentes}</span>`+
+    `<span class="report-chip">Ausentes: ${c.ausentes}</span>`+
+    `<span class="report-chip">Asistencia: ${c.pct}</span>`;
+
+  filteredReportTable.innerHTML=
+    `<table><thead><tr><th>Fecha</th><th>Día</th><th>Hora</th><th>Alumno</th><th>Aula</th><th>Profesor</th><th>Estado</th></tr></thead><tbody>`+
+    (list.map(r=>`<tr>
+      <td>${formatReportDate(r.fecha)}</td>
+      <td>${r.dia||""}</td>
+      <td>${fixTime(r.hora)}</td>
+      <td><b>${r.alumno||""}</b></td>
+      <td>${r.aula||""}</td>
+      <td>${r.profesor||""}</td>
+      <td><b>${String(r.estado||"").toUpperCase()}</b></td>
+    </tr>`).join("") ||
+    `<tr><td colspan="7" class="empty">No hay asistencias que coincidan con los filtros seleccionados.</td></tr>`)+
+    `</tbody></table>`;
+}
+
+function clearReportFilters(){
+  const today=todayISO();
+  reportFrom.value=today.slice(0,8)+"01";
+  reportTo.value=today;
+  reportFilterStudent.value="";
+  reportFilterStatus.value="";
+  applyReportFilters();
+}
+
+function printFilteredReport(){
+  const list=reportFilteredRecords();
+  if(!list.length){
+    alert("No hay resultados para imprimir.");
+    return;
+  }
+  const c=countRecords(list);
+  const from=reportFrom?.value ? formatReportDate(reportFrom.value) : "Inicio";
+  const to=reportTo?.value ? formatReportDate(reportTo.value) : "Hoy";
+  const student=reportFilterStudent?.value||"Todos los alumnos";
+  const status=reportFilterStatus?.value
+    ? (reportFilterStatus.value==="presente"?"Solo presentes":"Solo ausentes")
+    : "Presentes y ausentes";
+
+  const rows=list.map(r=>`<tr>
+    <td>${formatReportDate(r.fecha)}</td><td>${r.dia||""}</td><td>${fixTime(r.hora)}</td>
+    <td>${r.alumno||""}</td><td>${r.aula||""}</td><td>${r.profesor||""}</td>
+    <td>${String(r.estado||"").toUpperCase()}</td>
+  </tr>`).join("");
+
+  const w=window.open("","_blank");
+  if(!w){
+    alert("El navegador bloqueó la ventana de impresión.");
+    return;
+  }
+  w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8">
+  <title>Informe de asistencia</title>
+  <style>
+    body{font-family:Arial,sans-serif;padding:20px;color:#111}
+    h1{margin-bottom:6px}.meta{margin:4px 0 14px}
+    table{width:100%;border-collapse:collapse}
+    th,td{border:1px solid #777;padding:7px;text-align:left;font-size:12px}
+    th{background:#eee}
+    .totals{margin:12px 0;font-weight:bold}
+  </style></head><body>
+  <h1>Informe de asistencia</h1>
+  <div class="meta">Período: ${from} al ${to}</div>
+  <div class="meta">Alumno: ${student} · Estado: ${status}</div>
+  <div class="totals">Resultados: ${list.length} · Presentes: ${c.presentes} · Ausentes: ${c.ausentes} · Asistencia: ${c.pct}</div>
+  <table><thead><tr><th>Fecha</th><th>Día</th><th>Hora</th><th>Alumno</th><th>Aula</th><th>Profesor</th><th>Estado</th></tr></thead>
+  <tbody>${rows}</tbody></table>
+  <script>window.onload=()=>{window.print();}<\/script>
+  </body></html>`);
+  w.document.close();
+}
+
+function renderReports(){
+  const now=new Date();
+  const todayStart=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const weekStart=startOfWeekMonday(now), weekEnd=addDays(weekStart,6);
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1), monthEnd=endOfMonth(now);
+  const todayList=recordsBetween(todayStart,todayStart);
+  const weekList=recordsBetween(weekStart,weekEnd);
+  const monthList=recordsBetween(monthStart,monthEnd);
+  reportsSummary.innerHTML=summaryCard("Hoy",todayList)+summaryCard("Esta semana",weekList)+summaryCard("Este mes",monthList);
+  const by={};
+  monthList.forEach(r=>{
+    const name=String(r.alumno||"Sin nombre");
+    if(!by[name])by[name]={alumno:name,presente:0,ausente:0};
+    if(r.estado==="presente")by[name].presente++; else by[name].ausente++;
+  });
+  const rows=Object.values(by).sort((a,b)=>b.ausente-a.ausente || a.alumno.localeCompare(b.alumno));
+  reportsRanking.innerHTML=rows.slice(0,20).map(r=>{
+    const total=r.presente+r.ausente, pct=total?((r.presente*100/total).toFixed(1).replace('.',','))+"%":"-";
+    return `<tr><td><b>${r.alumno}</b></td><td>${r.ausente}</td><td>${r.presente}</td><td>${pct}</td></tr>`;
+  }).join("") || `<tr><td colspan="4" class="empty">Todavía no hay asistencias marcadas este mes.</td></tr>`;
+  const names=[...new Set(finalAttendanceRecords().map(r=>String(r.alumno||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const old=reportStudent.value;
+  reportStudent.innerHTML=`<option value="">Elegir alumno...</option>`+names.map(n=>`<option>${n}</option>`).join("");
+  if(names.includes(old))reportStudent.value=old;
+  renderStudentReport();
+  renderAbsentsByDay();
+}
+function renderAbsentsByDay(){
+  const day=absentDay?.value||"Lunes";
+  const list=finalAttendanceRecords()
+    .filter(r=>String(r.estado||"").toLowerCase()==="ausente" && String(r.dia||"")===day)
+    .sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha)) || fixTime(a.hora).localeCompare(fixTime(b.hora)) || String(a.alumno||"").localeCompare(String(b.alumno||"")));
+
+  absentsByDay.innerHTML=`<table><thead><tr><th>Fecha</th><th>Hora</th><th>Alumno</th><th>Aula</th><th>Profesor</th></tr></thead><tbody>`+
+    (list.map(r=>`<tr><td>${r.fecha}</td><td>${fixTime(r.hora)}</td><td><b>${r.alumno||""}</b></td><td>${r.aula||""}</td><td>${r.profesor||""}</td></tr>`).join("") ||
+    `<tr><td colspan="5" class="empty">No hay ausentes registrados para ${day}.</td></tr>`)+
+    `</tbody></table>`;
+}
+
+function renderStudentReport(){
+  const name=reportStudent.value;
+  if(!name){studentReport.innerHTML=`<div class="empty">Elegí un alumno para ver su historial.</div>`;return;}
+  const list=finalAttendanceRecords().filter(r=>String(r.alumno||"").trim()===name).slice().reverse();
+  const c=countRecords(list);
+  const alerts=[];
+  let consecutive=0;
+  for(const r of list){ if(r.estado==="ausente")consecutive++; else break; }
+  if(c.ausentes>=3)alerts.push(`⚠ ${name} registra ${c.ausentes} ausencias en el historial guardado.`);
+  if(consecutive>=2)alerts.push(`⚠ ${name} tiene ${consecutive} ausencias consecutivas recientes.`);
+  studentReport.innerHTML=`<div class="report-card"><h3>${name}</h3><div>Presentes: <b>${c.presentes}</b> · Ausentes: <b>${c.ausentes}</b> · Asistencia: <b>${c.pct}</b></div></div>`+
+    alerts.map(a=>`<div class="warn">${a}</div>`).join("")+
+    `<div style="overflow:auto"><table><thead><tr><th>Fecha</th><th>Día</th><th>Hora</th><th>Aula</th><th>Estado</th></tr></thead><tbody>`+
+    list.slice(0,60).map(r=>`<tr><td>${r.fecha}</td><td>${r.dia||""}</td><td>${fixTime(r.hora)}</td><td>${r.aula||""}</td><td><b>${r.estado.toUpperCase()}</b></td></tr>`).join("")+
+    `</tbody></table></div>`;
+}
+
+
+
+
+function showAbout(){
+  alert([
+    "Panel de Horarios",
+    "Versión: V11.1 FINAL JOYA · Cambio de dispositivo",
+    "Estado: producción final validada",
+    "",
+    "Incluye:",
+    "- Instalación compartida",
+    "- Conexión entre PC, celular y tablet",
+    "- Datos compartidos sincronizados",
+    "- Asistencia e informes",
+    "- Confirmación clara antes de borrar",
+    "- Preparar copia para otra institución",
+    "- Ventanas principales ajustables",
+    "",
+    "OMP Suite"
+  ].join("\n"));
+}
+
+function limpiarClavesPanelLocal(){
+  const borrar=[];
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(!k)continue;
+    if(k.startsWith("panel_") || k.startsWith("omp_install_panel_horarios")) borrar.push(k);
+  }
+  borrar.forEach(k=>localStorage.removeItem(k));
+}
+
+function prepararParaEntregar(){
+  const aviso=[
+    "PREPARAR COPIA PARA OTRA INSTITUCIÓN",
+    "",
+    "Esta acción deja ESTE ARCHIVO/EQUIPO listo para entregarse a otra institución.",
+    "",
+    "Se borrará SOLO en este equipo:",
+    "- conexión compartida",
+    "- aulas",
+    "- profesores",
+    "- alumnos",
+    "- horarios",
+    "- asistencias",
+    "- datos de instalación OMP",
+    "",
+    "NO borra la base de Google ya compartida con otros equipos.",
+    "NO borra los datos que ya estén en otras computadoras conectadas.",
+    "",
+    "Se recomienda hacer una copia de seguridad antes de continuar.",
+    "",
+    "Para confirmar escriba exactamente: ENTREGAR"
+  ].join("\n");
+  const code=prompt(aviso);
+  if(code!=="ENTREGAR"){
+    alert("Preparación cancelada. No se borró nada.");
+    return;
+  }
+  limpiarClavesPanelLocal();
+  items=[]; rooms=[]; teachers=[]; students=[]; attendance=[]; scriptUrl="";
+  saveLocal();
+  setMode("Copia preparada para otra institución. Cierre y vuelva a abrir la aplicación.","ok");
+  alert("Listo. Esta copia quedó preparada para otra institución. Cierre y vuelva a abrir la aplicación para iniciar como nueva institución.");
+}
+
+
+// ========================
+// OMP INSTALLER v1.0 + flujo maestro Datos compartidos / Cargar horario
+// ========================
+const OMPInstaller={
+  appId:"panel_horarios",
+  version:"16.1",
+  configKey:"omp_install_panel_horarios_v1",
+  stepKey:"omp_install_panel_horarios_step",
+
+  getConfig(){
+    try{return JSON.parse(localStorage.getItem(this.configKey)||"null")}catch(e){return null}
+  },
+  hasLegacyInstall(){
+    // V14.0.4: la URL técnica está incluida en el paquete y NO demuestra
+    // que este navegador haya sido autorizado. Solo cuentan instalaciones
+    // antiguas que realmente tengan datos locales propios.
+    return !!(
+      localStorage.getItem("panel_v9_items") ||
+      localStorage.getItem("panel_v9_rooms") ||
+      localStorage.getItem("panel_v9_teachers") ||
+      localStorage.getItem("panel_v10_students")
+    );
+  },
+  hideAll(){
+    ["ompHome","ompNewInstitution","ompConnectDevice","ompSendConnection","ompTestResult"]
+      .forEach(id=>{const el=document.getElementById(id);if(el)el.style.display="none";});
+  },
+  setTitle(title,text){
+    ompTitle.textContent=title;
+    ompText.textContent=text;
+  },
+  start(){
+    document.body.classList.add("omp-pending");
+    this.hideAll();
+    ompHome.style.display="block";
+    ompActions.innerHTML="";
+
+    const cfg=this.getConfig();
+    // Un dispositivo está realmente conectado solamente cuando conserva
+    // la institución y el token permanente entregados al autorizarlo.
+    const connected=!!(
+      cfg &&
+      cfg.estado==="INSTALADA" &&
+      String(cfg.institucionId||"").trim() &&
+      String(cfg.accessToken||"").trim()
+    );
+    const pendingAuthorization=!!(cfg && cfg.estado==="INSTALADA" && !connected);
+
+    if(connected){
+      this.setTitle(
+        "Este dispositivo ya está conectado",
+        "Puede comenzar a trabajar o agregar otro dispositivo."
+      );
+      ompStatus.textContent="Todos los dispositivos autorizados trabajan sobre la misma institución.";
+      ompActions.innerHTML=`
+        <button class="b2" onclick="OMPInstaller.openApp()">Abrir Panel de Horarios</button>
+        <button class="b1" onclick="OMPInstaller.showSendConnection()">Agregar otro dispositivo</button>
+        ${location.protocol==="file:"?'<button class="omp-dev" onclick="OMPInstaller.simulateNewDevice()">🧪 Simular dispositivo nuevo</button>':""}
+      `;
+    }else{
+      this.setTitle(
+        pendingAuthorization ? "Autorizar este dispositivo" : "Panel de Horarios",
+        pendingAuthorization
+          ? "Este equipo necesita un código solamente esta primera vez."
+          : "Seleccione una opción para comenzar."
+      );
+      ompStatus.textContent=pendingAuthorization
+        ? "Ingrese un código de 6 números generado por el responsable. Después quedará conectado permanentemente."
+        : "No se crea una copia. Todos los dispositivos trabajan sobre la misma información compartida.";
+      ompActions.innerHTML=`
+        <button class="b2" onclick="OMPInstaller.showNewInstitution()">Crear una nueva institución</button>
+        <div class="omp-secondary">Para comenzar un Panel de Horarios nuevo.</div>
+        <button class="b1" onclick="OMPInstaller.showConnectDevice()">Ingresar con código</button>
+        <div class="omp-secondary">Para usar la misma información que ya utilizan otros dispositivos.</div>
+      `;
+    }
+  },
+  showNewInstitution(){
+    this.hideAll();
+    ompNewInstitution.style.display="block";
+    this.setTitle("Nueva institución","Complete los datos para comenzar.");
+    ompInstitution.value="";
+    ompResponsible.value="";
+  },
+  showConnectDevice(){
+    this.hideAll();
+    ompConnectDevice.style.display="block";
+    this.setTitle("Ingresar con código","Ingrese el código autorizado por el responsable.");
+    ompConnectionInput.value="";
+    setTimeout(()=>ompConnectionInput.focus(),100);
+  },
+  async showSendConnection(){
+    try{
+      // El dispositivo ya autorizado NO debe volver a migrar la institución.
+      // Usa directamente su institucionId + accessToken para generar el código.
+      document.body.classList.add("omp-pending");
+      let cfg=this.getConfig()||{};
+
+      if(!cfg.institucionId || !cfg.accessToken){
+        const res=await apiPost({
+          action:"ensureInstitution",
+          institucionId:cfg.institucionId||"",
+          institucion:cfg.institucion||"Panel de Horarios",
+          responsable:cfg.responsable||"Responsable"
+        });
+        cfg={
+          ...cfg,
+          appId:this.appId,
+          version:this.version,
+          estado:"INSTALADA",
+          institucion:res.institucion,
+          responsable:res.responsable,
+          institucionId:res.institucionId,
+          accessToken:res.accessToken
+        };
+        localStorage.setItem(this.configKey,JSON.stringify(cfg));
+        localStorage.setItem(this.stepKey,"COMPLETA");
+      }
+
+      this.hideAll();
+      ompSendConnection.style.display="block";
+      this.setTitle("Agregar otro dispositivo","Genere un código temporal.");
+      await this.generateAccessCode();
+    }catch(e){
+      document.body.classList.remove("omp-pending");
+      alert(e.message||"No se pudo generar el código de acceso.");
+    }
+  },
+  async generateAccessCode(){
+    try{
+      ompConnectionOutput.textContent="······";
+      ompCodeExpiry.textContent="Generando código...";
+      const res=await apiPost({action:"generateAccessCode"});
+      ompConnectionOutput.textContent=String(res.code||"");
+      ompCodeExpiry.textContent="Válido por 15 minutos y para un solo dispositivo.";
+    }catch(e){
+      ompConnectionOutput.textContent="ERROR";
+      ompCodeExpiry.textContent="No se pudo generar el código.";
+      alert(e.message||"No se pudo generar el código.");
+    }
+  },
+  async createInstitution(){
+    const inst=(ompInstitution.value||"").trim();
+    const resp=(ompResponsible.value||"").trim();
+    if(!inst||!resp){
+      alert("Complete el nombre de la institución y su nombre.");
+      return;
+    }
+    try{
+      const res=await apiPost({action:"createInstitution",institucion:inst,responsable:resp});
+      const cfg={
+        appId:this.appId,
+        version:this.version,
+        estado:"INSTALADA",
+        institucion:res.institucion,
+        responsable:res.responsable,
+        institucionId:res.institucionId,
+        accessToken:res.accessToken,
+        fecha:new Date().toISOString(),
+        dispositivo:"responsable"
+      };
+      localStorage.setItem(this.configKey,JSON.stringify(cfg));
+      localStorage.setItem(this.stepKey,"COMPLETA");
+      scriptUrl=PANEL_DEFAULT_SCRIPT_URL;
+      localStorage.setItem("panel_v9_script_url",scriptUrl);
+      alert("Institución creada correctamente.");
+      this.openApp();
+    }catch(e){
+      alert(e.message||"No se pudo crear la institución.");
+    }
+  },
+  async activateDevice(){
+    const code=String(ompConnectionInput.value||"").replace(/\D/g,"").trim();
+    if(code.length!==6){
+      alert("Ingrese el código de 6 números.");
+      return;
+    }
+    try{
+      const res=await apiPost({action:"connectByCode",code});
+      const cfg={
+        appId:this.appId,
+        version:this.version,
+        estado:"INSTALADA",
+        institucion:res.institucion,
+        responsable:res.responsable,
+        institucionId:res.institucionId,
+        accessToken:res.accessToken,
+        fecha:new Date().toISOString(),
+        dispositivo:"conectado"
+      };
+      localStorage.setItem(this.configKey,JSON.stringify(cfg));
+      localStorage.setItem(this.stepKey,"COMPLETA");
+      scriptUrl=PANEL_DEFAULT_SCRIPT_URL;
+      localStorage.setItem("panel_v9_script_url",scriptUrl);
+      await loadData(true);
+      alert("¡Listo! Este dispositivo quedó conectado.");
+      this.openApp();
+    }catch(e){
+      alert(e.message||"Código inválido o vencido.");
+    }
+  },
+  async simulateNewDevice(){
+    this.hideAll();
+    ompTestResult.style.display="block";
+    this.setTitle("Prueba de conexión","Simulación interna del dispositivo nuevo.");
+    ompTestSteps.innerHTML="";
+
+    const add=(msg,ok=true)=>{
+      const d=document.createElement("div");
+      d.className="omp-step "+(ok?"ok":"err");
+      d.textContent=(ok?"✔ ":"✖ ")+msg;
+      ompTestSteps.appendChild(d);
+    };
+
+    const payload=panelConnectionPayload();
+    if(!payload){
+      add("No se pudo generar la conexión.",false);
+      return;
+    }
+    add("Conexión generada.");
+
+    const code=panelEncodeConnection(payload);
+    const decoded=panelDecodeConnection(code);
+    if(!decoded){
+      add("No se pudo leer la conexión.",false);
+      return;
+    }
+    add("Conexión recibida.");
+    add("Configuración válida.");
+
+    try{
+      const r=await fetch(decoded.scriptUrl+"?ts="+Date.now());
+      const data=await r.json();
+      if(data) add("Servidor compartido disponible.");
+      else add("El servidor no respondió correctamente.",false);
+    }catch(e){
+      add("No se pudo comprobar el servidor.",false);
+      return;
+    }
+
+    add("Dispositivo listo para conectarse.");
+    const final=document.createElement("div");
+    final.className="omp-status";
+    final.style.marginTop="12px";
+    final.innerHTML="<b>RESULTADO: APROBADO</b>";
+    ompTestSteps.appendChild(final);
+  },
+  openApp(){
+    document.body.classList.remove("omp-pending");
+    panelStart();
+  }
+};
+
+
+async function panelAutoConnectFromLink(){
+  try{
+    const hash=String(location.hash||"");
+    if(!hash.startsWith("#conectar=")) return false;
+
+    const code=decodeURIComponent(hash.slice("#conectar=".length));
+    const obj=panelDecodeConnection(code);
+    if(!obj){
+      alert("El enlace de conexión no es válido.");
+      history.replaceState(null,"",location.pathname+location.search);
+      return false;
+    }
+
+    document.body.classList.add("omp-pending");
+    OMPInstaller.hideAll();
+    OMPInstaller.setTitle("Conectando este dispositivo","Espere un momento...");
+    ompHome.style.display="block";
+    ompStatus.textContent="La aplicación está preparando este dispositivo automáticamente.";
+    ompActions.innerHTML="";
+
+    const ok=await aplicarConexionCompartida(obj,true);
+    history.replaceState(null,"",location.pathname+location.search);
+
+    if(ok){
+      OMPInstaller.setTitle("Dispositivo conectado correctamente","Ya puede comenzar a trabajar.");
+      ompStatus.textContent="Este dispositivo ya comparte la misma información.";
+      ompActions.innerHTML='<button class="b2" onclick="OMPInstaller.openApp()">Abrir Panel de Horarios</button>';
+      setTimeout(()=>OMPInstaller.openApp(),1800);
+      return true;
+    }
+  }catch(e){
+    console.error(e);
+    alert("No se pudo completar la conexión.");
+  }
+  return false;
+}
+
+async function panelEnsureSecureAccess(){
+  let cfg=ompCurrentConfig()||{};
+  if(!cfg || cfg.estado!=="INSTALADA") return false;
+  if(cfg.institucionId && cfg.accessToken) return true;
+  const res=await apiPost({action:"ensureInstitution",institucionId:cfg.institucionId||"",institucion:cfg.institucion||"Panel de Horarios",responsable:cfg.responsable||"Responsable"});
+  cfg={...cfg,institucionId:res.institucionId,accessToken:res.accessToken,institucion:res.institucion,responsable:res.responsable,estado:"INSTALADA"};
+  localStorage.setItem("omp_install_panel_horarios_v1",JSON.stringify(cfg));
+  return true;
+}
+async function panelStart(){
+  fillSelects();
+  panelGuardarScriptUrlSiHaceFalta();
+  if(!scriptUrl){
+    setMode("Aplicación instalada correctamente. Si es la primera vez, cargue Datos compartidos y luego Cargar horario.","ok");
+    render();
+    return;
+  }
+  try{
+    await panelEnsureSecureAccess();
+    startAuto();
+    await loadData(true);
+  }catch(e){
+    setMode("Este dispositivo necesita un código nuevo del responsable.","err");
+    document.body.classList.add("omp-pending");
+    OMPInstaller.start();
+  }
+}
+
+
+(async()=>{
+  const auto=await panelAutoConnectFromLink();
+  if(!auto) OMPInstaller.start();
+})();
+
+// V10.7 DOCENTE: base fija compartida para docentes.
+// V10.7 DOCENTE: vista compacta con casilla Presente frente a cada alumno.
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){
+    document.querySelectorAll(".modal.show").forEach(m=>m.classList.remove("show"));
+  }
+  if(e.ctrlKey && e.altKey && String(e.key||"").toLowerCase()==="d"){
+    alert("Diagnóstico no disponible en V12.");
+  }
+});
+document.addEventListener("click",e=>{
+  if(e.target.classList && e.target.classList.contains("modal")){
+    e.target.classList.remove("show");
+  }
 });
 
-window.addEventListener('beforeunload',stopAutoRefresh);
-expenseReceiptFile.addEventListener('change',renderExpenseReceiptPreview);
-paymentReceiptFile.addEventListener('change',onPaymentReceiptSelected);
-
-window.addEventListener('load',async()=>{
-  enableReservedAccess();
-  renderExpenseReceiptPreview();
-  updateConnectionBadge();
-  renderMyGroups();
-  await syncMyGroupsFromServer();
-  await openInviteFromLink();
-});
+// V10.7: sincronización suave, no interrumpe edición ni ventanas.
 </script>
 </body>
 </html>
